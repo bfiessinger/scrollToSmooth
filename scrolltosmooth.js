@@ -1,7 +1,7 @@
 /**
  * Vanilla JS Smooth Scroll
  * Author: Bastian Fießinger
- * Version: 1.0.0
+ * Version: 1.0.1
  */
 
 'use strict';
@@ -59,6 +59,9 @@ HTMLAnchorElement.prototype.scrollToSmooth = function (settings) {
   // Build the Settings Object from Defaults and user defined settings
   settings = extend(defaults, settings || {});
 
+  const reqAnimFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
+  const cancelAnimFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+  
   // Get All Links with hashes based on the current URI
   const findHashLinks = () => {
 
@@ -105,17 +108,18 @@ HTMLAnchorElement.prototype.scrollToSmooth = function (settings) {
     scrollToTarget(0, distToScroll, windowStartPos, startTime);
 
   }
-
+  
   // Animate the ScrollTop
   const scrollToTarget = (timestamp, distToScroll, startPos, startTime) => {
 
     const now = 'now' in window.performance ? performance.now() : new Date().getTime();
     const time = Math.min(1, ((now - startTime) / settings.speed));
     const timeFunction = easings[settings.easing](time);
-
+    let curScrollPosition = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
+    
     window.scroll(0, Math.ceil((timeFunction * (distToScroll - startPos)) + startPos));
-
-    if (Math.round(window.pageYOffset) === distToScroll) {
+    
+    if (Math.ceil(curScrollPosition) === distToScroll) {
       if (settings.callback) {
         settings.callback();
       }
@@ -124,16 +128,24 @@ HTMLAnchorElement.prototype.scrollToSmooth = function (settings) {
       return;
     }
 
-    window.requestAnimationFrame(function (timestamp) {
+    let scrollAnimationFrame = reqAnimFrame((timestamp) => {
       scrollToTarget(timestamp, distToScroll, startPos, startTime);
     });
 
+    // Cancel Animation on User Scroll
+    window.addEventListener('mousewheel', () => {
+      cancelAnimationFrame( scrollAnimationFrame );
+    });
+    window.addEventListener('touchmove', () => {
+      cancelAnimationFrame( scrollAnimationFrame );
+    });
+    
   }
-
+  
   const BindEvents = () => {
 
     window.addEventListener('load', findHashLinks);
-
+    
   }
 
   this.init = () => {
