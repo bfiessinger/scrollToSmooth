@@ -1,7 +1,7 @@
 # scrollToSmooth
-a Vanilla JS Smooth Scroll to anchor script
+a Vanilla JS Smooth Scroll to anchor script.
 
-<strong>Usage</strong>
+<strong>Usage:</strong>
 ```javascript
 let links = document.getElementsByTagName('a');
 
