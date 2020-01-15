@@ -69,3 +69,5 @@ let links = document.getElementsByTagName('a');
     </p>
   </dd>
 </dl>
+
+[Working Demo](https://codepen.io/bastian_fiessinger/full/WNbyOBN "ScrollToSmooth on Codepen")
