@@ -1,6 +1,8 @@
 # scrollToSmooth
 a Vanilla JS Smooth Scroll to anchor script.
 
+[![CodeFactor](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth/badge)](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth)
+
 <strong>Usage:</strong>
 ```javascript
 let links = document.getElementsByTagName('a');
