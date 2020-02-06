@@ -1,4 +1,4 @@
-# scrollToSmooth 🎉🖱️🎉
+# scrollToSmooth 🖱️
 a Vanilla JS Smooth Scroll to ⚓ script.
 
 [![CodeFactor](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth/badge)](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth)
