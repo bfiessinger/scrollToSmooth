@@ -1,9 +1,24 @@
-# 🖱️ scrollToSmooth
-a Vanilla JS Smooth Scroll to ⚓ script.
+# scrollToSmooth
+a lightweight Vanilla JS Smooth Scroll to ⚓ script.
 
 [![CodeFactor](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth/badge)](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth)
 
-<strong>Usage:</strong>
+**[View the Demo on CodePen &rarr;](https://codepen.io/bastian_fiessinger/full/WNbyOBN "ScrollToSmooth on Codepen")**
+
+<hr>
+
+## Get started
+### Installation
+[Download](https://github.com/basticodes/scrollToSmooth/archive/master.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
+
+*Currently downloading is the only option. Releases on a CDN and NPM are planned for the future.
+
+Include the script in your code:
+```html
+<script src="path/to/scrolltosmooth.min.js"></script>
+```
+
+## Usage
 ```javascript
 var smoothScroll = new scrollToSmooth('a', {
   targetAttribute: 'href',
@@ -14,7 +29,7 @@ var smoothScroll = new scrollToSmooth('a', {
 })
 smoothScroll.init();
 ```
-<strong>Options:</strong>
+### Options
 <dl class="options">
   <dt>targetAttribute</dt>
   <dd>
@@ -93,4 +108,8 @@ smoothScroll.init();
   </dd>
 </dl>
 
-[Working Demo](https://codepen.io/bastian_fiessinger/full/WNbyOBN "ScrollToSmooth on Codepen")
+## Browser Compability
+*Coming Soon
+
+### Polyfills
+Support for older browsers requires a polyfill for <code>requestAnimationFrame()</code>
