@@ -20,6 +20,9 @@ smoothScroll.init();
   <dd>
     Type: <code>string</code><br>
     Default: <code>'href'</code>
+    <p>
+      The attribute to determine the target element. Must be a valid selector!
+    </p>
   </dd>
   <dt>duration</dt>
   <dd>
