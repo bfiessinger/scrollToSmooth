@@ -2,6 +2,7 @@
 a lightweight Vanilla JS Smooth Scroll to ⚓ script.
 
 [![CodeFactor](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth/badge)](https://www.codefactor.io/repository/github/basticodes/scrolltosmooth)
+[![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 
 **[View the Demo on CodePen &rarr;](https://codepen.io/bastian_fiessinger/full/WNbyOBN "ScrollToSmooth on Codepen")**
 
