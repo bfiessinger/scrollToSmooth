@@ -5,20 +5,23 @@ a Vanilla JS Smooth Scroll to anchor script.
 
 <strong>Usage:</strong>
 ```javascript
-let links = document.getElementsByTagName('a');
-
-[].forEach.call(links, (el) => {
-  el.scrollToSmooth({
-    speed: 500,
-    easing: 'easeInOutQuint',
-    callback: function () { console.log('we reached it!'); },
-    fixedHeader: null
-  });
-});
+var smoothScroll = new scrollToSmooth('a', {
+  targetAttribute: 'href',
+  duration: 800,
+  easing: 'easeOutCubic',
+  callback: function () { console.log('we reached it!'); },
+  fixedHeader: null
+})
+smoothScroll.init();
 ```
 <strong>Options:</strong>
 <dl class="options">
-  <dt>speed</dt>
+  <dt>targetAttribute</dt>
+  <dd>
+    Type: <code>string</code><br>
+    Default: <code>'href'</code>
+  </dd>
+  <dt>duration</dt>
   <dd>
     Type: <code>Number</code><br>
     Default: <code>400</code>
@@ -47,9 +50,24 @@ let links = document.getElementsByTagName('a');
         <li>easeInQuint</li>
         <li>easeOutQuint</li>
         <li>easeInOutQuint</li>
+        <li>easeInSine</li>
+        <li>easeOutSine</li>
+        <li>easeInOutSine</li>
+        <li>easeInExpo</li>
+        <li>easeOutExpo</li>
+        <li>easeInOutExpo</li>
+        <li>easeInCirc</li>
+        <li>easeOutCirc</li>
+        <li>easeInOutCirc</li>
         <li>easeInElastic</li>
         <li>easeOutElastic</li>
         <li>easeInOutElastic</li>
+        <li>easeInBack</li>
+        <li>easeOutBack</li>
+        <li>easeInOutBack</li>
+        <li>easeInBounce</li>
+        <li>easeOutBounce</li>
+        <li>easeInOutBounce</li>
       </ul>
     </p>
   </dd>
