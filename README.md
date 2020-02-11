@@ -6,6 +6,8 @@
 
 
 a lightweight Vanilla JS Smooth Scroll to ⚓ script.
+Scroll to any target Element on your page. The script knows exactly when a target does not exists and so nothing get's executed.
+You can work with any HTML Element far beyond anchor tags.
 
 **[View the Demo on CodePen 🎉](https://codepen.io/bastian_fiessinger/full/WNbyOBN "ScrollToSmooth on Codepen")**
 
