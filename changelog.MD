@@ -1,5 +1,14 @@
 # Changelog
 
+### 2.0.1
+- Renamed callback to onScrollEnd
+- Added Callback function onScrollStart
+- Added Callback function onScrollUpdate
+- Added additional data parameter for all callback functions
+- Fixed a bug where the animation would stop too early
+- Added a durationRelative Parameter to calculate the duration based on the amount of pixel to scroll
+- Added durationMin and durationMax Parameters
+
 ### 2.0.0
 - Moved from an AnchorElement Prototype to a class construct.
 - Improvement: Now working with any HTML element not just a tags

@@ -35,14 +35,26 @@ export default class scrollToSmooth {
 		const defaults = {
 			targetAttribute: 'href',
 			duration: 400,
+			durationRelative: false,
+			durationMin: false,
+			durationMax: false,
 			easing: 'linear',
-			callback: null,
+			onScrollStart: null,
+			onScrollUpdate: null,
+			onScrollEnd: null,
 			fixedHeader: null
 		};
 
+		/**
+		 * Deprecated warnings
+		 */
 		if (settings.speed && !settings.duration) {
 			console.warn('settings.speed is deprecated. Use settings.duration instead.');
 			settings.duration = settings.speed;
+		}
+
+		if (settings.callback && !settings.onScrollEnd) {
+			console.warn('settings.callback is deprecated. Use settings.onScrollEnd instead.');
 		}
 
 		/**
@@ -130,40 +142,82 @@ export default class scrollToSmooth {
 			const docHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
 			const winHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
 			const targetOffset = currentTarget.offsetTop;
-			let distToScroll = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);
+			let distFromTop = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);
 
 			if (this.settings.fixedHeader !== null) {
 
 				const fixedHeader = document.querySelector(this.settings.fixedHeader);
 				if (fixedHeader.tagName) {
-					distToScroll -= Math.ceil(fixedHeader.getBoundingClientRect().height);
+					distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
 				}
 
 			}
 
 			// Distance can't be negative
-			distToScroll = (distToScroll < 0) ? 0 : distToScroll;
+			distFromTop = (distFromTop < 0) ? 0 : distFromTop;
 
-			scrollToTarget(0, distToScroll, windowStartPos, startTime);
+			// Callback onScrollStart
+			if (this.settings.onScrollStart) {
+				this.settings.onScrollStart({
+					startPosition: windowStartPos,
+					endPosition: distFromTop
+				});
+			}
+
+			// Start Scrolling
+			scrollToTarget(0, distFromTop, windowStartPos, startTime);
 
 		};
 
 		// Animate the ScrollTop
-		const scrollToTarget = (timestamp, distToScroll, startPos, startTime) => {
+		const scrollToTarget = (timestamp, distFromTop, startPos, startTime) => {
 
 			const now = 'now' in window.performance ? performance.now() : new Date().getTime();
 			const elapsed = now - startTime;
 
-			const duration = Math.max(1, this.settings.duration);
+			let duration = Math.max(1, this.settings.duration);
+			const distToScroll = distFromTop - startPos;
+			const scrollPx = (distToScroll < 0) ? distToScroll * -1 : distToScroll;
 
-			const timeFunction = Easings[this.settings.easing](elapsed, startPos, (distToScroll - startPos), duration);
+			if (this.settings.durationRelative) {
+
+				let durationRelativePx = (typeof (this.settings.durationRelative) == 'number') ? this.settings.durationRelative : 1000;
+				duration = scrollPx * (duration / durationRelativePx);
+
+			}
+
+			// Set a minimum duration
+			if (this.settings.durationMin && duration < this.settings.durationMin) {
+				duration = this.settings.durationMin;
+			}
+
+			// Set a maximum duration
+			if (this.settings.durationMax && duration > this.settings.durationMax) {
+				duration = this.settings.durationMax;
+			}
+
+			const timeFunction = Easings[this.settings.easing](elapsed, startPos, distToScroll, duration);
 			let curScrollPosition = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
+
+			// Callback onScrollUpdate
+			if (this.settings.onScrollUpdate) {
+				this.settings.onScrollUpdate({
+					startPosition: startPos,
+					currentPosition: curScrollPosition,
+					endPosition: distFromTop
+				});
+			}
 
 			window.scroll(0, Math.ceil(timeFunction));
 
-			if (Math.ceil(curScrollPosition) === distToScroll || elapsed > this.settings.duration) {
-				if (this.settings.callback) {
-					this.settings.callback();
+			if (elapsed > duration) {
+
+				// Callback onScrollEnd
+				if (this.settings.onScrollEnd) {
+					this.settings.onScrollEnd({
+						startPosition: startPos,
+						endPosition: distFromTop
+					});
 				}
 
 				// Stop when the element is reached
@@ -171,7 +225,7 @@ export default class scrollToSmooth {
 			}
 
 			let scrollAnimationFrame = reqAnimFrame((timestamp) => {
-				scrollToTarget(timestamp, distToScroll, startPos, startTime);
+				scrollToTarget(timestamp, distFromTop, startPos, startTime);
 			});
 
 			// Cancel Animation on User Scroll Interaction

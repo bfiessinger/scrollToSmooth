@@ -1,7 +1,7 @@
 /**
  * Vanilla JS Smooth Scroll
  * Author: Bastian Fießinger
- * Version: 2.0.0
+ * Version: 2.0.1
  */
 var scrollToSmooth = (function() {
   "use strict";
@@ -495,16 +495,30 @@ var scrollToSmooth = (function() {
     var defaults = {
       targetAttribute: "href",
       duration: 400,
+      durationRelative: false,
+      durationMin: false,
+      durationMax: false,
       easing: "linear",
-      callback: null,
+      onScrollStart: null,
+      onScrollUpdate: null,
+      onScrollEnd: null,
       fixedHeader: null,
     };
+    /**
+     * Deprecated warnings
+     */
 
     if (settings.speed && !settings.duration) {
       console.warn(
         "settings.speed is deprecated. Use settings.duration instead."
       );
       settings.duration = settings.speed;
+    }
+
+    if (settings.callback && !settings.onScrollEnd) {
+      console.warn(
+        "settings.callback is deprecated. Use settings.onScrollEnd instead."
+      );
     }
     /**
      * Basic Helper Function to merge user defined settings with the defaults Object
@@ -610,7 +624,7 @@ var scrollToSmooth = (function() {
         document.documentElement.clientHeight ||
         document.getElementsByTagName("body")[0].clientHeight;
       var targetOffset = currentTarget.offsetTop;
-      var distToScroll = Math.ceil(
+      var distFromTop = Math.ceil(
         docHeight - targetOffset < winHeight
           ? docHeight - winHeight
           : targetOffset
@@ -620,17 +634,25 @@ var scrollToSmooth = (function() {
         var fixedHeader = document.querySelector(_this.settings.fixedHeader);
 
         if (fixedHeader.tagName) {
-          distToScroll -= Math.ceil(fixedHeader.getBoundingClientRect().height);
+          distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
         }
       } // Distance can't be negative
 
-      distToScroll = distToScroll < 0 ? 0 : distToScroll;
-      scrollToTarget(0, distToScroll, windowStartPos, startTime);
+      distFromTop = distFromTop < 0 ? 0 : distFromTop; // Callback onScrollStart
+
+      if (_this.settings.onScrollStart) {
+        _this.settings.onScrollStart({
+          startPosition: windowStartPos,
+          endPosition: distFromTop,
+        });
+      } // Start Scrolling
+
+      scrollToTarget(0, distFromTop, windowStartPos, startTime);
     }; // Animate the ScrollTop
 
     var scrollToTarget = function scrollToTarget(
       timestamp,
-      distToScroll,
+      distFromTop,
       startPos,
       startTime
     ) {
@@ -638,33 +660,61 @@ var scrollToSmooth = (function() {
         "now" in window.performance ? performance.now() : new Date().getTime();
       var elapsed = now - startTime;
       var duration = Math.max(1, _this.settings.duration);
+      var distToScroll = distFromTop - startPos;
+      var scrollPx = distToScroll < 0 ? distToScroll * -1 : distToScroll;
+
+      if (_this.settings.durationRelative) {
+        var durationRelativePx =
+          typeof _this.settings.durationRelative == "number"
+            ? _this.settings.durationRelative
+            : 1000;
+        duration = scrollPx * (duration / durationRelativePx);
+      } // Set a minimum duration
+
+      if (_this.settings.durationMin && duration < _this.settings.durationMin) {
+        duration = _this.settings.durationMin;
+      } // Set a maximum duration
+
+      if (_this.settings.durationMax && duration > _this.settings.durationMax) {
+        duration = _this.settings.durationMax;
+      }
 
       var timeFunction = Easings[_this.settings.easing](
         elapsed,
         startPos,
-        distToScroll - startPos,
+        distToScroll,
         duration
       );
 
       var curScrollPosition =
         window.pageYOffset ||
         document.body.scrollTop ||
-        document.documentElement.scrollTop;
+        document.documentElement.scrollTop; // Callback onScrollUpdate
+
+      if (_this.settings.onScrollUpdate) {
+        _this.settings.onScrollUpdate({
+          startPosition: startPos,
+          currentPosition: curScrollPosition,
+          endPosition: distFromTop,
+        });
+      }
+
       window.scroll(0, Math.ceil(timeFunction));
 
-      if (
-        Math.ceil(curScrollPosition) === distToScroll ||
-        elapsed > _this.settings.duration
-      ) {
-        if (_this.settings.callback) {
-          _this.settings.callback();
+      if (elapsed > duration) {
+        // Callback onScrollEnd
+        if (_this.settings.onScrollEnd) {
+          _this.settings.onScrollEnd({
+            startPosition: startPos,
+            endPosition: distFromTop,
+          });
         } // Stop when the element is reached
 
         return;
       }
 
       var scrollAnimationFrame = reqAnimFrame(function(timestamp) {
-        scrollToTarget(timestamp, distToScroll, startPos, startTime);
+        scrollToTarget(timestamp, distFromTop, startPos, startTime);
       }); // Cancel Animation on User Scroll Interaction
 
       var cancelAnimationOnEvents = ["mousewheel", "wheel", "touchstart"];
