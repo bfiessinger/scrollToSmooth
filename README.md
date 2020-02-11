@@ -10,7 +10,7 @@ a lightweight Vanilla JS Smooth Scroll to ⚓ script.
 
 ## Get started
 ### Installation
-[Download](https://github.com/basticodes/scrollToSmooth/archive/master.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
+[Download](https://github.com/bfiessinger/scrollToSmooth/archive/master.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
 
 *Currently downloading is the only option. Releases on a CDN and NPM are planned for the future.*
 
