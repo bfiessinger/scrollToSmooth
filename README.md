@@ -23,9 +23,14 @@ Include the script in your code:
 ```javascript
 var smoothScroll = new scrollToSmooth('a', {
   targetAttribute: 'href',
-  duration: 800,
+  duration: 400,
+  durationRelative: false,
+  durationMin: false,
+  durationMax: false,
   easing: 'easeOutCubic',
-  callback: function () { console.log('we reached it!'); },
+  onScrollStart: (data) => { console.log(data); },
+  onScrollUpdate: (data) => { console.log(data); },
+  onScrollEnd: (data) => { console.log(data); },
   fixedHeader: null
 })
 smoothScroll.init();
@@ -46,6 +51,31 @@ smoothScroll.init();
     Default: <code>400</code>
     <p>
       Scroll time in milliseconds
+    </p>
+  </dd>
+  <dt>durationRelative</dt>
+  <dd>
+    Type: <code>boolean|number</code><br>
+    Default: <code>false</code>
+    <p>
+      Used to calculate the duration based on the amount of pixels to scroll.<br>
+      Use true to calculate by 1000px or a number to calculate by that.
+    </p>
+  </dd>
+  <dt>durationMin</dt>
+  <dd>
+    Type: <code>number</code><br>
+    Default: <code>null</code>
+    <p>
+      minimum duration time in ms
+    </p>
+  </dd>
+  <dt>durationMax</dt>
+  <dd>
+    Type: <code>number</code><br>
+    Default: <code>null</code>
+    <p>
+      maximum duration time in ms
     </p>
   </dd>
   <dt>easing</dt>
@@ -90,14 +120,30 @@ smoothScroll.init();
       </ul>
     </p>
   </dd>
-  <dt>callback</dt>
+  <dt>onScrollStart</dt>
   <dd>
     Type: <code>function</code><br>
     Default: <code>null</code>
     <p>
-      Callback to be executed when scrolling is finished
+      Callback to be executed when scrolling has started
     </p>
   </dd>
+  <dt>onScrollUpdate</dt>
+  <dd>
+    Type: <code>function</code><br>
+    Default: <code>null</code>
+    <p>
+      Callback to be executed when scrolling is running
+    </p>
+  </dd>
+  <dt>onScrollEnd</dt>
+  <dd>
+    Type: <code>function</code><br>
+    Default: <code>null</code>
+    <p>
+      Callback to be executed when scrolling has finished
+    </p>
+  </dd>  
   <dt>fixedHeader</dt>
   <dd>
     Type: <code>string</code><br>
@@ -109,8 +155,13 @@ smoothScroll.init();
   </dd>
 </dl>
 
+*Attention: `callback` got renamed to `onScrollEnd`*
+
+## Callbacks
+*Coming Soon*
+
 ## Browser Compability
-*Coming Soon
+*Coming Soon*
 
 ### Polyfills
 Support for older browsers requires a polyfill for <code>requestAnimationFrame()</code>
