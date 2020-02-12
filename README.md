@@ -14,7 +14,7 @@ You can work with any HTML Element far beyond anchor tags.
 
 <hr>
 
-[Getting Started](#getting-started) | [Usage](#usage) | [Options](#options) | [Methods](#methods) | [Callbacks](#callbacks) [Browser Compatibility](#browser-compatibility)
+[Getting Started](#getting-started) | [Usage](#usage) | [Options](#options) | [Methods](#methods) | [Callbacks](#callbacks) | [Browser Compatibility](#browser-compatibility)
 
 ## Getting started
 ### Installation
@@ -240,8 +240,8 @@ new scrollToSmooth('a', {
 ```
 data contains an object with values for `startPosition` and `endPosition`
 
-## Browser Compability
-*Coming Soon*
+## Browser Compatibility
+*Will be updated ASAP*
 
 ### Polyfills
 Support for older browsers requires a polyfill for <code>requestAnimationFrame()</code>
