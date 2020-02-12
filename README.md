@@ -163,6 +163,13 @@ smoothScroll.init();
 
 *Attention: `callback` got renamed to `onScrollEnd`*
 
+## Methods
+### `init`
+
+### `scrollTo`
+
+### `destroy`
+
 ## Callbacks
 *Coming Soon*
 
