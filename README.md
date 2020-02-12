@@ -186,17 +186,23 @@ OR:
 smoothScroll.scrollTo(document.querySelector('.your-selector'));
 ```
 
+<hr>
+
 #### `cancelScroll`
 while the animation is running you can call `cancelScroll` whenever you want to stop it immediately
 ```javascript
 smoothScroll.cancelScroll();
 ```
 
+<hr>
+
 #### `destroy`
 Destroy the current instance of scrollToSmooth. You can then reinitialize the instance with the `init` method.
 ```javascript
 smoothScroll.destroy();
 ```
+
+<hr>
 
 ## Callbacks
 *Coming Soon*
