@@ -136,7 +136,7 @@ export default class scrollToSmooth {
 
 			Array.prototype.forEach.call(this.elements, (el) => {
 
-				let sanitizeBaseURIRegex = new RegExp('/*(' + location.hash + ')?$');
+				let sanitizeBaseURIRegex = new RegExp('(' + location.hash + ')?$');
 
 				// Remove Trailing Slash and Hash Parameters from the baseURI
 				let baseURI = el.baseURI.replace(sanitizeBaseURIRegex, '');
@@ -321,17 +321,24 @@ export default class scrollToSmooth {
 		/**
 		 * Method: init
 		 */
-		this.init = function () {
+		this.init = () => {
+
+			// Destroy any existing initialization
+			this.destroy();
+
 			// Bind Events
 			BindEvents.call(this, linkCollector());
+
 		};
 
 		/**
 		 * Method: destroy
 		 */
-		this.destroy = function () {
+		this.destroy = () => {
+
 			// Remove Events
 			RemoveEvents.call(this, linkCollector());
+
 		};
 
 		let scrollAnimationFrame;
@@ -339,7 +346,7 @@ export default class scrollToSmooth {
 		/**
 		 * Method: scrollTo
 		 */
-		this.scrollTo = function (currentTarget) {
+		this.scrollTo = (currentTarget) => {
 
 			if (!currentTarget) {
 				return;
@@ -390,7 +397,7 @@ export default class scrollToSmooth {
 		/**
 		 * Method: cancelScroll
 		 */
-		this.cancelScroll = function () {
+		this.cancelScroll = () => {
 
 			// Do nothing if no scroll Event has fired
 			if (!scrollAnimationFrame) {
@@ -398,6 +405,23 @@ export default class scrollToSmooth {
 			}
 
 			cancelAnimFrame(scrollAnimationFrame);
+
+		};
+
+		/**
+		 * Method: update
+		 * 
+		 * @param {object} obj The settings to be updated from the original instance 
+		 */
+		this.update = (obj) => {
+
+			if (!(obj instanceof Object)) {
+				return;
+			}
+
+			for (let [key, value] of Object.entries(obj)) {
+				this.settings[key] = value;
+			}
 
 		};
 

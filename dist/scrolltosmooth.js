@@ -12,6 +12,61 @@ var scrollToSmooth = (function() {
     }
   }
 
+  function _slicedToArray(arr, i) {
+    return (
+      _arrayWithHoles(arr) ||
+      _iterableToArrayLimit(arr, i) ||
+      _nonIterableRest()
+    );
+  }
+
+  function _arrayWithHoles(arr) {
+    if (Array.isArray(arr)) return arr;
+  }
+
+  function _iterableToArrayLimit(arr, i) {
+    if (
+      !(
+        Symbol.iterator in Object(arr) ||
+        Object.prototype.toString.call(arr) === "[object Arguments]"
+      )
+    ) {
+      return;
+    }
+
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (
+        var _i = arr[Symbol.iterator](), _s;
+        !(_n = (_s = _i.next()).done);
+        _n = true
+      ) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"] != null) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  function _nonIterableRest() {
+    throw new TypeError("Invalid attempt to destructure non-iterable instance");
+  }
+
   function linear(elapsed, initialValue, amountOfChange, duration) {
     return amountOfChange;
   }
@@ -614,7 +669,7 @@ var scrollToSmooth = (function() {
     var linkCollector = function linkCollector() {
       var links = [];
       Array.prototype.forEach.call(_this.elements, function(el) {
-        var sanitizeBaseURIRegex = new RegExp("/*(" + location.hash + ")?$"); // Remove Trailing Slash and Hash Parameters from the baseURI
+        var sanitizeBaseURIRegex = new RegExp("(" + location.hash + ")?$"); // Remove Trailing Slash and Hash Parameters from the baseURI
 
         var baseURI = el.baseURI.replace(sanitizeBaseURIRegex, "");
         var targetSelector =
@@ -797,8 +852,10 @@ var scrollToSmooth = (function() {
      */
 
     this.init = function() {
-      // Bind Events
-      BindEvents.call(this, linkCollector());
+      // Destroy any existing initialization
+      _this.destroy(); // Bind Events
+
+      BindEvents.call(_this, linkCollector());
     };
     /**
      * Method: destroy
@@ -806,7 +863,7 @@ var scrollToSmooth = (function() {
 
     this.destroy = function() {
       // Remove Events
-      RemoveEvents.call(this, linkCollector());
+      RemoveEvents.call(_this, linkCollector());
     };
 
     var scrollAnimationFrame;
@@ -847,8 +904,8 @@ var scrollToSmooth = (function() {
           : targetOffset
       );
 
-      if (this.settings.fixedHeader !== null) {
-        var fixedHeader = _$(this.settings.fixedHeader);
+      if (_this.settings.fixedHeader !== null) {
+        var fixedHeader = _$(_this.settings.fixedHeader);
 
         if (fixedHeader.tagName) {
           distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
@@ -857,8 +914,8 @@ var scrollToSmooth = (function() {
 
       distFromTop = distFromTop < 0 ? 0 : distFromTop; // Callback onScrollStart
 
-      if (this.settings.onScrollStart) {
-        this.settings.onScrollStart({
+      if (_this.settings.onScrollStart) {
+        _this.settings.onScrollStart({
           startPosition: windowStartPos,
           endPosition: distFromTop,
         });
@@ -877,6 +934,29 @@ var scrollToSmooth = (function() {
       }
 
       cancelAnimFrame(scrollAnimationFrame);
+    };
+    /**
+     * Method: update
+     *
+     * @param {object} obj The settings to be updated from the original instance
+     */
+
+    this.update = function(obj) {
+      if (!(obj instanceof Object)) {
+        return;
+      }
+
+      for (
+        var _i = 0, _Object$entries = Object.entries(obj);
+        _i < _Object$entries.length;
+        _i++
+      ) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          key = _Object$entries$_i[0],
+          value = _Object$entries$_i[1];
+
+        _this.settings[key] = value;
+      }
     };
   };
 
