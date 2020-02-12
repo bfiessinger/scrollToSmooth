@@ -181,10 +181,12 @@ smoothScroll.init();
   <dt>`scrollTo`</dt>
   <dd>
 You can use the `scrollTo` method to animate the scrolling to a specific element on the page:
+    
 ```javascript
 smoothScroll.scrollTo('.your-selector');
 ```
 OR:
+    
 ```javascript
 smoothScroll.scrollTo(document.querySelector('.your-selector'));
 ```
@@ -192,6 +194,7 @@ smoothScroll.scrollTo(document.querySelector('.your-selector'));
   <dt>`cancelScroll`</dt>
   <dd>
 while the animation is running you can call `cancelScroll` whenever you want to stop it immediately
+    
 ```javascript
 smoothScroll.cancelScroll();
 ```
@@ -199,6 +202,7 @@ smoothScroll.cancelScroll();
   <dt>`destroy`</dt>
   <dd>
 Destroy the current instance of scrollToSmooth. You can then reinitialize the instance with the `init` method.
+    
 ```javascript
 smoothScroll.destroy();
 ```
@@ -206,8 +210,9 @@ smoothScroll.destroy();
 </dl>
 ## Callbacks
 <dl>
-  <dt>`onScrollStart`</dt>
+  <dt> `onScrollStart` </dt>
   <dd>
+    
 ```javascript
     
 ```
