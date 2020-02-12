@@ -170,48 +170,40 @@ let smoothScroll = new scrollToSmooth(document.querySelector('.my-scrollToSmooth
 ```
 You can use the following public methods to interact with it:
 
-<dl>
-  <dt>`init`</dt>
-  <dd>
+**`init`**
 Initialize
 ```javascript
 smoothScroll.init();
 ```
-  </dd>
-  <dt><code>scrollTo</code></dt>
-  <dd>
+
+**`scrollTo`**
+
 You can use the `scrollTo` method to animate the scrolling to a specific element on the page:
     
 ```javascript
 smoothScroll.scrollTo('.your-selector');
-```
-OR:
-    
-```javascript
+// OR
 smoothScroll.scrollTo(document.querySelector('.your-selector'));
 ```
-  </dd>
-  <dt><code>cancelScroll</code></dt>
-  <dd>
+
+**`cancelScroll`**
+
 while the animation is running you can call `cancelScroll` whenever you want to stop it immediately
     
 ```javascript
 smoothScroll.cancelScroll();
 ```
-  </dd>
-  <dt><code>destroy</code></dt>
-  <dd>
+
+**`destroy`**
+
 Destroy the current instance of scrollToSmooth. You can then reinitialize the instance with the `init` method.
     
 ```javascript
 smoothScroll.destroy();
 ```
-  </dd>
-</dl>
+
 ## Callbacks
-<dl>
-  <dt><code>onScrollStart</code></dt>
-  <dd>
+**`onScrollStart`**
     
 ```javascript
 new scrollToSmooth('a', {
@@ -221,9 +213,8 @@ new scrollToSmooth('a', {
 });
 ```
 data contains an object with values for `startPosition` and `endPosition`
-  </dd>
-  <dt><code>onScrollUpdate</code></dt>
-  <dd>
+
+**`onScrollUpdate`**
     
 ```javascript
 new scrollToSmooth('a', {
@@ -233,9 +224,8 @@ new scrollToSmooth('a', {
 });
 ```
 data contains an object with values for `startPosition`, `currentPosition` and `endPosition`
-  </dd>
-  <dt><code>onScrollEnd</code></dt>
-  <dd>
+
+**`onScrollEnd`**
     
 ```javascript
 new scrollToSmooth('a', {
@@ -245,8 +235,6 @@ new scrollToSmooth('a', {
 });
 ```
 data contains an object with values for `startPosition` and `endPosition`
-  </dd>
-</dl>
 
 ## Browser Compability
 *Coming Soon*
