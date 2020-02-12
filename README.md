@@ -210,7 +210,10 @@ smoothScroll.destroy();
 </dl>
 ## Callbacks
 <dl>
-  <dt> `onScrollStart` </dt>
+  <dt>
+    
+    `onScrollStart`
+  </dt>
   <dd>
     
 ```javascript
