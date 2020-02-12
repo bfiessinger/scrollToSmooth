@@ -27,7 +27,7 @@ Include the script in your code:
 
 ## Usage
 ```javascript
-var smoothScroll = new scrollToSmooth('a', {
+let smoothScroll = new scrollToSmooth('a', {
   targetAttribute: 'href',
   duration: 400,
   durationRelative: false,
@@ -164,11 +164,39 @@ smoothScroll.init();
 *Attention: `callback` got renamed to `onScrollEnd`*
 
 ## Methods
-### `init`
+After creating a new instance of scrollToSmooth
+```javascript
+let smoothScroll = new scrollToSmooth(document.querySelector('.my-scrollToSmooth'));
+```
+You can use the following public methods to interact with it:
 
-### `scrollTo`
+#### `init`
+Initialize
+```javascript
+smoothScroll.init();
+```
 
-### `destroy`
+#### `scrollTo`
+You can use the `scrollTo` method to animate the scrolling to a specific element on the page:
+```javascript
+smoothScroll.scrollTo('.your-selector');
+```
+OR:
+```javascript
+smoothScroll.scrollTo(document.querySelector('.your-selector'));
+```
+
+#### `cancelScroll`
+while the animation is running you can call `cancelScroll` whenever you want to stop it immediately
+```javascript
+smoothScroll.cancelScroll();
+```
+
+#### `destroy`
+Destroy the current instance of scrollToSmooth. You can then reinitialize the instance with the `init` method.
+```javascript
+smoothScroll.destroy();
+```
 
 ## Callbacks
 *Coming Soon*
