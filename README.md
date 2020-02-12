@@ -171,7 +171,9 @@ let smoothScroll = new scrollToSmooth(document.querySelector('.my-scrollToSmooth
 You can use the following public methods to interact with it:
 
 **`init`**
+
 Initialize
+
 ```javascript
 smoothScroll.init();
 ```
