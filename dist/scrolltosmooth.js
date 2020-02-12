@@ -462,13 +462,25 @@ var scrollToSmooth = (function() {
     _classCallCheck(this, scrollToSmooth);
 
     this.elements;
+    var d = document;
+    var w = window;
+
+    var _$ = function _$(s) {
+      return d.querySelector(s);
+    };
+
+    var _$$ = function _$$(s) {
+      return d.querySelectorAll(s);
+    };
     /**
      * Basic Helper function to check if an Element is an instance of Node
+     *
      * @param {any} domNode either a dom node or querySelector
+     *
      * @returns {boolean} either true or false
      */
 
-    function isDomElement(domNode) {
+    var isDomElement = function isDomElement(domNode) {
       if (
         domNode instanceof Node ||
         domNode instanceof NodeList ||
@@ -478,7 +490,7 @@ var scrollToSmooth = (function() {
       }
 
       return false;
-    }
+    };
     /**
      * Check this.elements and declare them based on their value
      */
@@ -486,8 +498,35 @@ var scrollToSmooth = (function() {
     if (isDomElement(nodes)) {
       this.elements = nodes;
     } else {
-      this.elements = document.querySelectorAll(nodes);
+      this.elements = _$$(nodes);
     }
+    /**
+     * Check if a selector exists on the current page
+     *
+     * @param {selector} selector
+     *
+     * @returns {boolean} true if the selector exists
+     */
+
+    var validateSelector = function validateSelector(selector) {
+      var selectorValid = true; // Validate if the target is a valid selector
+
+      try {
+        if (isDomElement(selector)) {
+          selector;
+        } else {
+          _$(selector);
+        }
+      } catch (e) {
+        selectorValid = false;
+      }
+
+      return selectorValid;
+    };
+
+    var getTime = function getTime() {
+      return "now" in w.performance ? performance.now() : new Date().getTime();
+    };
     /**
      * Build Default Settings Object
      */
@@ -496,8 +535,8 @@ var scrollToSmooth = (function() {
       targetAttribute: "href",
       duration: 400,
       durationRelative: false,
-      durationMin: false,
-      durationMax: false,
+      durationMin: null,
+      durationMax: null,
       easing: "linear",
       onScrollStart: null,
       onScrollUpdate: null,
@@ -519,10 +558,13 @@ var scrollToSmooth = (function() {
       console.warn(
         "settings.callback is deprecated. Use settings.onScrollEnd instead."
       );
+      settings.onScrollEnd = settings.callback;
     }
     /**
      * Basic Helper Function to merge user defined settings with the defaults Object
-     * @param  {...any} args Arguments to check
+     *
+     * @param  {object} args Arguments to check
+     *
      * @returns {object} Merged Settings Object
      */
 
@@ -553,31 +595,34 @@ var scrollToSmooth = (function() {
      */
 
     this.settings = extendSettings(defaults, settings || {});
+    /**
+     * Maximize Browser Support of requestAnimationFrame
+     */
+
     var reqAnimFrame =
-      window.requestAnimationFrame ||
-      window.mozRequestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
-      window.msRequestAnimationFrame;
-    var cancelAnimFrame =
-      window.cancelAnimationFrame || window.mozCancelAnimationFrame; // Get All Links with hashes based on the current URI
+      w.requestAnimationFrame ||
+      w.mozRequestAnimationFrame ||
+      w.webkitRequestAnimationFrame ||
+      w.msRequestAnimationFrame;
+    var cancelAnimFrame = w.cancelAnimationFrame || w.mozCancelAnimationFrame;
+    /**
+     * Get all scrollto elements that have target attributes related to the current page
+     *
+     * @returns {array} Array with all links found
+     */
 
     var linkCollector = function linkCollector() {
       var links = [];
       Array.prototype.forEach.call(_this.elements, function(el) {
-        var baseURI = el.baseURI.replace(/\/+$/, "");
+        var sanitizeBaseURIRegex = new RegExp("/*(" + location.hash + ")?$"); // Remove Trailing Slash and Hash Parameters from the baseURI
+
+        var baseURI = el.baseURI.replace(sanitizeBaseURIRegex, "");
         var targetSelector =
           _this.settings.targetAttribute === "href"
             ? el.href.replace(baseURI, "")
-            : el.getAttribute(_this.settings.targetAttribute);
-        var selectorValid = true; // Validate if the target is a valid selector
+            : el.getAttribute(_this.settings.targetAttribute); // Check if the selector is found on the page
 
-        try {
-          document.querySelector(targetSelector);
-        } catch (e) {
-          selectorValid = false;
-        } // Check if the selector is found on the page
-
-        if (selectorValid && document.querySelector(targetSelector)) {
+        if (validateSelector(targetSelector)) {
           // Handle href attributes
           if (
             _this.settings.targetAttribute === "href" &&
@@ -593,6 +638,13 @@ var scrollToSmooth = (function() {
       });
       return links;
     };
+    /**
+     * Handler for the click event
+     *
+     * @param {object} e The current Event
+     *
+     * @returns {void}
+     */
 
     var clickHandler = function clickHandler(e) {
       // Prevent Default Behaviour of how the browser would treat the click event
@@ -601,63 +653,35 @@ var scrollToSmooth = (function() {
 
       if (_this.settings.targetAttribute === "href") {
         var currentTargetIdSliced = e.target.hash.slice(1);
-        currentTarget = document.getElementById(currentTargetIdSliced);
+        currentTarget = d.getElementById(currentTargetIdSliced);
       } else {
-        currentTarget = document.querySelector(
+        currentTarget = _$(
           e.target.getAttribute(_this.settings.targetAttribute)
         );
       }
 
-      if (!currentTarget) return;
-      var windowStartPos = window.pageYOffset;
-      var startTime =
-        "now" in window.performance ? performance.now() : new Date().getTime();
-      var docHeight = Math.max(
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.clientHeight,
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight
-      );
-      var winHeight =
-        window.innerHeight ||
-        document.documentElement.clientHeight ||
-        document.getElementsByTagName("body")[0].clientHeight;
-      var targetOffset = currentTarget.offsetTop;
-      var distFromTop = Math.ceil(
-        docHeight - targetOffset < winHeight
-          ? docHeight - winHeight
-          : targetOffset
-      );
-
-      if (_this.settings.fixedHeader !== null) {
-        var fixedHeader = document.querySelector(_this.settings.fixedHeader);
-
-        if (fixedHeader.tagName) {
-          distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
-        }
-      } // Distance can't be negative
-
-      distFromTop = distFromTop < 0 ? 0 : distFromTop; // Callback onScrollStart
-
-      if (_this.settings.onScrollStart) {
-        _this.settings.onScrollStart({
-          startPosition: windowStartPos,
-          endPosition: distFromTop,
-        });
+      if (!currentTarget) {
+        return;
       } // Start Scrolling
 
-      scrollToTarget(0, distFromTop, windowStartPos, startTime);
-    }; // Animate the ScrollTop
+      _this.startScroll(currentTarget);
+    };
+    /**
+     * Animate scrolling
+     *
+     * @param {number} distFromTop Distance to be scrolled from top
+     * @param {number} startPos Distance from top when the animation has started
+     * @param {number} startTime The time in ms when the animation has started
+     *
+     * @returns {void}
+     */
 
     var scrollToTarget = function scrollToTarget(
-      timestamp,
       distFromTop,
       startPos,
       startTime
     ) {
-      var now =
-        "now" in window.performance ? performance.now() : new Date().getTime();
+      var now = getTime();
       var elapsed = now - startTime;
       var duration = Math.max(1, _this.settings.duration);
       var distToScroll = distFromTop - startPos;
@@ -668,7 +692,10 @@ var scrollToSmooth = (function() {
           typeof _this.settings.durationRelative == "number"
             ? _this.settings.durationRelative
             : 1000;
-        duration = scrollPx * (duration / durationRelativePx);
+        duration = Math.max(
+          _this.settings.duration,
+          scrollPx * (duration / durationRelativePx)
+        );
       } // Set a minimum duration
 
       if (_this.settings.durationMin && duration < _this.settings.durationMin) {
@@ -687,9 +714,7 @@ var scrollToSmooth = (function() {
       );
 
       var curScrollPosition =
-        window.pageYOffset ||
-        document.body.scrollTop ||
-        document.documentElement.scrollTop; // Callback onScrollUpdate
+        window.pageYOffset || d.body.scrollTop || d.documentElement.scrollTop; // Callback onScrollUpdate
 
       if (_this.settings.onScrollUpdate) {
         _this.settings.onScrollUpdate({
@@ -713,28 +738,145 @@ var scrollToSmooth = (function() {
         return;
       }
 
-      var scrollAnimationFrame = reqAnimFrame(function(timestamp) {
-        scrollToTarget(timestamp, distFromTop, startPos, startTime);
-      }); // Cancel Animation on User Scroll Interaction
+      scrollAnimationFrame = reqAnimFrame(function() {
+        scrollToTarget(distFromTop, startPos, startTime);
+      });
+    };
+    /**
+     * Add and remove Events
+     *
+     * @param {string} action The current state
+     * @param {array} linksFiltered Array with all available Smooth Scroll Links
+     */
+
+    var handleEvents = function handleEvents(action, linksFiltered) {
+      Array.prototype.forEach.call(linksFiltered, function(link) {
+        if (action == "add") {
+          link.addEventListener("click", clickHandler);
+        } else if (action == "remove") {
+          link.removeEventListener("click", clickHandler, false);
+        }
+      });
+    };
+    /**
+     * Bind Events
+     *
+     * @param {array} linksFiltered Array of anchor Elements
+     *
+     * @returns {void}
+     */
+
+    var BindEvents = function BindEvents(linksFiltered) {
+      handleEvents("add", linksFiltered); // Cancel Animation on User Scroll Interaction
 
       var cancelAnimationOnEvents = ["mousewheel", "wheel", "touchstart"];
       cancelAnimationOnEvents.forEach(function(ev) {
         window.addEventListener(ev, function() {
-          cancelAnimFrame(scrollAnimationFrame);
+          _this.cancelScroll();
         });
       });
     };
+    /**
+     * Remove Events
+     *
+     * @param {array} linksFiltered Array of anchor Elements
+     *
+     * @returns {void}
+     */
 
-    var BindEvents = function BindEvents(linksFiltered) {
-      Array.prototype.forEach.call(linksFiltered, function(link) {
-        link.addEventListener("click", clickHandler);
-      });
+    var RemoveEvents = function RemoveEvents(linksFiltered) {
+      // Do nothing if the plugin is not already initialized
+      if (!_this.settings) {
+        return;
+      }
+
+      handleEvents("remove", linksFiltered);
     };
+    /**
+     * Method: init
+     */
 
     this.init = function() {
       // Bind Events
-      var linksFiltered = linkCollector();
-      BindEvents.call(this, linksFiltered);
+      BindEvents.call(this, linkCollector());
+    };
+    /**
+     * Method: destroy
+     */
+
+    this.destroy = function() {
+      // Remove Events
+      RemoveEvents.call(this, linkCollector());
+    };
+
+    var scrollAnimationFrame;
+    /**
+     * Method: startScroll
+     */
+
+    this.startScroll = function(currentTarget) {
+      if (!currentTarget) {
+        return;
+      } // Do nothing if the selector is no Element of the DOM
+
+      if (!validateSelector(currentTarget)) {
+        return;
+      }
+
+      if (!isDomElement(currentTarget)) {
+        currentTarget = _$(currentTarget);
+      }
+
+      var windowStartPos = w.pageYOffset;
+      var startTime = getTime();
+      var docHeight = Math.max(
+        d.body.scrollHeight,
+        d.body.offsetHeight,
+        d.documentElement.clientHeight,
+        d.documentElement.scrollHeight,
+        d.documentElement.offsetHeight
+      );
+      var winHeight =
+        w.innerHeight ||
+        d.documentElement.clientHeight ||
+        d.getElementsByTagName("body")[0].clientHeight;
+      var targetOffset = currentTarget.offsetTop;
+      var distFromTop = Math.ceil(
+        docHeight - targetOffset < winHeight
+          ? docHeight - winHeight
+          : targetOffset
+      );
+
+      if (this.settings.fixedHeader !== null) {
+        var fixedHeader = _$(this.settings.fixedHeader);
+
+        if (fixedHeader.tagName) {
+          distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
+        }
+      } // Distance can't be negative
+
+      distFromTop = distFromTop < 0 ? 0 : distFromTop; // Callback onScrollStart
+
+      if (this.settings.onScrollStart) {
+        this.settings.onScrollStart({
+          startPosition: windowStartPos,
+          endPosition: distFromTop,
+        });
+      } // Start Scroll Animation
+
+      scrollToTarget(distFromTop, windowStartPos, startTime);
+    };
+    /**
+     * Method: cancelScroll
+     */
+
+    this.cancelScroll = function() {
+      // Do nothing if no scroll Event has fired
+      if (!scrollAnimationFrame) {
+        return;
+      }
+
+      cancelAnimFrame(scrollAnimationFrame);
     };
   };
 

@@ -8,36 +8,72 @@ export default class scrollToSmooth {
 
 		this.elements;
 
+		const d = document;
+		const w = window;
+
+		let _$ = (s) => d.querySelector(s);
+		let _$$ = (s) => d.querySelectorAll(s);
+
 		/**
-     * Basic Helper function to check if an Element is an instance of Node
-     * @param {any} domNode either a dom node or querySelector
-     * @returns {boolean} either true or false
-     */
-		function isDomElement(domNode) {
+		 * Basic Helper function to check if an Element is an instance of Node
+		 * 
+		 * @param {any} domNode either a dom node or querySelector
+		 * 
+		 * @returns {boolean} either true or false
+		 */
+		let isDomElement = (domNode) => {
 			if (domNode instanceof Node || domNode instanceof NodeList || domNode instanceof HTMLCollection) {
 				return true;
 			}
 			return false;
-		}
+		};
 
 		/**
-     * Check this.elements and declare them based on their value
-     */
+		 * Check this.elements and declare them based on their value
+		 */
 		if (isDomElement(nodes)) {
 			this.elements = nodes;
 		} else {
-			this.elements = document.querySelectorAll(nodes);
+			this.elements = _$$(nodes);
 		}
 
 		/**
-     * Build Default Settings Object
-     */
+		 * Check if a selector exists on the current page
+		 * 
+		 * @param {selector} selector 
+		 * 
+		 * @returns {boolean} true if the selector exists
+		 */
+		let validateSelector = (selector) => {
+
+			let selectorValid = true;
+
+			// Validate if the target is a valid selector
+			try {
+				if (isDomElement(selector)) {
+					selector;
+				} else {
+					_$(selector);
+				}
+			} catch (e) {
+				selectorValid = false;
+			}
+
+			return selectorValid;
+
+		};
+
+		let getTime = () => 'now' in w.performance ? performance.now() : new Date().getTime();
+
+		/**
+		 * Build Default Settings Object
+		 */
 		const defaults = {
 			targetAttribute: 'href',
 			duration: 400,
 			durationRelative: false,
-			durationMin: false,
-			durationMax: false,
+			durationMin: null,
+			durationMax: null,
 			easing: 'linear',
 			onScrollStart: null,
 			onScrollUpdate: null,
@@ -55,13 +91,16 @@ export default class scrollToSmooth {
 
 		if (settings.callback && !settings.onScrollEnd) {
 			console.warn('settings.callback is deprecated. Use settings.onScrollEnd instead.');
+			settings.onScrollEnd = settings.callback;
 		}
 
 		/**
-     * Basic Helper Function to merge user defined settings with the defaults Object
-     * @param  {...any} args Arguments to check
-     * @returns {object} Merged Settings Object
-     */
+		 * Basic Helper Function to merge user defined settings with the defaults Object
+		 * 
+		 * @param  {object} args Arguments to check
+		 * 
+		 * @returns {object} Merged Settings Object
+		 */
 		const extendSettings = (...args) => {
 			var merged = {};
 			Array.prototype.forEach.call(args, (obj) => {
@@ -76,33 +115,36 @@ export default class scrollToSmooth {
 		};
 
 		/**
-     * Build the final Settings Object
-     */
+		 * Build the final Settings Object
+		 */
 		this.settings = extendSettings(defaults, settings || {});
 
-		const reqAnimFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-		const cancelAnimFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame;
+		/**
+		 * Maximize Browser Support of requestAnimationFrame
+		 */
+		const reqAnimFrame = w.requestAnimationFrame || w.mozRequestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame;
+		const cancelAnimFrame = w.cancelAnimationFrame || w.mozCancelAnimationFrame;
 
-		// Get All Links with hashes based on the current URI
+		/**
+		 * Get all scrollto elements that have target attributes related to the current page
+		 * 
+		 * @returns {array} Array with all links found
+		 */
 		const linkCollector = () => {
 
 			let links = [];
 
 			Array.prototype.forEach.call(this.elements, (el) => {
 
-				let baseURI = el.baseURI.replace(/\/+$/, '');
-				let targetSelector = (this.settings.targetAttribute === 'href') ? el.href.replace(baseURI, '') : el.getAttribute(this.settings.targetAttribute);
-				let selectorValid = true;
+				let sanitizeBaseURIRegex = new RegExp('/*(' + location.hash + ')?$');
 
-				// Validate if the target is a valid selector
-				try {
-					document.querySelector(targetSelector);
-				} catch (e) {
-					selectorValid = false;
-				}
+				// Remove Trailing Slash and Hash Parameters from the baseURI
+				let baseURI = el.baseURI.replace(sanitizeBaseURIRegex, '');
+
+				let targetSelector = (this.settings.targetAttribute === 'href') ? el.href.replace(baseURI, '') : el.getAttribute(this.settings.targetAttribute);
 
 				// Check if the selector is found on the page
-				if (selectorValid && document.querySelector(targetSelector)) {
+				if (validateSelector(targetSelector)) {
 
 					// Handle href attributes
 					if (this.settings.targetAttribute === 'href' && el.href.indexOf(baseURI) != -1 && el.href.indexOf('#') != -1 && el.hash != '') {
@@ -119,6 +161,13 @@ export default class scrollToSmooth {
 
 		};
 
+		/**
+		 * Handler for the click event
+		 * 
+		 * @param {object} e The current Event 
+		 * 
+		 * @returns {void}
+		 */
 		const clickHandler = (e) => {
 
 			// Prevent Default Behaviour of how the browser would treat the click event
@@ -129,50 +178,32 @@ export default class scrollToSmooth {
 			// Evaluate the current Target Element
 			if (this.settings.targetAttribute === 'href') {
 				const currentTargetIdSliced = e.target.hash.slice(1);
-				currentTarget = document.getElementById(currentTargetIdSliced);
+				currentTarget = d.getElementById(currentTargetIdSliced);
 			} else {
-				currentTarget = document.querySelector(e.target.getAttribute(this.settings.targetAttribute));
+				currentTarget = _$(e.target.getAttribute(this.settings.targetAttribute));
 			}
 
-			if (!currentTarget) return;
-
-			const windowStartPos = window.pageYOffset;
-			const startTime = 'now' in window.performance ? performance.now() : new Date().getTime();
-
-			const docHeight = Math.max(document.body.scrollHeight, document.body.offsetHeight, document.documentElement.clientHeight, document.documentElement.scrollHeight, document.documentElement.offsetHeight);
-			const winHeight = window.innerHeight || document.documentElement.clientHeight || document.getElementsByTagName('body')[0].clientHeight;
-			const targetOffset = currentTarget.offsetTop;
-			let distFromTop = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);
-
-			if (this.settings.fixedHeader !== null) {
-
-				const fixedHeader = document.querySelector(this.settings.fixedHeader);
-				if (fixedHeader.tagName) {
-					distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
-				}
-
-			}
-
-			// Distance can't be negative
-			distFromTop = (distFromTop < 0) ? 0 : distFromTop;
-
-			// Callback onScrollStart
-			if (this.settings.onScrollStart) {
-				this.settings.onScrollStart({
-					startPosition: windowStartPos,
-					endPosition: distFromTop
-				});
+			if (!currentTarget) {
+				return;
 			}
 
 			// Start Scrolling
-			scrollToTarget(0, distFromTop, windowStartPos, startTime);
+			this.startScroll(currentTarget);
 
 		};
 
-		// Animate the ScrollTop
-		const scrollToTarget = (timestamp, distFromTop, startPos, startTime) => {
+		/**
+		 * Animate scrolling
+		 * 
+		 * @param {number} distFromTop Distance to be scrolled from top
+		 * @param {number} startPos Distance from top when the animation has started
+		 * @param {number} startTime The time in ms when the animation has started
+		 * 
+		 * @returns {void}
+		 */
+		const scrollToTarget = (distFromTop, startPos, startTime) => {
 
-			const now = 'now' in window.performance ? performance.now() : new Date().getTime();
+			const now = getTime();
 			const elapsed = now - startTime;
 
 			let duration = Math.max(1, this.settings.duration);
@@ -182,7 +213,7 @@ export default class scrollToSmooth {
 			if (this.settings.durationRelative) {
 
 				let durationRelativePx = (typeof (this.settings.durationRelative) == 'number') ? this.settings.durationRelative : 1000;
-				duration = scrollPx * (duration / durationRelativePx);
+				duration = Math.max(this.settings.duration, scrollPx * (duration / durationRelativePx));
 
 			}
 
@@ -197,7 +228,7 @@ export default class scrollToSmooth {
 			}
 
 			const timeFunction = Easings[this.settings.easing](elapsed, startPos, distToScroll, duration);
-			let curScrollPosition = window.pageYOffset || document.body.scrollTop || document.documentElement.scrollTop;
+			let curScrollPosition = window.pageYOffset || d.body.scrollTop || d.documentElement.scrollTop;
 
 			// Callback onScrollUpdate
 			if (this.settings.onScrollUpdate) {
@@ -224,32 +255,150 @@ export default class scrollToSmooth {
 				return;
 			}
 
-			let scrollAnimationFrame = reqAnimFrame((timestamp) => {
-				scrollToTarget(timestamp, distFromTop, startPos, startTime);
+			scrollAnimationFrame = reqAnimFrame(() => {
+				scrollToTarget(distFromTop, startPos, startTime);
 			});
+
+		};
+
+		/**
+		 * Add and remove Events
+		 * 
+		 * @param {string} action The current state
+		 * @param {array} linksFiltered Array with all available Smooth Scroll Links
+		 */
+		const handleEvents = (action, linksFiltered) => {
+
+			Array.prototype.forEach.call(linksFiltered, (link) => {
+				if (action == 'add') {
+					link.addEventListener('click', clickHandler);
+				} else if (action == 'remove') {
+					link.removeEventListener('click', clickHandler, false);
+				}
+			});
+
+		};
+
+		/**
+		 * Bind Events
+		 * 
+		 * @param {array} linksFiltered Array of anchor Elements
+		 * 
+		 * @returns {void}
+		 */
+		const BindEvents = (linksFiltered) => {
+
+			handleEvents('add', linksFiltered);
 
 			// Cancel Animation on User Scroll Interaction
 			let cancelAnimationOnEvents = ['mousewheel', 'wheel', 'touchstart'];
 			cancelAnimationOnEvents.forEach((ev) => {
 				window.addEventListener(ev, () => {
-					cancelAnimFrame(scrollAnimationFrame);
+					this.cancelScroll();
 				});
 			});
 
 		};
 
-		const BindEvents = (linksFiltered) => {
+		/**
+		 * Remove Events
+		 * 
+		 * @param {array} linksFiltered Array of anchor Elements
+		 * 
+		 * @returns {void}
+		 */
+		const RemoveEvents = (linksFiltered) => {
 
-			Array.prototype.forEach.call(linksFiltered, (link) => {
-				link.addEventListener('click', clickHandler);
-			});
+			// Do nothing if the plugin is not already initialized
+			if (!this.settings) {
+				return;
+			}
+
+			handleEvents('remove', linksFiltered);
 
 		};
 
+		/**
+		 * Method: init
+		 */
 		this.init = function () {
 			// Bind Events
-			let linksFiltered = linkCollector();
-			BindEvents.call(this, linksFiltered);
+			BindEvents.call(this, linkCollector());
+		};
+
+		/**
+		 * Method: destroy
+		 */
+		this.destroy = function () {
+			// Remove Events
+			RemoveEvents.call(this, linkCollector());
+		};
+
+		let scrollAnimationFrame;
+
+		/**
+		 * Method: startScroll
+		 */
+		this.startScroll = function (currentTarget) {
+
+			if (!currentTarget) {
+				return;
+			}
+
+			// Do nothing if the selector is no Element of the DOM
+			if (!validateSelector(currentTarget)) {
+				return;
+			}
+
+			if (!isDomElement(currentTarget)) {
+				currentTarget = _$(currentTarget);
+			}
+
+			const windowStartPos = w.pageYOffset;
+			const startTime = getTime();
+
+			const docHeight = Math.max(d.body.scrollHeight, d.body.offsetHeight, d.documentElement.clientHeight, d.documentElement.scrollHeight, d.documentElement.offsetHeight);
+			const winHeight = w.innerHeight || d.documentElement.clientHeight || d.getElementsByTagName('body')[0].clientHeight;
+			const targetOffset = currentTarget.offsetTop;
+			let distFromTop = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);
+
+			if (this.settings.fixedHeader !== null) {
+
+				const fixedHeader = _$(this.settings.fixedHeader);
+				if (fixedHeader.tagName) {
+					distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
+				}
+
+			}
+
+			// Distance can't be negative
+			distFromTop = (distFromTop < 0) ? 0 : distFromTop;
+
+			// Callback onScrollStart
+			if (this.settings.onScrollStart) {
+				this.settings.onScrollStart({
+					startPosition: windowStartPos,
+					endPosition: distFromTop
+				});
+			}
+
+			// Start Scroll Animation
+			scrollToTarget(distFromTop, windowStartPos, startTime);
+
+		};
+
+		/**
+		 * Method: cancelScroll
+		 */
+		this.cancelScroll = function () {
+
+			// Do nothing if no scroll Event has fired
+			if (!scrollAnimationFrame) {
+				return;
+			}
+
+			cancelAnimFrame(scrollAnimationFrame);
+
 		};
 
 	}

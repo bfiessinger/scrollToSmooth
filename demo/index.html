@@ -116,12 +116,13 @@ smoothScroll.init();
   <script src="../dist/scrolltosmooth.js"></script>
   <script>
     var smoothScroll = new scrollToSmooth('a', {
-      easing: 'easeOutCubic',
-      speed: 400,
+      easing: 'easeInOutElastic',
+      speed: 600,
       durationRelative: true,
-      onScrollStart: (data) => { console.log(data); },
-      onScrollUpdate: (data) => { console.log(data); },
-      onScrollEnd: (data) => { console.log(data) }
+      updateURL: true,
+      //onScrollStart: (data) => { console.log(data); },
+      //onScrollUpdate: (data) => { console.log(data); },
+      //onScrollEnd: (data) => { console.log(data) }
     })
     smoothScroll.init();
 

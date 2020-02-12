@@ -1,5 +1,14 @@
 # Changelog
 
+### 2.1.0
+- Bugfix: durationMin Parameter must have a minimum value if durationRelative is set
+- Bugfix: Scrolling not working if the current location contains a hash *BUMMER*
+- Added a destroy Method
+- Added a cancelScroll Method
+- Added a startScroll Method
+- Refactored the scroll function
+- overall code improvements
+
 ### 2.0.1
 - Renamed callback to onScrollEnd
 - Added Callback function onScrollStart
