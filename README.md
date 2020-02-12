@@ -178,7 +178,7 @@ Initialize
 smoothScroll.init();
 ```
   </dd>
-  <dt>`scrollTo`</dt>
+  <dt><code>scrollTo</code></dt>
   <dd>
 You can use the `scrollTo` method to animate the scrolling to a specific element on the page:
     
@@ -191,7 +191,7 @@ OR:
 smoothScroll.scrollTo(document.querySelector('.your-selector'));
 ```
   </dd>
-  <dt>`cancelScroll`</dt>
+  <dt><code>cancelScroll</code></dt>
   <dd>
 while the animation is running you can call `cancelScroll` whenever you want to stop it immediately
     
@@ -199,7 +199,7 @@ while the animation is running you can call `cancelScroll` whenever you want to 
 smoothScroll.cancelScroll();
 ```
   </dd>
-  <dt>`destroy`</dt>
+  <dt><code>destroy</code></dt>
   <dd>
 Destroy the current instance of scrollToSmooth. You can then reinitialize the instance with the `init` method.
     
@@ -210,23 +210,41 @@ smoothScroll.destroy();
 </dl>
 ## Callbacks
 <dl>
-  <dt>
-    
-    `onScrollStart`
-  </dt>
+  <dt><code>onScrollStart</code></dt>
   <dd>
     
 ```javascript
-    
+new scrollToSmooth('a', {
+  ...
+  onScrollStart: (data) => {  },
+  ...
+});
 ```
+data contains an object with values for `startPosition` and `endPosition`
   </dd>
-  <dt>`onScrollUpdate`</dt>
+  <dt><code>onScrollUpdate</code></dt>
   <dd>
     
+```javascript
+new scrollToSmooth('a', {
+  ...
+  onScrollUpdate: (data) => {  },
+  ...
+});
+```
+data contains an object with values for `startPosition`, `currentPosition` and `endPosition`
   </dd>
-  <dt>`onScrollEnd`</dt>
+  <dt><code>onScrollEnd</code></dt>
   <dd>
     
+```javascript
+new scrollToSmooth('a', {
+  ...
+  onScrollEnd: (data) => {  },
+  ...
+});
+```
+data contains an object with values for `startPosition` and `endPosition`
   </dd>
 </dl>
 
