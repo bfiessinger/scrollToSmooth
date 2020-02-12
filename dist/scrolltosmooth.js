@@ -664,7 +664,7 @@ var scrollToSmooth = (function() {
         return;
       } // Start Scrolling
 
-      _this.startScroll(currentTarget);
+      _this.scrollTo(currentTarget);
     };
     /**
      * Animate scrolling
@@ -811,10 +811,10 @@ var scrollToSmooth = (function() {
 
     var scrollAnimationFrame;
     /**
-     * Method: startScroll
+     * Method: scrollTo
      */
 
-    this.startScroll = function(currentTarget) {
+    this.scrollTo = function(currentTarget) {
       if (!currentTarget) {
         return;
       } // Do nothing if the selector is no Element of the DOM

@@ -188,7 +188,7 @@ export default class scrollToSmooth {
 			}
 
 			// Start Scrolling
-			this.startScroll(currentTarget);
+			this.scrollTo(currentTarget);
 
 		};
 
@@ -337,9 +337,9 @@ export default class scrollToSmooth {
 		let scrollAnimationFrame;
 
 		/**
-		 * Method: startScroll
+		 * Method: scrollTo
 		 */
-		this.startScroll = function (currentTarget) {
+		this.scrollTo = function (currentTarget) {
 
 			if (!currentTarget) {
 				return;
