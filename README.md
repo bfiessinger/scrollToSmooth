@@ -14,6 +14,8 @@ You can work with any HTML Element far beyond anchor tags.
 
 <hr>
 
+[Getting Started](#getting-started) | [Usage](#usage) | [Options](#options) | [Methods](#methods) | [Callbacks](#callbacks) [Browser Compatibility](#browser-compatibility)
+
 ## Getting started
 ### Installation
 [Download](https://github.com/bfiessinger/scrollToSmooth/archive/master.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
