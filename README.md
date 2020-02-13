@@ -1,9 +1,9 @@
 # scrollToSmooth
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/bfiessinger/scrollToSmooth/graphs/commit-activity)
-[![CodeFactor](https://www.codefactor.io/repository/github/bfiessinger/scrolltosmooth/badge)](https://www.codefactor.io/repository/github/bfiessinger/scrolltosmooth)
+[![CodeFactor](https://img.shields.io/codefactor/grade/github/bfiessinger/scrollToSmooth)](https://www.codefactor.io/repository/github/bfiessinger/scrolltosmooth)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square)](https://github.com/prettier/prettier)
 [![Filesize](https://badge-size.herokuapp.com/bfiessinger/scrollToSmooth/master/dist/scrolltosmooth.min.js)](https://github.com/bfiessinger/scrollToSmooth/blob/master/dist/scrolltosmooth.min.js)
-
+[!Version](https://img.shields.io/github/v/release/bfiessinger/scrollToSmooth?include_prereleases)
 
 a lightweight Vanilla JS Smooth Scroll to ⚓ script.
 
