@@ -198,6 +198,17 @@ while the animation is running you can call `cancelScroll` whenever you want to 
 smoothScroll.cancelScroll();
 ```
 
+**`update`**:
+
+Update the settings after initialization.
+
+```javascript
+smoothScroll.update({
+  duration: 1000,
+  fixedHeader: '#my-header-element'
+});
+```
+
 **`destroy`**:
 
 Destroy the current instance of scrollToSmooth. You can then reinitialize the instance with the `init` method.
