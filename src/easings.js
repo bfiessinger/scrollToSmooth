@@ -1,5 +1,6 @@
 function linear(elapsed, initialValue, amountOfChange, duration) {
-    return amountOfChange;
+    return (amountOfChange * elapsed) / duration + initialValue;
+    ;
 }
 function easeInQuad(elapsed, initialValue, amountOfChange, duration) {
     return amountOfChange * (elapsed /= duration) * elapsed + initialValue;

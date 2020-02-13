@@ -1,5 +1,8 @@
 # Changelog
 
+### 2.1.2
+- Bugfix: linear easing not working
+
 ### 2.1.1
 - Call destroy method on initialization to prevent errors with existing ones
 - Added a update Method to edit settings after initialization
