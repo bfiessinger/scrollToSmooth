@@ -4,6 +4,7 @@
 - Call destroy method on initialization to prevent errors with existing ones
 - Added a update Method to edit settings after initialization
 - Bugfix: links where not collected correctly in Internet Explorer
+- Bugfix: window.performance fix on old Safari's
 - Remove Deprecated warnings
 - cleaned up some functions
 

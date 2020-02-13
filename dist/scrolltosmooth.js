@@ -584,7 +584,9 @@ var scrollToSmooth = (function() {
      */
 
     var getTime = function getTime() {
-      return "now" in w.performance ? performance.now() : new Date().getTime();
+      return w.performance && "now" in w.performance
+        ? performance.now()
+        : new Date().getTime();
     };
     /**
      * Determine element baseURI

@@ -68,7 +68,7 @@ export default class scrollToSmooth {
 		/**
 		 * Get the current Timestamp
 		 */
-		let getTime = () => 'now' in w.performance ? performance.now() : new Date().getTime();
+		let getTime = () => (w.performance && 'now' in w.performance) ? performance.now() : new Date().getTime();
 
 		/**
 		 * Determine element baseURI
