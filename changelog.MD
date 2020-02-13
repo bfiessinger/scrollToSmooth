@@ -1,5 +1,12 @@
 # Changelog
 
+### 2.1.1
+- Call destroy method on initialization to prevent errors with existing ones
+- Added a update Method to edit settings after initialization
+- Bugfix: links where not collected correctly in Internet Explorer
+- Remove Deprecated warnings
+- cleaned up some functions
+
 ### 2.1.0
 - Bugfix: durationMin Parameter must have a minimum value if durationRelative is set
 - Bugfix: Scrolling not working if the current location contains a hash *BUMMER*

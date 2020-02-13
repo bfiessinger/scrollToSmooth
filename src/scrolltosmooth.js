@@ -11,6 +11,8 @@ export default class scrollToSmooth {
 		const d = document;
 		const w = window;
 
+		let scrollAnimationFrame;
+
 		let _$ = (s) => d.querySelector(s);
 		let _$$ = (s) => d.querySelectorAll(s);
 
@@ -63,7 +65,67 @@ export default class scrollToSmooth {
 
 		};
 
+		/**
+		 * Get the current Timestamp
+		 */
 		let getTime = () => 'now' in w.performance ? performance.now() : new Date().getTime();
+
+		/**
+		 * Determine element baseURI
+		 * 
+		 * @param {HTMLElement} el 
+		 * 
+		 * @returns {string}
+		 */
+		let getBaseURI = (el) => {
+
+			let sanitizeBaseURIRegex = new RegExp('(' + location.hash + ')?$');
+
+			let elBaseURI = el.baseURI || document.URL;
+
+			// Remove Trailing Slash and Hash Parameters from the baseURI
+			let baseURI = elBaseURI.replace(sanitizeBaseURIRegex, '');
+
+			return baseURI;
+
+		};
+
+		/**
+		 * Determine the target Element of a link
+		 * 
+		 * @param {HTMLElement} el 
+		 * 
+		 * @returns {HTMLElement} targetSelector
+		 */
+		let getTargetElement = (el) => {
+
+			let baseURI = getBaseURI(el);
+			let target = (this.settings.targetAttribute === 'href') ? el.href.replace(baseURI, '') : el.getAttribute(this.settings.targetAttribute);
+
+			// Top on Empty Hash
+			if (this.settings.topOnEmptyHash && target == '#') {
+				target = 'body';
+			}
+
+			return target;
+
+		};
+
+		/**
+		 * Get document's height
+		 * 
+		 * @returns {number}
+		 */
+		let getDocHeight = () => {
+			return Math.max(
+				d.body.scrollHeight,
+				d.body.offsetHeight,
+				d.body.clientHeight,
+				d.documentElement.scrollHeight,
+				d.documentElement.offsetHeight,
+				d.documentElement.clientHeight
+			);
+		};
 
 		/**
 		 * Build Default Settings Object
@@ -78,21 +140,9 @@ export default class scrollToSmooth {
 			onScrollStart: null,
 			onScrollUpdate: null,
 			onScrollEnd: null,
-			fixedHeader: null
+			fixedHeader: null,
+			topOnEmptyHash: true
 		};
-
-		/**
-		 * Deprecated warnings
-		 */
-		if (settings.speed && !settings.duration) {
-			console.warn('settings.speed is deprecated. Use settings.duration instead.');
-			settings.duration = settings.speed;
-		}
-
-		if (settings.callback && !settings.onScrollEnd) {
-			console.warn('settings.callback is deprecated. Use settings.onScrollEnd instead.');
-			settings.onScrollEnd = settings.callback;
-		}
 
 		/**
 		 * Basic Helper Function to merge user defined settings with the defaults Object
@@ -136,18 +186,15 @@ export default class scrollToSmooth {
 
 			Array.prototype.forEach.call(this.elements, (el) => {
 
-				let sanitizeBaseURIRegex = new RegExp('(' + location.hash + ')?$');
+				let baseURI = getBaseURI(el);
 
-				// Remove Trailing Slash and Hash Parameters from the baseURI
-				let baseURI = el.baseURI.replace(sanitizeBaseURIRegex, '');
-
-				let targetSelector = (this.settings.targetAttribute === 'href') ? el.href.replace(baseURI, '') : el.getAttribute(this.settings.targetAttribute);
+				let targetSelector = getTargetElement(el);
 
 				// Check if the selector is found on the page
 				if (validateSelector(targetSelector)) {
 
 					// Handle href attributes
-					if (this.settings.targetAttribute === 'href' && el.href.indexOf(baseURI) != -1 && el.href.indexOf('#') != -1 && el.hash != '') {
+					if (this.settings.targetAttribute === 'href' && el.href.indexOf(baseURI) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || this.settings.topOnEmptyHash)) {
 						links.push(el);
 					} else if (this.settings.targetAttribute !== 'href') {
 						links.push(el);
@@ -173,17 +220,9 @@ export default class scrollToSmooth {
 			// Prevent Default Behaviour of how the browser would treat the click event
 			e.preventDefault();
 
-			let currentTarget;
+			let currentTarget = _$(getTargetElement(e.target));
 
-			// Evaluate the current Target Element
-			if (this.settings.targetAttribute === 'href') {
-				const currentTargetIdSliced = e.target.hash.slice(1);
-				currentTarget = d.getElementById(currentTargetIdSliced);
-			} else {
-				currentTarget = _$(e.target.getAttribute(this.settings.targetAttribute));
-			}
-
-			if (!currentTarget) {
+			if (!currentTarget || !validateSelector(currentTarget)) {
 				return;
 			}
 
@@ -341,8 +380,6 @@ export default class scrollToSmooth {
 
 		};
 
-		let scrollAnimationFrame;
-
 		/**
 		 * Method: scrollTo
 		 */
@@ -361,10 +398,10 @@ export default class scrollToSmooth {
 				currentTarget = _$(currentTarget);
 			}
 
-			const windowStartPos = w.pageYOffset;
+			const windowStartPos = window.pageYOffset || d.body.scrollTop || d.documentElement.scrollTop;
 			const startTime = getTime();
 
-			const docHeight = Math.max(d.body.scrollHeight, d.body.offsetHeight, d.documentElement.clientHeight, d.documentElement.scrollHeight, d.documentElement.offsetHeight);
+			const docHeight = getDocHeight();
 			const winHeight = w.innerHeight || d.documentElement.clientHeight || d.getElementsByTagName('body')[0].clientHeight;
 			const targetOffset = currentTarget.offsetTop;
 			let distFromTop = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);

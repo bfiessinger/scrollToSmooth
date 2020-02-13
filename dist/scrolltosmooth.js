@@ -1,7 +1,7 @@
 /**
  * Vanilla JS Smooth Scroll
  * Author: Bastian Fießinger
- * Version: 2.0.1
+ * Version: 2.1.1
  */
 var scrollToSmooth = (function() {
   "use strict";
@@ -519,6 +519,7 @@ var scrollToSmooth = (function() {
     this.elements;
     var d = document;
     var w = window;
+    var scrollAnimationFrame;
 
     var _$ = function _$(s) {
       return d.querySelector(s);
@@ -578,9 +579,64 @@ var scrollToSmooth = (function() {
 
       return selectorValid;
     };
+    /**
+     * Get the current Timestamp
+     */
 
     var getTime = function getTime() {
       return "now" in w.performance ? performance.now() : new Date().getTime();
+    };
+    /**
+     * Determine element baseURI
+     *
+     * @param {HTMLElement} el
+     *
+     * @returns {string}
+     */
+
+    var getBaseURI = function getBaseURI(el) {
+      var sanitizeBaseURIRegex = new RegExp("(" + location.hash + ")?$");
+      var elBaseURI = el.baseURI || document.URL; // Remove Trailing Slash and Hash Parameters from the baseURI
+
+      var baseURI = elBaseURI.replace(sanitizeBaseURIRegex, "");
+      return baseURI;
+    };
+    /**
+     * Determine the target Element of a link
+     *
+     * @param {HTMLElement} el
+     *
+     * @returns {HTMLElement} targetSelector
+     */
+
+    var getTargetElement = function getTargetElement(el) {
+      var baseURI = getBaseURI(el);
+      var target =
+        _this.settings.targetAttribute === "href"
+          ? el.href.replace(baseURI, "")
+          : el.getAttribute(_this.settings.targetAttribute); // Top on Empty Hash
+
+      if (_this.settings.topOnEmptyHash && target == "#") {
+        target = "body";
+      }
+
+      return target;
+    };
+    /**
+     * Get document's height
+     *
+     * @returns {number}
+     */
+
+    var getDocHeight = function getDocHeight() {
+      return Math.max(
+        d.body.scrollHeight,
+        d.body.offsetHeight,
+        d.body.clientHeight,
+        d.documentElement.scrollHeight,
+        d.documentElement.offsetHeight,
+        d.documentElement.clientHeight
+      );
     };
     /**
      * Build Default Settings Object
@@ -597,24 +653,8 @@ var scrollToSmooth = (function() {
       onScrollUpdate: null,
       onScrollEnd: null,
       fixedHeader: null,
+      topOnEmptyHash: true,
     };
-    /**
-     * Deprecated warnings
-     */
-
-    if (settings.speed && !settings.duration) {
-      console.warn(
-        "settings.speed is deprecated. Use settings.duration instead."
-      );
-      settings.duration = settings.speed;
-    }
-
-    if (settings.callback && !settings.onScrollEnd) {
-      console.warn(
-        "settings.callback is deprecated. Use settings.onScrollEnd instead."
-      );
-      settings.onScrollEnd = settings.callback;
-    }
     /**
      * Basic Helper Function to merge user defined settings with the defaults Object
      *
@@ -669,13 +709,8 @@ var scrollToSmooth = (function() {
     var linkCollector = function linkCollector() {
       var links = [];
       Array.prototype.forEach.call(_this.elements, function(el) {
-        var sanitizeBaseURIRegex = new RegExp("(" + location.hash + ")?$"); // Remove Trailing Slash and Hash Parameters from the baseURI
-
-        var baseURI = el.baseURI.replace(sanitizeBaseURIRegex, "");
-        var targetSelector =
-          _this.settings.targetAttribute === "href"
-            ? el.href.replace(baseURI, "")
-            : el.getAttribute(_this.settings.targetAttribute); // Check if the selector is found on the page
+        var baseURI = getBaseURI(el);
+        var targetSelector = getTargetElement(el); // Check if the selector is found on the page
 
         if (validateSelector(targetSelector)) {
           // Handle href attributes
@@ -683,7 +718,7 @@ var scrollToSmooth = (function() {
             _this.settings.targetAttribute === "href" &&
             el.href.indexOf(baseURI) != -1 &&
             el.href.indexOf("#") != -1 &&
-            el.hash != ""
+            (el.hash != "" || _this.settings.topOnEmptyHash)
           ) {
             links.push(el);
           } else if (_this.settings.targetAttribute !== "href") {
@@ -704,18 +739,10 @@ var scrollToSmooth = (function() {
     var clickHandler = function clickHandler(e) {
       // Prevent Default Behaviour of how the browser would treat the click event
       e.preventDefault();
-      var currentTarget; // Evaluate the current Target Element
 
-      if (_this.settings.targetAttribute === "href") {
-        var currentTargetIdSliced = e.target.hash.slice(1);
-        currentTarget = d.getElementById(currentTargetIdSliced);
-      } else {
-        currentTarget = _$(
-          e.target.getAttribute(_this.settings.targetAttribute)
-        );
-      }
+      var currentTarget = _$(getTargetElement(e.target));
 
-      if (!currentTarget) {
+      if (!currentTarget || !validateSelector(currentTarget)) {
         return;
       } // Start Scrolling
 
@@ -865,8 +892,6 @@ var scrollToSmooth = (function() {
       // Remove Events
       RemoveEvents.call(_this, linkCollector());
     };
-
-    var scrollAnimationFrame;
     /**
      * Method: scrollTo
      */
@@ -884,15 +909,10 @@ var scrollToSmooth = (function() {
         currentTarget = _$(currentTarget);
       }
 
-      var windowStartPos = w.pageYOffset;
+      var windowStartPos =
+        window.pageYOffset || d.body.scrollTop || d.documentElement.scrollTop;
       var startTime = getTime();
-      var docHeight = Math.max(
-        d.body.scrollHeight,
-        d.body.offsetHeight,
-        d.documentElement.clientHeight,
-        d.documentElement.scrollHeight,
-        d.documentElement.offsetHeight
-      );
+      var docHeight = getDocHeight();
       var winHeight =
         w.innerHeight ||
         d.documentElement.clientHeight ||
