@@ -21,7 +21,7 @@ You can work with any HTML Element far beyond anchor tags.
 [Download](https://github.com/bfiessinger/scrollToSmooth/archive/master.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
 
 or use a CDN:
-- jsdelivr (https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@latest/dist/scrolltosmooth.min.js)
+- jsdelivr https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@latest/dist/scrolltosmooth.min.js
 
 Include the script in your code:
 ```html
