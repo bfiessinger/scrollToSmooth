@@ -18,18 +18,23 @@ You can work with any HTML Element far beyond anchor tags.
 
 ## Getting started
 ### Installation
+
+#### NPM
+`npm install scrollToSmooth`
+
+#### From a CDN
+```html
+<script src="https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@latest/dist/scrolltosmooth.min.js"></script>
+<!-- OR -->
+<script src="https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@{VERSION}/dist/scrolltosmooth.min.js"></script>
+```
+
+#### Download
 [Download](https://github.com/bfiessinger/scrollToSmooth/archive/master.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
 
 Include the script in your code:
 ```html
 <script src="path/to/scrolltosmooth.min.js"></script>
-```
-
-or use a CDN:
-```html
-<script src="https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@latest/dist/scrolltosmooth.min.js"></script>
-<!-- OR -->
-<script src="https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@{VERSION}/dist/scrolltosmooth.min.js"></script>
 ```
 
 ## Usage
@@ -263,4 +268,4 @@ data contains an object with values for `startPosition` and `endPosition`
 15+ ✔ | 7+ ✔ | 10+ ✔ | 12+ ✔ | 15+ ✔ | 6+ ✔ |
 
 ### Polyfills
-Support for older browsers requires a polyfill for <code>requestAnimationFrame()</code>
+Support for older browsers requires a polyfill for `requestAnimationFrame()`

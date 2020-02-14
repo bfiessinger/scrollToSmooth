@@ -1,5 +1,9 @@
 # Changelog
 
+### 2.1.3
+- Fixed wrong compiled code
+- Published NPM Release
+
 ### 2.1.2
 - Bugfix: linear easing not working
 
