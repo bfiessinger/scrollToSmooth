@@ -20,7 +20,7 @@ You can work with any HTML Element far beyond anchor tags.
 ### Installation
 
 #### NPM
-`npm install scrollToSmooth`
+`npm install scrolltosmooth`
 
 #### From a CDN
 ```html
