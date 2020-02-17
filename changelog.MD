@@ -1,5 +1,12 @@
 # Changelog
 
+### 2.1.4
+- Fixed npm packagename in readme
+- Fixed double semicolon in easings.ts
+- Fixed Scrollanimation could stop too late
+- Restructured some parts of the code
+- Activated babel loose transformation
+
 ### 2.1.3
 - Fixed wrong compiled code
 - Published NPM Release
