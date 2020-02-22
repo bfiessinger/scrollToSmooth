@@ -269,3 +269,8 @@ data contains an object with values for `startPosition` and `endPosition`
 
 ### Polyfills
 Support for older browsers requires a polyfill for `requestAnimationFrame()`
+
+## Support on Beerpay
+Hey dude! Help me out for a couple of :beers:!
+
+[![Beerpay](https://beerpay.io/bfiessinger/scrollToSmooth/badge.svg?style=beer-square)](https://beerpay.io/bfiessinger/scrollToSmooth)  [![Beerpay](https://beerpay.io/bfiessinger/scrollToSmooth/make-wish.svg?style=flat-square)](https://beerpay.io/bfiessinger/scrollToSmooth?focus=wish)
