@@ -23,9 +23,7 @@ You can work with any HTML Element far beyond anchor tags.
 
 #### From a CDN
 ```html
-<script src="https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@latest/dist/scrolltosmooth.min.js"></script>
-<!-- OR -->
-<script src="https://cdn.jsdelivr.net/gh/bfiessinger/scrollToSmooth@{VERSION}/dist/scrolltosmooth.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/scrolltosmooth/dist/scrolltosmooth.min.js"></script>
 ```
 
 #### Download

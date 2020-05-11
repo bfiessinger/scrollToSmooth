@@ -5,7 +5,7 @@ import { terser } from 'rollup-plugin-terser';
 const prettier = require('rollup-plugin-prettier');
 
 const srcScript = 'src/scrolltosmooth.js';
-const version = '2.1.4';
+const version = '2.1.5';
 const banner = '/**\n\
 * Vanilla JS Smooth Scroll\n\
 * Author: Bastian Fießinger\n\
