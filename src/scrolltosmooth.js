@@ -223,12 +223,14 @@ export default class scrollToSmooth {
 	 * 
 	 * @returns {void}
 	 */
-	clickHandler(e) {
+	clickHandler(el, e) {
+
+		e.stopPropagation();
 
 		// Prevent Default Behaviour of how the browser would treat the click event
 		e.preventDefault();
 
-		let currentTarget = _$(this.getTargetElement(e.target));
+		let currentTarget = _$(this.getTargetElement(el));
 
 		if (!currentTarget || !validateSelector(currentTarget)) {
 			return;
@@ -318,9 +320,9 @@ export default class scrollToSmooth {
 
 		Array.prototype.forEach.call(linksFiltered, (link) => {
 			if (action == 'add') {
-				link.addEventListener('click', this.clickHandler.bind(this), false);
+				link.addEventListener('click', this.clickHandler.bind(this, link), false);
 			} else if (action == 'remove') {
-				link.removeEventListener('click', this.clickHandler.bind(this), false);
+				link.removeEventListener('click', this.clickHandler.bind(this, link), false);
 			}
 		});
 
