@@ -1,7 +1,7 @@
 /**
  * Vanilla JS Smooth Scroll
  * Author: Bastian Fießinger
- * Version: 2.1.4
+ * Version: 2.1.5
  */
 var scrollToSmooth = (function() {
   "use strict";
