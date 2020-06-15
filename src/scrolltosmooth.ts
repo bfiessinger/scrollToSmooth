@@ -24,7 +24,7 @@ const reqAnimFrame = w.requestAnimationFrame || (w as any).mozRequestAnimationFr
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationFrame;
 
-interface scrollToSmoothSettings {
+interface ScrollToSmoothSettings {
 	targetAttribute: string;
 	duration: number;
 	durationRelative: boolean;
@@ -39,13 +39,13 @@ interface scrollToSmoothSettings {
 	topOnEmptyHash: boolean;
 }
 
-export class scrollToSmooth {
+export class ScrollToSmooth {
 
 	elements: NodeListOf<Element>;
 	settings: Record<string, unknown>;
-	defaults: scrollToSmoothSettings;
+	defaults: ScrollToSmoothSettings;
 
-	constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: scrollToSmoothSettings) {
+	constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: ScrollToSmoothSettings) {
 
 		/**
 		 * Check this.elements and declare them based on their value
@@ -389,11 +389,11 @@ export class scrollToSmooth {
 	/**
 	 * Method: update
 	 * 
-	 * @param {scrollToSmoothSettings} obj The settings to be updated from the original instance 
+	 * @param {ScrollToSmoothSettings} obj The settings to be updated from the original instance 
 	 * 
 	 * @returns {void}
 	 */
-	update(obj: scrollToSmoothSettings): void {
+	update(obj: ScrollToSmoothSettings): void {
 
 		if (!(obj instanceof Object)) {
 			return;
@@ -407,4 +407,4 @@ export class scrollToSmooth {
 
 }
 
-export default scrollToSmooth;
+export default ScrollToSmooth;
