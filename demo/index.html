@@ -114,17 +114,17 @@ smoothScroll.init();
   </section>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-  <script src="../dist/scrolltosmooth.js"></script>
+  <script src="../dist/scrolltosmooth.min.js"></script>
   <script>
     var smoothScroll = new scrollToSmooth('a', {
 			easing: 'easeInOutQuad',
-			easing: 'linear',
+			//easing: 'linear',
     	duration: 600,
       durationRelative: true,
       updateURL: true,
-      //onScrollStart: (data) => { console.log(data); },
-      //onScrollUpdate: (data) => { console.log(data); },
-      //onScrollEnd: (data) => { console.log(data) }
+      onScrollStart: (data) => { console.log(data); },
+      onScrollUpdate: (data) => { console.log(data); },
+      onScrollEnd: (data) => { console.log(data) }
     })
     smoothScroll.init();
 
