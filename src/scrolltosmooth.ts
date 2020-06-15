@@ -89,7 +89,7 @@ export class ScrollToSmooth {
 	getTargetElement(el: Element): string {
 
 		const baseURI = getBaseURI(el);
-		let target = (this.settings.targetAttribute === 'href') ? el.href.replace(baseURI, '') : el.getAttribute(<string>this.settings.targetAttribute);
+		let target = (this.settings.targetAttribute === 'href') ? el.href.replace(baseURI, '') : el.getAttribute(this.settings.targetAttribute as string);
 
 		// Top on Empty Hash
 		if (this.settings.topOnEmptyHash && target == '#') {
@@ -185,12 +185,12 @@ export class ScrollToSmooth {
 		}
 
 		// Set a minimum duration
-		if (this.settings.durationMin && duration < <number>this.settings.durationMin) {
+		if (this.settings.durationMin && duration < ( this.settings.durationMin as number ) ) {
 			duration = this.settings.durationMin as number;
 		}
 
 		// Set a maximum duration
-		if (this.settings.durationMax && duration > <number>this.settings.durationMax) {
+		if (this.settings.durationMax && duration > ( this.settings.durationMax as number ) ) {
 			duration = this.settings.durationMax as number;
 		}
 
