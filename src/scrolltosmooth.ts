@@ -20,23 +20,23 @@ let scrollAnimationFrame: number;
  * Maximize Browser Support of requestAnimationFrame
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const reqAnimFrame = w.requestAnimationFrame || (<any>w).mozRequestAnimationFrame || w.webkitRequestAnimationFrame || (<any>w).msRequestAnimationFrame;
+const reqAnimFrame = w.requestAnimationFrame || (w as any).mozRequestAnimationFrame || w.webkitRequestAnimationFrame || (w as any).msRequestAnimationFrame;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const cancelAnimFrame = w.cancelAnimationFrame || (<any>w).mozCancelAnimationFrame;
+const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationFrame;
 
 interface scrollToSmoothSettings {
-	targetAttribute: string,
-	duration: number,
-	durationRelative: boolean,
-	durationMin: number | null,
-	durationMax: number | null,
-	easing: string,
-	onScrollStart: CallableFunction | null,
-	onScrollUpdate: CallableFunction | null,
-	onScrollEnd: CallableFunction | null,
+	targetAttribute: string;
+	duration: number;
+	durationRelative: boolean;
+	durationMin: number | null;
+	durationMax: number | null;
+	easing: string;
+	onScrollStart: CallableFunction | null;
+	onScrollUpdate: CallableFunction | null;
+	onScrollEnd: CallableFunction | null;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	fixedHeader: any,
-	topOnEmptyHash: boolean
+	fixedHeader: any;
+	topOnEmptyHash: boolean;
 }
 
 export class scrollToSmooth {
@@ -173,25 +173,25 @@ export class scrollToSmooth {
 		const now = getTime();
 		const elapsed = now - startTime;
 
-		let duration = Math.max(1, <number>this.settings.duration);
+		let duration = Math.max(1, this.settings.duration as number);
 		const distToScroll = distFromTop - startPos;
 		const scrollPx = (distToScroll < 0) ? distToScroll * -1 : distToScroll;
 
 		if (this.settings.durationRelative) {
 
 			const durationRelativePx = (typeof (this.settings.durationRelative) == 'number') ? this.settings.durationRelative : 1000;
-			duration = Math.max(<number>this.settings.duration, scrollPx * (duration / durationRelativePx));
+			duration = Math.max(this.settings.duration as number, scrollPx * (duration / durationRelativePx));
 
 		}
 
 		// Set a minimum duration
 		if (this.settings.durationMin && duration < <number>this.settings.durationMin) {
-			duration = <number>this.settings.durationMin;
+			duration = this.settings.durationMin as number;
 		}
 
 		// Set a maximum duration
 		if (this.settings.durationMax && duration > <number>this.settings.durationMax) {
-			duration = <number>this.settings.durationMax;
+			duration = this.settings.durationMax as number;
 		}
 
 		const timeFunction = Easing[this.settings.easing](elapsed, startPos, distToScroll, duration);
@@ -331,7 +331,7 @@ export class scrollToSmooth {
 		}
 
 		if (typeof currentTarget == 'string' && !isDomNodeList(currentTarget)) {
-			currentTarget = <Element>_$(currentTarget);
+			currentTarget = _$(currentTarget) as Element;
 		}
 
 		if ( typeof currentTarget == 'string' || typeof currentTarget == null ) {
