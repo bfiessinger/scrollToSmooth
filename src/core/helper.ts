@@ -66,6 +66,13 @@ const validateSelector = (selector: any): boolean => {
 }
 
 /**
+ * Get current Position
+ */
+const getPos = (): number => {
+	return w.pageYOffset || b.scrollTop || dEl.scrollTop;
+}
+
+/**
  * Get the current Timestamp
  */
 const getTime = (): number => {
@@ -108,4 +115,4 @@ const getDocHeight = (): number => {
 	);
 }
 
-export { _$, _$$, objExtend, validateSelector, getTime, getBaseURI, getDocHeight };
+export { _$, _$$, objExtend, validateSelector, getPos, getTime, getBaseURI, getDocHeight };

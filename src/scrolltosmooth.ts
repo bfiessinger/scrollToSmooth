@@ -6,7 +6,8 @@ import {
 	_$, 
 	_$$, 
 	objExtend, 
-	validateSelector, 
+	validateSelector,
+	getPos,
 	getTime, 
 	getBaseURI, 
 	getDocHeight 
@@ -19,9 +20,7 @@ let scrollAnimationFrame: number;
 /**
  * Maximize Browser Support of requestAnimationFrame
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const reqAnimFrame = w.requestAnimationFrame || (w as any).mozRequestAnimationFrame || w.webkitRequestAnimationFrame || (w as any).msRequestAnimationFrame;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationFrame;
 
 interface ScrollToSmoothSettings {
@@ -34,7 +33,6 @@ interface ScrollToSmoothSettings {
 	onScrollStart: CallableFunction | null;
 	onScrollUpdate: CallableFunction | null;
 	onScrollEnd: CallableFunction | null;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	fixedHeader: any;
 	topOnEmptyHash: boolean;
 }
@@ -50,7 +48,7 @@ export class ScrollToSmooth {
 		/**
 		 * Check this.elements and declare them based on their value
 		 */
-		this.elements = ( typeof nodes == 'string' ) ? _$$(nodes) : <NodeListOf<Element>><unknown>nodes;
+		this.elements = ( typeof nodes == 'string' ) ? _$$(nodes) : nodes as unknown as NodeListOf<Element>;
 
 		/**
 		 * Build Default Settings Object
@@ -88,8 +86,7 @@ export class ScrollToSmooth {
 	 */
 	getTargetElement(el: Element): string {
 
-		const baseURI = getBaseURI(el);
-		let target = (this.settings.targetAttribute === 'href') ? el.href.replace(baseURI, '') : el.getAttribute(this.settings.targetAttribute as string);
+		let target = (this.settings.targetAttribute === 'href') ? el.href.replace(getBaseURI(el), '') : el.getAttribute(this.settings.targetAttribute as string);
 
 		// Top on Empty Hash
 		if (this.settings.topOnEmptyHash && target == '#') {
@@ -111,15 +108,13 @@ export class ScrollToSmooth {
 
 		Array.prototype.forEach.call(this.elements, (el) => {
 
-			const baseURI = getBaseURI(el);
-
 			const targetSelector = this.getTargetElement(el);
 
 			// Check if the selector is found on the page
 			if (validateSelector(targetSelector)) {
 
 				// Handle href attributes
-				if (this.settings.targetAttribute === 'href' && el.href.indexOf(baseURI) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || this.settings.topOnEmptyHash)) {
+				if (this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || this.settings.topOnEmptyHash)) {
 					links.push(el);
 				} else if (this.settings.targetAttribute !== 'href') {
 					links.push(el);
@@ -170,8 +165,7 @@ export class ScrollToSmooth {
 	 */
 	scrollToTarget(distFromTop: number, startPos: number, startTime: number): void {
 
-		const now = getTime();
-		const elapsed = now - startTime;
+		const elapsed = getTime() - startTime;
 
 		let duration = Math.max(1, this.settings.duration as number);
 		const distToScroll = distFromTop - startPos;
@@ -195,13 +189,12 @@ export class ScrollToSmooth {
 		}
 
 		const timeFunction = Easing[this.settings.easing](elapsed, startPos, distToScroll, duration);
-		const curScrollPosition = w.pageYOffset || b.scrollTop || dEl.scrollTop;
 
 		// Callback onScrollUpdate
-		if (this.settings.onScrollUpdate) {
+		if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
 			this.settings.onScrollUpdate({
 				startPosition: startPos,
-				currentPosition: curScrollPosition,
+				currentPosition: getPos(),
 				endPosition: distFromTop
 			});
 		}
@@ -211,7 +204,7 @@ export class ScrollToSmooth {
 		if (elapsed >= duration) {
 
 			// Callback onScrollEnd
-			if (this.settings.onScrollEnd) {
+			if (this.settings.onScrollEnd && typeof this.settings.onScrollEnd == 'function') {
 				this.settings.onScrollEnd({
 					startPosition: startPos,
 					endPosition: distFromTop
@@ -227,7 +220,7 @@ export class ScrollToSmooth {
 		});
 
 	}
-
+	
 	/**
 	 * Add and remove Events
 	 * 
@@ -319,14 +312,10 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {void}
 	 */
-	scrollTo(currentTarget: string | Element): void {
-
-		if (!currentTarget) {
-			return;
-		}
+	scrollTo(currentTarget: Element): void {
 
 		// Do nothing if the selector is no Element of the DOM
-		if (!validateSelector(currentTarget)) {
+		if (!currentTarget || !validateSelector(currentTarget)) {
 			return;
 		}
 
@@ -334,20 +323,15 @@ export class ScrollToSmooth {
 			currentTarget = _$(currentTarget) as Element;
 		}
 
-		if ( typeof currentTarget == 'string' || typeof currentTarget == null ) {
-			return;
-		}
-
-		const windowStartPos = w.pageYOffset || b.scrollTop || dEl.scrollTop;
-		const startTime = getTime();
-
+		const windowStartPos = getPos();
 		const docHeight = getDocHeight();
 		const winHeight = w.innerHeight || dEl.clientHeight || d.getElementsByTagName('body')[0].clientHeight;
 		const targetOffset = currentTarget.offsetTop;
 		let distFromTop = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);
 
 		if (this.settings.fixedHeader !== null) {
-			const fixedHeader = ( typeof this.settings.fixedHeader == 'string' ) ? _$(this.settings.fixedHeader) : this.settings.fixedHeader;
+
+			const fixedHeader = ( typeof this.settings.fixedHeader == 'string' ) ? _$(this.settings.fixedHeader) : this.settings.fixedHeader as Element;
 			if (fixedHeader && fixedHeader.tagName) {
 				distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
 			}
@@ -358,7 +342,7 @@ export class ScrollToSmooth {
 		distFromTop = (distFromTop < 0) ? 0 : distFromTop;
 
 		// Callback onScrollStart
-		if (this.settings.onScrollStart) {
+		if (this.settings.onScrollStart && typeof this.settings.onScrollStart == 'function') {
 			this.settings.onScrollStart({
 				startPosition: windowStartPos,
 				endPosition: distFromTop
@@ -366,7 +350,7 @@ export class ScrollToSmooth {
 		}
 
 		// Start Scroll Animation
-		this.scrollToTarget(distFromTop, windowStartPos, startTime);
+		this.scrollToTarget(distFromTop, windowStartPos, getTime());
 
 	}
 
