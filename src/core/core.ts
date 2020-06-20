@@ -29,7 +29,37 @@ interface ScrollToSmoothSettings {
 	durationRelative: boolean;
 	durationMin: number | null;
 	durationMax: number | null;
-	easing: 'linear' | 'easeInQuad' | 'easeOutQuad' | 'easeInOutQuad' | 'easeInCubic' | 'easeOutCubic' | 'easeInOutCubic' | 'easeInQuart' | 'easeOutQuart' | 'easeInOutQuart' | 'easeInQuint' | 'easeOutQuint' | 'easeInOutQuint' | 'easeInSine' | 'easeOutSine' | 'easeInOutSine' | 'easeInExpo' | 'easeOutExpo' | 'easeInOutExpo' | 'easeInCirc' | 'easeOutCirc' | 'easeInOutCirc' | 'easeInElastic' | 'easeOutElastic' | 'easeInOutElastic' | 'easeInBack' | 'easeOutBack' | 'easeInOutBack' | 'easeInBounce' | 'easeOutBounce' | 'easeInOutBounce';
+	easing: 'linear' | 
+					'easeInQuad' | 
+					'easeOutQuad' | 
+					'easeInOutQuad' | 
+					'easeInCubic' | 
+					'easeOutCubic' | 
+					'easeInOutCubic' | 
+					'easeInQuart' | 
+					'easeOutQuart' | 
+					'easeInOutQuart' | 
+					'easeInQuint' | 
+					'easeOutQuint' | 
+					'easeInOutQuint' | 
+					'easeInSine' | 
+					'easeOutSine' | 
+					'easeInOutSine' | 
+					'easeInExpo' | 
+					'easeOutExpo' | 
+					'easeInOutExpo' | 
+					'easeInCirc' | 
+					'easeOutCirc' | 
+					'easeInOutCirc' | 
+					'easeInElastic' | 
+					'easeOutElastic' | 
+					'easeInOutElastic' | 
+					'easeInBack' | 
+					'easeOutBack' | 
+					'easeInOutBack' | 
+					'easeInBounce' | 
+					'easeOutBounce' | 
+					'easeInOutBounce';
 	onScrollStart: CallableFunction | null;
 	onScrollUpdate: CallableFunction | null;
 	onScrollEnd: CallableFunction | null;
