@@ -1,4 +1,4 @@
-import isDomNodeList from 'is-dom-node-list';
+import isDomNodeList from "is-dom-node-list";
 import { d, dEl, b, w } from './global_vars';
 
 /**
@@ -26,7 +26,7 @@ const _$$ = (s: string): NodeListOf<Element> => { return d.querySelectorAll(s); 
  * 
  * @returns {object} Merged Settings Object
  */
-const objExtend = (...args: any[]): Record<string, unknown> => {
+const objExtend = (...args: Array<unknown>): Record<string, unknown> => {
 	const merged = {};
 	Array.prototype.forEach.call(args, (obj) => {
 		for (const key in obj) {

@@ -4,6 +4,7 @@
 		"moduleResolution": "node",
 		"allowJs": true,
 		//"noEmit": true,
+		"noImplicitAny": false,
 		"strict": true,
 		"isolatedModules": true,
 		"esModuleInterop": true,
