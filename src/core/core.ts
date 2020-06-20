@@ -112,9 +112,7 @@ export class ScrollToSmooth {
 			if (this.getTargetElement(el)) {
 
 				// Handle href attributes
-				if (this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || this.settings.topOnEmptyHash)) {
-					links.push(el);
-				} else if (this.settings.targetAttribute !== 'href') {
+				if ( ( this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || this.settings.topOnEmptyHash) ) || this.settings.targetAttribute != 'href' ) {
 					links.push(el);
 				}
 
