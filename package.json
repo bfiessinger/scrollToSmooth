@@ -41,6 +41,8 @@
     "webpack-cli": "^3.3.12"
   },
   "dependencies": {
+    "@rollup/plugin-node-resolve": "^8.0.1",
+    "babel-plugin-add-module-exports": "^1.0.2",
     "is-dom-node-list": "^1.2.1"
   }
 }

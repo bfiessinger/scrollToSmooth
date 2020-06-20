@@ -5,6 +5,7 @@ const pkg = require('./package.json');
 import babel from '@rollup/plugin-babel';
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 
 const srcScript = pkg.main;
@@ -25,10 +26,16 @@ export default [{
     banner: banner
   },
   plugins: [
+		resolve(),
 		commonjs(),
   	typescript(),
     babel(),
     terser({
+			compress: {
+				drop_console: true,
+				keep_fargs: false,
+				typeofs: false
+			},
       output: {
         comments: function (node, comment) {
           if (comment.type === "comment2") {
