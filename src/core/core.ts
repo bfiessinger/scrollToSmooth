@@ -1,7 +1,7 @@
 'use strict';
 
 import isDomNodeList from 'is-dom-node-list';
-import Easing from './easings';
+import { Easings } from './easings';
 import { 
 	_$, 
 	_$$, 
@@ -116,7 +116,12 @@ export class ScrollToSmooth {
 	 */
 	getTargetElement(el: Element): Element | null {
 
-		const targetSelector = (this.settings.targetAttribute === 'href') ? el.href.replace(getBaseURI(el), '') : el.getAttribute(this.settings.targetAttribute as string);
+		let targetSelector = '';
+		if ( this.settings.targetAttribute === 'href' && (el as HTMLAnchorElement).href ) {
+			targetSelector = (el as HTMLAnchorElement).href.replace(getBaseURI(el), '')
+		} else if ( el.getAttribute(this.settings.targetAttribute as string) ) {
+			targetSelector = el.getAttribute(this.settings.targetAttribute as string) as string;
+		}
 
 		// Top on Empty Hash
 		if (this.settings.topOnEmptyHash && targetSelector == '#') {
@@ -214,7 +219,7 @@ export class ScrollToSmooth {
 			duration = this.settings.durationMax as number;
 		}
 
-		const timeFunction = Easing[this.settings.easing as string](elapsed, startPos, distToScroll, duration);
+		const timeFunction = Easings[this.settings.easing as string](elapsed, startPos, distToScroll, duration);
 
 		// Callback onScrollUpdate
 		if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
@@ -353,7 +358,7 @@ export class ScrollToSmooth {
 		const windowStartPos = getPos();
 		const docHeight = getDocHeight();
 		const winHeight = w.innerHeight || dEl.clientHeight || b.clientHeight;
-		const targetOffset = currentTarget.offsetTop;
+		const targetOffset = currentTarget.getBoundingClientRect().top + windowStartPos;
 		let distFromTop = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);
 
 		if (this.settings.fixedHeader !== null) {

@@ -6,6 +6,7 @@ import babel from '@rollup/plugin-babel';
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
+import json from '@rollup/plugin-json';
 import { terser } from 'rollup-plugin-terser';
 
 const srcScript = pkg.main;
@@ -29,10 +30,11 @@ export default [{
 		resolve(),
 		commonjs(),
   	typescript(),
-    babel(),
+		babel(),
+		json(),
     terser({
 			compress: {
-				drop_console: true,
+				drop_console: false,
 				keep_fargs: false,
 				typeofs: false
 			},

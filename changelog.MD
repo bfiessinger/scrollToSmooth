@@ -1,5 +1,13 @@
 # Changelog
 
+### 2.2.0
+- Refactor codebase in TypeScript
+- Overall Code improvements
+- Fixed a bug where the Scrollposition would be calculated wrong if transforms are used (caused errors with libraries like AOS)
+
+### 2.1.5
+- Fixed a bug where navigation elements won't work with inner Elements
+
 ### 2.1.4
 - Fixed npm packagename in readme
 - Fixed double semicolon in easings.ts
