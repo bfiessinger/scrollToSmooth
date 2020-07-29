@@ -1,5 +1,8 @@
 # Changelog
 
+### 2.2.1
+- Fix broken easings (easeInBack, easeOutBack, easeInOutBack)
+
 ### 2.2.0
 - Refactor codebase in TypeScript
 - Overall Code improvements
