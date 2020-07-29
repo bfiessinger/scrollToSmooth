@@ -194,15 +194,18 @@ export const easeInOutElastic = (elapsed: number, initialValue: number, amountOf
 	);
 }
 
-export const easeInBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number, s: 1.70158): number => {
+export const easeInBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
+	const s = 1.70158;
 	return amountOfChange * (elapsed /= duration) * elapsed * ((s + 1) * elapsed - s) + initialValue;
 };
 
-export const easeOutBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number, s: 1.70158): number => {
+export const easeOutBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
+	const s = 1.70158;
 	return amountOfChange * ((elapsed = elapsed / duration - 1) * elapsed * ((s + 1) * elapsed + s) + 1) + initialValue;
 };
 
-export const easeInOutBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number, s: 1.70158): number => {
+export const easeInOutBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
+	let s = 1.70158;
 	if ((elapsed /= duration / 2) < 1) {
 		return amountOfChange / 2 * (elapsed * elapsed * (((s *= 1.525) + 1) * elapsed - s)) + initialValue;
 	}
