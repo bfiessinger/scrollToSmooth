@@ -26,7 +26,7 @@ You can work with any HTML Element far beyond anchor tags.
 ```
 
 #### Download
-[Download](https://github.com/bfiessinger/scrollToSmooth/archive/master.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
+[Download](https://github.com/bfiessinger/scrollToSmooth/archive/scrollToSmooth-2.zip) the repository and include the production ready code from the <code>dist</code> folder in your project.
 
 Include the script in your code:
 ```html
