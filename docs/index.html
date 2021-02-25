@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" />
+  <link href="https://highlightjs.org/static/demo/styles/night-owl.css" rel="stylesheet" />
+  <link href="demo.css" rel="stylesheet" />
+</head>
+
+<body>
+
+  <nav>
+    <a href="#">Test Top</a>
+    <a href="#section-1">Vanilla JS Smooth Scroll</a>
+    <a href="#section-2">Easy to use!</a>
+    <a href="#section-3">Usage</a>
+    <a href="#section-4">Options</a>
+    <a href="#section-5">That's it</a>
+  </nav>
+  <section id="section-1">
+    <div>
+      <strong>Vanilla JS Smooth Scroll</strong>
+    </div>
+  </section>
+  <section id="section-2">
+    <div>
+      <strong>Easy to use!</strong>
+    </div>
+  </section>
+  <section id="section-3">
+    <div>
+      <span>Usage:</span>
+      <pre>
+      <code class="javascript">
+var smoothScroll = new scrollToSmooth('a', {
+  targetAttribute: 'href',
+  duration: 800,
+  easing: 'easeOutCubic',
+  callback: function () { console.log('we reached it!'); },
+  fixedHeader: null
+})
+smoothScroll.init();
+      </code>
+      </pre>
+    </div>
+  </section>
+  <section id="section-4">
+    <div>
+      <h3>Options:</h3>
+      <dl class="options">
+        <dt>speed</dt>
+        <dd>
+          Type: <code>Number</code><br>
+          Default: <code>400</code>
+          <p>
+            Scroll time in milliseconds
+          </p>
+        </dd>
+        <dt>easing</dt>
+        <dd>
+          Type: <code>string</code><br>
+          Default: <code>linear</code>
+          <p>
+            Easing function used for scrolling.<br>
+            Available Easings:
+            <ul>
+              <li>linear</li>
+              <li>easeInQuad</li>
+              <li>easeOutQuad</li>
+              <li>easeInOutQuad</li>
+              <li>easeInCubic</li>
+              <li>easeOutCubic</li>
+              <li>easeInOutCubic</li>
+              <li>easeInQuart</li>
+              <li>easeOutQuart</li>
+              <li>easeInOutQuart</li>
+              <li>easeInQuint</li>
+              <li>easeOutQuint</li>
+              <li>easeInOutQuint</li>
+              <li>easeInElastic</li>
+              <li>easeOutElastic</li>
+              <li>easeInOutElastic</li>
+            </ul>
+          </p>
+        </dd>
+        <dt>callback</dt>
+        <dd>
+          Type: <code>function</code><br>
+          Default: <code>null</code>
+          <p>
+            Callback to be executed when scrolling is finished
+          </p>
+        </dd>
+        <dt>fixedHeader</dt>
+        <dd>
+          Type: <code>string</code><br>
+          Default: <code>null</code>
+          <p>
+            The header element<br>
+            Example: '#fixed-header'
+          </p>
+        </dd>
+      </dl>
+    </div>
+  </section>
+  <section id="section-5">
+    <div>
+      <strong>Here we go!</strong>
+    </div>
+  </section>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+  <script src="../dist/scrolltosmooth.min.js"></script>
+  <script>
+    var smoothScroll = new scrollToSmooth('a', {
+    	duration: 300,
+      durationRelative: true,
+      updateURL: true,
+      onScrollStart: (data) => { console.log(data); },
+      onScrollUpdate: (data) => { console.log(data); },
+      onScrollEnd: (data) => { console.log(data) }
+    })
+    smoothScroll.init();
+
+    // Init Highlight JS
+    hljs.initHighlightingOnLoad();
+  </script>
+
+</body>
+
+</html>
