@@ -5,13 +5,13 @@ import { Easings } from './easings';
 import { 
 	_$, 
 	_$$, 
-	objExtend, 
+	isNodeOrElement,
 	validateSelector,
 	getPos,
 	getTime, 
 	getBaseURI, 
 	getDocHeight 
-} from './helper';
+} from './helper/scrollToSmoothHelper';
 
 import { dEl, b, w } from './global_vars';
 
@@ -353,7 +353,7 @@ export class ScrollToSmooth {
 			return;
 		}
 
-		if (typeof currentTarget == 'string' && !isDomNodeList(currentTarget)) {
+		if (typeof currentTarget == 'string' && !isNodeOrElement(currentTarget)) {
 			currentTarget = _$(currentTarget) as Element;
 		}
 
