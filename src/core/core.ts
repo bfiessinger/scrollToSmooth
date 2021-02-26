@@ -119,7 +119,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {Element | false} valid targetSelector or false
 	 */
-	getTargetElement(el: Element): Element | null {
+	private getTargetElement(el: Element): Element | null {
 
 		let targetSelector = '';
 		if ( this.settings.targetAttribute === 'href' && (el as HTMLAnchorElement).href ) {
@@ -142,7 +142,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {array} Array with all links found
 	 */
-	linkCollector(): Array<Element> {
+	private linkCollector(): Array<Element> {
 
 		const links: Array<Element> = [];
 
@@ -172,7 +172,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {void}
 	 */
-	clickHandler(el: Element, e: Event): void {
+	private clickHandler(el: Element, e: Event): void {
 
 		e.stopPropagation();
 
@@ -199,7 +199,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {void}
 	 */
-	scrollToTarget(distFromTop: number, startPos: number, startTime: number): void {
+	private scrollToTarget(distFromTop: number, startPos: number, startTime: number): void {
 
 		const elapsed = getTime() - startTime;
 
@@ -266,7 +266,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {void}
 	 */
-	handleEvents(action: string, linksFiltered: Array<Element>): void {
+	private handleEvents(action: string, linksFiltered: Array<Element>): void {
 
 		Array.prototype.forEach.call(linksFiltered, (link) => {
 			if (action == 'add') {
@@ -285,7 +285,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {void}
 	 */
-	BindEvents(linksFiltered: Array<Element>): void {
+	private BindEvents(linksFiltered: Array<Element>): void {
 
 		this.handleEvents('add', linksFiltered);
 
@@ -306,7 +306,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @returns {void}
 	 */
-	RemoveEvents(linksFiltered: Array<Element>): void {
+	private RemoveEvents(linksFiltered: Array<Element>): void {
 
 		// Do nothing if the plugin is not already initialized
 		if (!this.settings) {
