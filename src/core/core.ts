@@ -4,7 +4,7 @@ import isDomNodeList from 'is-dom-node-list';
 import { Easings } from './easings';
 import { 
 	_$, 
-	_$$, 
+	_$$,
 	isNodeOrElement,
 	validateSelector,
 	getPos,
