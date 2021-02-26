@@ -72,8 +72,7 @@ interface ScrollToSmoothSettings {
 export class ScrollToSmooth {
 
 	elements: NodeListOf<Element>;
-	settings: Record<string, unknown>;
-	defaults: ScrollToSmoothSettings;
+	settings: ScrollToSmoothSettings;
 
 	constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: ScrollToSmoothSettings) {
 
@@ -85,7 +84,7 @@ export class ScrollToSmooth {
 		/**
 		 * Build Default Settings Object
 		 */
-		this.defaults = {
+		const defaults = {
 			targetAttribute: 'href',
 			duration: 400,
 			durationRelative: false,
@@ -97,15 +96,19 @@ export class ScrollToSmooth {
 			onScrollEnd: null,
 			fixedHeader: null,
 			topOnEmptyHash: true
-		};
+		} as ScrollToSmoothSettings;
 	
 		/**
 		 * Build the final Settings Object
 		 */
-		this.settings = objExtend(
-			this.defaults, 
-			settings || {}
-		);
+		settings = settings || defaults;
+		for (const opt in defaults) {
+			if (Object.prototype.hasOwnProperty.call(defaults, opt) && !Object.prototype.hasOwnProperty.call(settings, opt)) {
+				settings[opt] = defaults[opt];
+			}
+		}
+
+		this.settings = settings;
 
 	}
 	
