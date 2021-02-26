@@ -123,7 +123,7 @@ export class ScrollToSmooth {
 
 		let targetSelector = '';
 		if ( this.settings.targetAttribute === 'href' && (el as HTMLAnchorElement).href ) {
-			targetSelector = (el as HTMLAnchorElement).href.replace(getBaseURI(el), '')
+			targetSelector = (el as HTMLAnchorElement).href.replace(getBaseURI(el), '');
 		} else if ( el.getAttribute(this.settings.targetAttribute as string) ) {
 			targetSelector = el.getAttribute(this.settings.targetAttribute as string) as string;
 		}
