@@ -35,6 +35,8 @@ Include the script in your code:
 
 ## Usage
 ```javascript
+import { scrollToSmooth } from 'scrolltosmooth';
+
 let smoothScroll = new scrollToSmooth('a', {
   targetAttribute: 'href',
   duration: 400,
