@@ -268,7 +268,7 @@ data contains an object with values for `startPosition` and `endPosition`
 ### Polyfills
 Support for older browsers requires a polyfill for `requestAnimationFrame()`
 
-## Support on Beerpay
-Hey dude! Help me out for a couple of :beers:!
+## Support me
+If this project is helpfull you might support me out with a cup of coffee 🤗
 
-[![Beerpay](https://beerpay.io/bfiessinger/scrollToSmooth/badge.svg?style=beer-square)](https://beerpay.io/bfiessinger/scrollToSmooth)  [![Beerpay](https://beerpay.io/bfiessinger/scrollToSmooth/make-wish.svg?style=flat-square)](https://beerpay.io/bfiessinger/scrollToSmooth?focus=wish)
+[![paypal.me](https://img.shields.io/badge/paypal.me-dedede?style=for-the-badge&logo=paypal)](https://www.paypal.me/bfiessinger)
