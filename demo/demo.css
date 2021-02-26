@@ -1,0 +1,119 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat:400,900&display=swap");
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+}
+
+nav {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+          transform: translateY(-50%);
+}
+nav a {
+  font-size: 0px;
+  line-height: 0px;
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: 4px solid #FFF;
+  border-radius: 50%;
+  margin: 10px 0;
+  -webkit-filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+          filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+}
+
+section {
+  width: 100%;
+  min-height: 100vh;
+  display: -webkit-box;
+  display: flex;
+  -webkit-box-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+          justify-content: center;
+  color: #FFF;
+  padding: 5rem;
+}
+section#section-1 {
+  background-color: #e67e22;
+}
+section#section-2 {
+  background-color: #2980b9;
+}
+section#section-3 {
+  background-color: #8e44ad;
+}
+section#section-4 {
+  color: #000;
+}
+section#section-5 {
+  background-color: #c0392b;
+}
+section > div {
+  width: 80%;
+}
+
+strong {
+  font-size: 80px;
+  text-align: center;
+  display: block;
+}
+
+.hljs, code {
+  font-family: 'Space Mono', monospace;
+}
+
+.hljs {
+  font-size: 14px;
+  padding: 0 26px;
+  border-radius: 4px;
+  -webkit-box-flex: 1;
+          flex: 1;
+  overflow: auto;
+  line-height: 1.6;
+}
+
+pre {
+  margin: 1rem 0;
+  display: -webkit-box;
+  display: flex;
+}
+
+.options dt {
+  margin-bottom: 10px;
+}
+.options dd {
+  line-height: 24px;
+  margin-left: 0;
+  border-bottom: 1px solid #000;
+  margin-bottom: 20px;
+}
+.options dd:last-child {
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+.options code {
+  font-weight: bold;
+  background: #f7f7f7;
+  font-size: 90%;
+  font-weight: normal;
+  padding: 1px 5px;
+  border-radius: 2px;
+  color: #000;
+}
+
+@media (max-width: 840px) {
+  strong {
+    font-size: 40px;
+  }
+
+  section {
+    padding: 2rem;
+  }
+}
