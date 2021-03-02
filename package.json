@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/basticodes/scrollToSmooth.git"
+    "url": "git+https://github.com/bfiessinger/scrollToSmooth.git"
   },
   "keywords": [
     "smooth",
@@ -21,9 +21,9 @@
   "author": "Bastian Fießinger",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/basticodes/scrollToSmooth/issues"
+    "url": "https://github.com/bfiessinger/scrollToSmooth/issues"
   },
-  "homepage": "https://github.com/basticodes/scrollToSmooth#readme",
+  "homepage": "https://github.com/bfiessinger/scrollToSmooth#readme",
   "devDependencies": {
     "@babel/core": "^7.13.1",
     "@babel/preset-env": "^7.13.5",
