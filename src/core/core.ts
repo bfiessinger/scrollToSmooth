@@ -1,7 +1,8 @@
 'use strict';
 
-import isDomNodeList from 'is-dom-node-list';
-import { Easings } from './easings';
+import { ScrollToSmoothSettings } from './interfaces/ScrollToSmoothSettings';
+import { linear } from '../easings';
+
 import { 
 	_$, 
 	_$$,
@@ -25,50 +26,6 @@ const reqAnimFrame = w.requestAnimationFrame || (w as any).mozRequestAnimationFr
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationFrame;
 
-interface ScrollToSmoothSettings {
-	targetAttribute: string;
-	duration: number;
-	durationRelative: boolean;
-	durationMin: number | null;
-	durationMax: number | null;
-	easing: 'linear' | 
-					'easeInQuad' | 
-					'easeOutQuad' | 
-					'easeInOutQuad' | 
-					'easeInCubic' | 
-					'easeOutCubic' | 
-					'easeInOutCubic' | 
-					'easeInQuart' | 
-					'easeOutQuart' | 
-					'easeInOutQuart' | 
-					'easeInQuint' | 
-					'easeOutQuint' | 
-					'easeInOutQuint' | 
-					'easeInSine' | 
-					'easeOutSine' | 
-					'easeInOutSine' | 
-					'easeInExpo' | 
-					'easeOutExpo' | 
-					'easeInOutExpo' | 
-					'easeInCirc' | 
-					'easeOutCirc' | 
-					'easeInOutCirc' | 
-					'easeInElastic' | 
-					'easeOutElastic' | 
-					'easeInOutElastic' | 
-					'easeInBack' | 
-					'easeOutBack' | 
-					'easeInOutBack' | 
-					'easeInBounce' | 
-					'easeOutBounce' | 
-					'easeInOutBounce';
-	onScrollStart: CallableFunction | null;
-	onScrollUpdate: CallableFunction | null;
-	onScrollEnd: CallableFunction | null;
-	fixedHeader: string | null;
-	topOnEmptyHash: boolean;
-}
-
 export class ScrollToSmooth {
 
 	elements: NodeListOf<Element>;
@@ -90,7 +47,7 @@ export class ScrollToSmooth {
 			durationRelative: false,
 			durationMin: null,
 			durationMax: null,
-			easing: 'linear',
+			easing: linear,
 			onScrollStart: null,
 			onScrollUpdate: null,
 			onScrollEnd: null,
