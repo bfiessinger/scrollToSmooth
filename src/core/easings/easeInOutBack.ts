@@ -11,7 +11,7 @@
  * @since 3.0.0
  */
 export const easeInOutBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
-	const s = 1.70158;
+	let s = 1.70158;
 	if ((elapsed /= duration / 2) < 1) {
 		return amountOfChange / 2 * (elapsed * elapsed * (((s *= 1.525) + 1) * elapsed - s)) + initialValue;
 	}
