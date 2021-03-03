@@ -162,12 +162,10 @@ export class ScrollToSmooth {
 	 */
 	private scrollToTarget(distFromTop: number, startPos: number, startTime: number): void {
 
-		const elapsed = getTime() - startTime;
-
-		let duration = Math.max(1, this.settings.duration as number);
 		const distToScroll = distFromTop - startPos;
 		const scrollPx = (distToScroll < 0) ? distToScroll * -1 : distToScroll;
 
+		let duration = Math.max(1, this.settings.duration as number);
 		if (this.settings.durationRelative) {
 
 			const durationRelativePx = (typeof (this.settings.durationRelative) == 'number') ? this.settings.durationRelative : 1000;
@@ -184,6 +182,7 @@ export class ScrollToSmooth {
 		if (this.settings.durationMax && duration > ( this.settings.durationMax as number ) ) {
 			duration = this.settings.durationMax as number;
 		}
+		const elapsed = Math.min(duration, getTime() - startTime);
 
 		const timeFunction = (typeof this.settings.easing === 'string') ? this.evalTimeFn(this.settings.easing, [elapsed, startPos, distToScroll, duration]) : this.settings.easing(elapsed, startPos, distToScroll, duration);
 
@@ -196,7 +195,7 @@ export class ScrollToSmooth {
 			});
 		}
 
-		w.scroll(0, Math.ceil(timeFunction));
+		w.scroll(0, timeFunction);
 
 		if (elapsed >= duration) {
 
@@ -325,13 +324,13 @@ export class ScrollToSmooth {
 		const docHeight = getDocHeight();
 		const winHeight = w.innerHeight || dEl.clientHeight || b.clientHeight;
 		const targetOffset = currentTarget.getBoundingClientRect().top + windowStartPos;
-		let distFromTop = Math.ceil(docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset);
+		let distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
 
 		if (this.settings.fixedHeader !== null) {
 
 			const fixedHeader = ( typeof this.settings.fixedHeader == 'string' ) ? _$(this.settings.fixedHeader) : this.settings.fixedHeader as Element;
 			if (fixedHeader && fixedHeader.tagName) {
-				distFromTop -= Math.ceil(fixedHeader.getBoundingClientRect().height);
+				distFromTop -= fixedHeader.getBoundingClientRect().height;
 			}
 
 		}
