@@ -190,7 +190,7 @@ export class ScrollToSmooth {
 		if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
 			this.settings.onScrollUpdate({
 				startPosition: startPos,
-				currentPosition: getPos(),
+				currentPosition: timeFunction,
 				endPosition: distFromTop
 			});
 		}
