@@ -74,7 +74,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @param {Element} el 
 	 * 
-	 * @returns {Element | false} valid targetSelector or false
+	 * @returns {Element | null} valid targetSelector or null
 	 */
 	private getTargetElement(el: Element): Element | null {
 
