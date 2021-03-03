@@ -16,3 +16,4 @@ export const easeInOutCirc = (elapsed: number, initialValue: number, amountOfCha
 	}
 	return amountOfChange / 2 * (Math.sqrt(1 - (elapsed -= 2) * elapsed) + 1) + initialValue;
 };
+export default easeInOutCirc;

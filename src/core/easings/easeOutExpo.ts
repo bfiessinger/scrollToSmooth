@@ -15,3 +15,4 @@ export const easeOutExpo = (elapsed: number, initialValue: number, amountOfChang
 		? initialValue + amountOfChange
 		: amountOfChange * (-Math.pow(2, -10 * elapsed / duration) + 1) + initialValue;
 };
+export default easeOutExpo;

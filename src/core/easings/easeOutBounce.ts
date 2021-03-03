@@ -23,3 +23,4 @@ export const easeOutBounce = (elapsed: number, initialValue: number, amountOfCha
 		return amountOfChange * (7.5625 * (elapsed -= 2.625 / 2.75) * elapsed + 0.984375) + initialValue;
 	}
 };
+export default easeOutBounce;

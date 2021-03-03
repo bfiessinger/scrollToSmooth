@@ -14,3 +14,4 @@ export const easeOutBack = (elapsed: number, initialValue: number, amountOfChang
 	const s = 1.70158;
 	return amountOfChange * ((elapsed = elapsed / duration - 1) * elapsed * ((s + 1) * elapsed + s) + 1) + initialValue;
 };
+export default easeOutBack;

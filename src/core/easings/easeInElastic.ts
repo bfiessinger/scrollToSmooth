@@ -31,3 +31,4 @@ export const easeInElastic = (elapsed: number, initialValue: number, amountOfCha
 	}
 	return -(a * Math.pow(2, 10 * (elapsed -= 1)) * Math.sin((elapsed * duration - s) * (2 * Math.PI) / p)) + initialValue;
 };
+export default easeInElastic;

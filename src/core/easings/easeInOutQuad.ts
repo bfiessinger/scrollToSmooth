@@ -16,3 +16,4 @@ export const easeInOutQuad = (elapsed: number, initialValue: number, amountOfCha
 	}
 	return -amountOfChange / 2 * (--elapsed * (elapsed - 2) - 1) + initialValue;
 };
+export default easeInOutQuad;

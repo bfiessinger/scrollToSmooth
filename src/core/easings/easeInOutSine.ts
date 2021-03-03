@@ -13,3 +13,4 @@
 export const easeInOutSine = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
 	return -amountOfChange / 2 * (Math.cos(Math.PI * elapsed / duration) - 1) + initialValue;
 };
+export default easeInOutSine;

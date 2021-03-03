@@ -14,3 +14,4 @@ export const easeInBack = (elapsed: number, initialValue: number, amountOfChange
 	const s = 1.70158;
 	return amountOfChange * (elapsed /= duration) * elapsed * ((s + 1) * elapsed - s) + initialValue;
 };
+export default easeInBack;

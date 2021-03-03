@@ -13,3 +13,4 @@
 export const easeInQuad = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
 	return amountOfChange * (elapsed /= duration) * elapsed + initialValue;
 };
+export default easeInQuad;

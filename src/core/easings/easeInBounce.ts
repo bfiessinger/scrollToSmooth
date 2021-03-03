@@ -16,3 +16,4 @@ import { easeOutBounce } from './easeOutBounce';
 export const easeInBounce = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
 	return amountOfChange - easeOutBounce(duration - elapsed, 0, amountOfChange, duration) + initialValue;
 };
+export default easeInBounce;

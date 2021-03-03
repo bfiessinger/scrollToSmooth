@@ -31,3 +31,4 @@ export const easeOutElastic = (elapsed: number, initialValue: number, amountOfCh
 	}
 	return a * Math.pow(2, -10 * elapsed) * Math.sin((elapsed * duration - s) * (2 * Math.PI) / p) + amountOfChange + initialValue;
 };
+export default easeOutElastic;

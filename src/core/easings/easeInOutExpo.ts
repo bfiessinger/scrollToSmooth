@@ -22,3 +22,4 @@ export const easeInOutExpo = (elapsed: number, initialValue: number, amountOfCha
 	}
 	return amountOfChange / 2 * (-Math.pow(2, -10 * --elapsed) + 2) + initialValue;
 };
+export default easeInOutExpo;

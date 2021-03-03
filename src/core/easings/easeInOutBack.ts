@@ -17,3 +17,4 @@ export const easeInOutBack = (elapsed: number, initialValue: number, amountOfCha
 	}
 	return amountOfChange / 2 * ((elapsed -= 2) * elapsed * (((s *= 1.525) + 1) * elapsed + s) + 2) + initialValue;
 };
+export default easeInOutBack;

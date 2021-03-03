@@ -16,3 +16,4 @@ export const easeInOutCubic = (elapsed: number, initialValue: number, amountOfCh
 	}
 	return amountOfChange / 2 * ((elapsed -= 2) * elapsed * elapsed + 2) + initialValue;
 };
+export default easeInOutCubic;

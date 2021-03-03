@@ -13,3 +13,4 @@
 export const easeInCirc = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
 	return -amountOfChange * (Math.sqrt(1 - (elapsed /= duration) * elapsed) - 1) + initialValue;
 };
+export default easeInCirc;

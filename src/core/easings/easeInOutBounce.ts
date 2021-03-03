@@ -21,3 +21,4 @@ export const easeInOutBounce = (elapsed: number, initialValue: number, amountOfC
 	}
 	return easeOutBounce(elapsed * 2 - duration, 0, amountOfChange, duration) * 0.5 + amountOfChange * 0.5 + initialValue;
 };
+export default easeInOutBounce;
