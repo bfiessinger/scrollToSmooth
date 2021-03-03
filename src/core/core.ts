@@ -147,6 +147,10 @@ export class ScrollToSmooth {
 
 	}
 
+	private evalTimeFn(fn: string, easingArgs: Array<unknown>): CallableFunction {
+		return Function('"use strict"; return (' + fn + '(' + Array.prototype.join.call(easingArgs, ',') + '))')();
+	}
+
 	/**
 	 * Animate scrolling
 	 * 
@@ -181,7 +185,7 @@ export class ScrollToSmooth {
 			duration = this.settings.durationMax as number;
 		}
 
-		const timeFunction = Easings[this.settings.easing as string](elapsed, startPos, distToScroll, duration);
+		const timeFunction = (typeof this.settings.easing === 'string') ? this.evalTimeFn(this.settings.easing, [elapsed, startPos, distToScroll, duration]) : this.settings.easing(elapsed, startPos, distToScroll, duration);
 
 		// Callback onScrollUpdate
 		if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
