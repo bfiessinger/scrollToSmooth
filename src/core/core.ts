@@ -307,24 +307,39 @@ export class ScrollToSmooth {
 	/**
 	 * Method: scrollTo
 	 * 
+	 * @param {Element|number} target 
+	 * 
 	 * @returns {void}
 	 */
-	scrollTo(currentTarget: Element): void {
-
-		// Do nothing if the selector is no Element of the DOM
-		if (!currentTarget || !validateSelector(currentTarget)) {
-			return;
-		}
-
-		if (typeof currentTarget == 'string' && !isNodeOrElement(currentTarget)) {
-			currentTarget = _$(currentTarget) as Element;
-		}
+	scrollTo(target: any): void {
 
 		const windowStartPos = getPos();
 		const docHeight = getDocHeight();
-		const winHeight = w.innerHeight || dEl.clientHeight || b.clientHeight;
-		const targetOffset = currentTarget.getBoundingClientRect().top + windowStartPos;
-		let distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
+		const winHeight = getWinHeight();
+
+		let distFromTop = 0;
+
+		if (validateSelector(target)) {
+
+			if (typeof target == 'string') {
+				target = _$(target);
+			}
+
+			const targetOffset = target.getBoundingClientRect().top + windowStartPos;
+
+			distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
+
+		} else if (!isNaN(target)) {
+
+			if (typeof target === 'string') {
+				target = parseFloat(target);
+			}
+
+			target = docHeight - target < winHeight ? docHeight - winHeight : target;
+
+			distFromTop = target;
+
+		}		
 
 		if (this.settings.fixedHeader !== null) {
 

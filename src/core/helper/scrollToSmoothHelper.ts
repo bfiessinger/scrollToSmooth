@@ -149,3 +149,10 @@ export const getDocHeight = (): number => {
 		dEl.clientHeight
 	);
 }
+
+/**
+ * Get window height
+ * 
+ * @returns {number}
+ */
+export const getWinHeight = (): number => w.innerHeight || dEl.clientHeight || b.clientHeight;
