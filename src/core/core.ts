@@ -13,7 +13,8 @@ import {
 	getPos,
 	getTime, 
 	getBaseURI, 
-	getDocHeight 
+	getDocHeight,
+	getWinHeight 
 } from './helper/scrollToSmoothHelper';
 
 import { dEl, b, w } from './global_vars';
