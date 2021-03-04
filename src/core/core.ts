@@ -169,6 +169,17 @@ export class ScrollToSmooth {
 
 	}
 
+	/**
+	 * Take a function name of an easing function and treat it like
+	 * a real function
+	 * 
+	 * @param {string} fn 
+	 * @param {Array} easingArgs 
+	 * 
+	 * @returns {Function}
+	 * 
+	 * @access private
+	 */
 	private evalTimeFn(fn: string, easingArgs: Array<unknown>): CallableFunction {
 		return Function('"use strict"; return (' + fn + '(' + Array.prototype.join.call(easingArgs, ',') + '))')();
 	}
