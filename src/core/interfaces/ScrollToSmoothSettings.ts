@@ -1,4 +1,5 @@
 export interface ScrollToSmoothSettings {
+	container: string | Element,
 	targetAttribute: string;
 	duration: number;
 	durationRelative: boolean;
@@ -8,6 +9,6 @@ export interface ScrollToSmoothSettings {
 	onScrollStart: CallableFunction | null;
 	onScrollUpdate: CallableFunction | null;
 	onScrollEnd: CallableFunction | null;
-	fixedHeader: string | null;
+	offset: Node | Element | string | number | null;
 	topOnEmptyHash: boolean;
 }

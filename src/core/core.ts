@@ -32,6 +32,7 @@ const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationF
 export class ScrollToSmooth {
 
 	elements: NodeListOf<Element>;
+	container: Document | HTMLElement | Element;
 	settings: ScrollToSmoothSettings;
 
 	constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: ScrollToSmoothSettings) {
@@ -45,6 +46,7 @@ export class ScrollToSmooth {
 		 * Build Default Settings Object
 		 */
 		const defaults = {
+			container: b,
 			targetAttribute: 'href',
 			offset: null,
 			topOnEmptyHash: true,
@@ -54,11 +56,10 @@ export class ScrollToSmooth {
 			durationMin: null,
 			durationMax: null,
 			easing: linear,
+			// Callbacks
 			onScrollStart: null,
 			onScrollUpdate: null,
-			onScrollEnd: null,
-			fixedHeader: null,
-			topOnEmptyHash: true
+			onScrollEnd: null
 		} as ScrollToSmoothSettings;
 	
 		/**
@@ -73,12 +74,28 @@ export class ScrollToSmooth {
 
 		this.settings = settings;
 
+		/**
+		 * Set a container Element
+		 */
+		this.container = b;
+		if (typeof this.settings.container == 'string' && validateSelector(this.settings.container)) {
+			this.container = _$(this.settings.container) as HTMLElement;
+		} else if (typeof this.settings.container != 'string' && isNodeOrElement(this.settings.container) && validateSelector(this.settings.container)) {
+			this.container = this.settings.container;
+		}
+
+		/**
+		 * Check this.elements and declare them based on their value
+		 */
+		this.elements = ( typeof nodes == 'string' ) ? _$$(nodes, this.container) : nodes as unknown as NodeListOf<Element>;
+
 	}
 	
 	/**
-	 * Determine the target Element of a link
+	 * Determine the target Element from the targetAttribute of a
+	 * scrollToSmooth selector
 	 * 
-	 * @param {Element} el 
+	 * @param {Element} el element with the target Attribute
 	 * 
 	 * @returns {Element | null} valid targetSelector or null
 	 */
@@ -93,10 +110,10 @@ export class ScrollToSmooth {
 
 		// Top on Empty Hash
 		if (this.settings.topOnEmptyHash && targetSelector == '#') {
-			return b;
+			return this.container as Element;
 		}
 
-		return ( validateSelector(targetSelector) ) ? _$(targetSelector) : null;
+		return ( validateSelector(targetSelector, this.container) ) ? _$(targetSelector, this.container as HTMLElement) : null;
 
 	}
 
@@ -325,10 +342,10 @@ export class ScrollToSmooth {
 
 		let distFromTop = 0;
 
-		if (validateSelector(target)) {
+		if (validateSelector(target, this.container)) {
 
 			if (typeof target == 'string') {
-				target = _$(target);
+				target = _$(target, this.container as HTMLElement);
 			}
 
 			const targetOffset = target.getBoundingClientRect().top + windowStartPos;

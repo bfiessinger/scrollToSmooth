@@ -24,7 +24,7 @@ export const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAni
  * 
  * @returns {Element | null}
  */
-export const _$ = (s: string): Element | null => { return d.querySelector(s); }
+export const _$ = (s: string, container: HTMLElement | Document = d): Element | null => { return container.querySelector(s); }
 
 /**
  * Shorthand for document.querySelectorAll
@@ -33,7 +33,7 @@ export const _$ = (s: string): Element | null => { return d.querySelector(s); }
  * 
  * @returns {NodeListOf<Element>}
  */
-export const _$$ = (s: string): NodeListOf<Element> => { return d.querySelectorAll(s); }
+export const _$$ = (s: string, container: HTMLElement | Document | Element = d): NodeListOf<Element> => { return container.querySelectorAll(s); }
 
 /**
  * Check if a selector exists on the current page
@@ -42,23 +42,18 @@ export const _$$ = (s: string): NodeListOf<Element> => { return d.querySelectorA
  * 
  * @returns {boolean} true if the selector exists
  */
-export const validateSelector = (selector: string | Node | HTMLElement): boolean => {
+export const validateSelector = (selector: string | Node | HTMLElement, container: HTMLElement | Document | Element = d): boolean => {
+	let valid = false;
 
-	let selectorValid = true;
-
-	// Validate if the target is a valid selector
-	try {
-		if ( typeof selector == 'string' ) {
-			_$(selector);
-		} else if (isNodeOrElement(selector)) {
-			selector;
-		}  
-	} catch (e) {
-		selectorValid = false;
+	// Check if the target is a valid selector inside the scrollToSmooth container
+	if (
+		(typeof selector == 'string' && _$(selector, container as HTMLElement)) || 
+		(isNodeOrElement(selector as Node | HTMLElement) && container.contains(selector as Element))
+	) {
+		valid = true;
 	}
 
-	return selectorValid;
-
+	return valid;
 }
 
 /**
