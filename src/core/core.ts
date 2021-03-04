@@ -142,7 +142,7 @@ export class ScrollToSmooth {
 	}
 
 	/**
-	 * Handler for the click event
+	 * Event handler for click events on scrollToSmooth selectors
 	 * 
 	 * @param {Element} el 
 	 * @param {Event} e The current Event 
