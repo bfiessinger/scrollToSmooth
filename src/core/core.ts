@@ -185,7 +185,37 @@ export class ScrollToSmooth {
 	}
 
 	/**
-	 * Animate scrolling
+	 * Calculate scroll animation duration
+	 * 
+	 * @param distance 
+	 * @param settings 
+	 * 
+	 * @access private
+	 */
+	private getDuration(distance: number, settings: ScrollToSmoothSettings) {
+		let duration = Math.max(1, settings.duration as number);
+		if (settings.durationRelative) {
+
+			const durationRelativePx = (typeof settings.durationRelative == 'number') ? settings.durationRelative : 1000;
+			duration = Math.max(settings.duration as number, distance * (duration / durationRelativePx));
+
+		}
+
+		// Set a minimum duration
+		if (settings.durationMin && duration < ( settings.durationMin as number ) ) {
+			duration = settings.durationMin as number;
+		}
+
+		// Set a maximum duration
+		if (settings.durationMax && duration > ( settings.durationMax as number ) ) {
+			duration = settings.durationMax as number;
+		}
+
+		return duration;
+	}
+
+	/**
+	 * Animate scrolling 
 	 * 
 	 * @param {number} distFromTop Distance to be scrolled from top
 	 * @param {number} startPos Distance from top when the animation has started
@@ -195,28 +225,12 @@ export class ScrollToSmooth {
 	 * 
 	 * @access private
 	 */
-	private scrollToTarget(distFromTop: number, startPos: number, startTime: number): void {
+	private animateScroll(distFromTop: number, startPos: number, startTime: number, docHeight: number, winHeight: number): void {
 
 		const distToScroll = distFromTop - startPos;
 		const scrollPx = (distToScroll < 0) ? distToScroll * -1 : distToScroll;
-
-		let duration = Math.max(1, this.settings.duration as number);
-		if (this.settings.durationRelative) {
-
-			const durationRelativePx = (typeof (this.settings.durationRelative) == 'number') ? this.settings.durationRelative : 1000;
-			duration = Math.max(this.settings.duration as number, scrollPx * (duration / durationRelativePx));
-
-		}
-
-		// Set a minimum duration
-		if (this.settings.durationMin && duration < ( this.settings.durationMin as number ) ) {
-			duration = this.settings.durationMin as number;
-		}
-
-		// Set a maximum duration
-		if (this.settings.durationMax && duration > ( this.settings.durationMax as number ) ) {
-			duration = this.settings.durationMax as number;
-		}
+		
+		const duration = this.getDuration(scrollPx, this.settings);		
 		const elapsed = Math.min(duration, getTime() - startTime);
 
 		const timeFunction = (typeof this.settings.easing === 'string') ? this.evalTimeFn(this.settings.easing, [elapsed, startPos, distToScroll, duration]) : this.settings.easing(elapsed, startPos, distToScroll, duration);
@@ -248,7 +262,7 @@ export class ScrollToSmooth {
 		}
 
 		scrollAnimationFrame = reqAnimFrame(() => {
-			this.scrollToTarget(distFromTop, startPos, startTime);
+			this.animateScroll(distFromTop, startPos, startTime, docHeight, winHeight);
 		});
 
 	}
@@ -417,7 +431,7 @@ export class ScrollToSmooth {
 		}
 
 		// Start Scroll Animation
-		this.scrollToTarget(distFromTop, windowStartPos, getTime());
+		this.animateScroll(distFromTop, windowStartPos, getTime(), docHeight, winHeight);
 
 	}
 
