@@ -91,6 +91,8 @@ export class ScrollToSmooth {
 	 * @param {Element} el element with the target Attribute
 	 * 
 	 * @returns {Element | null} valid targetSelector or null
+	 * 
+	 * @access private
 	 */
 	private getTargetElement(el: Element): Element | null {
 
@@ -114,6 +116,8 @@ export class ScrollToSmooth {
 	 * Filter all scrollto elements that have target attributes related to the current page
 	 * 
 	 * @returns {array} Array with all links found
+	 * 
+	 * @access private
 	 */
 	private linkCollector(): Array<Element> {
 
@@ -144,6 +148,8 @@ export class ScrollToSmooth {
 	 * @param {Event} e The current Event 
 	 * 
 	 * @returns {void}
+	 * 
+	 * @access private
 	 */
 	private clickHandler(el: Element, e: Event): void {
 
@@ -175,6 +181,8 @@ export class ScrollToSmooth {
 	 * @param {number} startTime The time in ms when the animation has started
 	 * 
 	 * @returns {void}
+	 * 
+	 * @access private
 	 */
 	private scrollToTarget(distFromTop: number, startPos: number, startTime: number): void {
 
@@ -241,6 +249,8 @@ export class ScrollToSmooth {
 	 * @param {array} linksFiltered Array with all available Smooth Scroll Links
 	 * 
 	 * @returns {void}
+	 * 
+	 * @access private
 	 */
 	private handleEvents(action: string, linksFiltered: Array<Element>): void {
 
@@ -260,6 +270,8 @@ export class ScrollToSmooth {
 	 * @param {array} linksFiltered Array of anchor Elements
 	 * 
 	 * @returns {void}
+	 * 
+	 * @access private
 	 */
 	private BindEvents(linksFiltered: Array<Element>): void {
 
@@ -281,6 +293,8 @@ export class ScrollToSmooth {
 	 * @param {array} linksFiltered Array of anchor Elements
 	 * 
 	 * @returns {void}
+	 * 
+	 * @access private
 	 */
 	private RemoveEvents(linksFiltered: Array<Element>): void {
 
