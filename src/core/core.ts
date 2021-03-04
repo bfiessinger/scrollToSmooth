@@ -17,7 +17,7 @@ import {
 	getWinHeight 
 } from './helper/scrollToSmoothHelper';
 
-import { dEl, b, w } from './global_vars';
+import { d, b, w } from './global_vars';
 
 let scrollAnimationFrame: number;
 
@@ -46,7 +46,8 @@ export class ScrollToSmooth {
 		 * Build Default Settings Object
 		 */
 		const defaults = {
-			container: b,
+			// Selectors
+			container: d,
 			targetAttribute: 'href',
 			offset: null,
 			topOnEmptyHash: true,
