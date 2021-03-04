@@ -422,6 +422,17 @@ export class ScrollToSmooth {
 	}
 
 	/**
+	 * Scroll by a fixed amount of pixels
+	 * 
+	 * @param px 
+	 * 
+	 * @return {void}
+	 */
+	scrollBy(px: number): void {
+		this.scrollTo(getPos() + px);
+	}
+
+	/**
 	 * Method: cancelScroll
 	 * 
 	 * @returns {void}
