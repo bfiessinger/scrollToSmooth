@@ -49,8 +49,8 @@ export class ScrollToSmooth {
 			// Selectors
 			container: d,
 			targetAttribute: 'href',
-			offset: null,
 			topOnEmptyHash: true,
+			offset: null,
 			// Speed and duration
 			duration: 400,
 			durationRelative: false,
