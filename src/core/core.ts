@@ -21,14 +21,6 @@ import { d, b, w } from './global_vars';
 
 let scrollAnimationFrame: number;
 
-/**
- * Maximize Browser Support of requestAnimationFrame
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const reqAnimFrame = w.requestAnimationFrame || (w as any).mozRequestAnimationFrame || w.webkitRequestAnimationFrame || (w as any).msRequestAnimationFrame;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationFrame;
-
 export class ScrollToSmooth {
 
 	elements: NodeListOf<Element>;
