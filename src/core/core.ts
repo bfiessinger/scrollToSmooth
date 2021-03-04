@@ -43,6 +43,9 @@ export class ScrollToSmooth {
 		 */
 		const defaults = {
 			targetAttribute: 'href',
+			offset: null,
+			topOnEmptyHash: true,
+			// Speed and duration
 			duration: 400,
 			durationRelative: false,
 			durationMin: null,
@@ -341,12 +344,26 @@ export class ScrollToSmooth {
 
 		}		
 
-		if (this.settings.fixedHeader !== null) {
+		if (this.settings.offset !== null) {
 
-			const fixedHeader = ( typeof this.settings.fixedHeader == 'string' ) ? _$(this.settings.fixedHeader) : this.settings.fixedHeader as Element;
-			if (fixedHeader && fixedHeader.tagName) {
-				distFromTop -= fixedHeader.getBoundingClientRect().height;
+			let offset = 0;
+
+			if (validateSelector(this.settings.offset as string | Node | HTMLElement, this.container)) {
+				let offsetElement = this.settings.offset;
+				if (typeof offsetElement == 'string') {
+					offsetElement = _$(this.settings.offset as string) as HTMLElement;
+				}
+				if (isNodeOrElement(offsetElement as Node | Element)) {
+					offset = (offsetElement as HTMLElement).getBoundingClientRect().height;
+				}
+			} else if (!isNaN(this.settings.offset as number)) {
+				offset = this.settings.offset as number;
+				if (typeof offset === 'string') {
+					offset = parseFloat(offset);
+				}
 			}
+			
+			distFromTop -= offset;
 
 		}
 
