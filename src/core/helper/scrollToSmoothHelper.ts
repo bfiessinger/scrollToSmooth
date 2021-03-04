@@ -10,6 +10,14 @@
 import { d, dEl, b, w } from '../global_vars';
 
 /**
+ * Maximize Browser Support of requestAnimationFrame
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const reqAnimFrame = w.requestAnimationFrame || (w as any).mozRequestAnimationFrame || w.webkitRequestAnimationFrame || (w as any).msRequestAnimationFrame;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationFrame;
+
+/**
  * Shorthand for document.querySelector
  * 
  * @param {string} - a valid querySelector

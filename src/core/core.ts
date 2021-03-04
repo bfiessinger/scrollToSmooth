@@ -3,7 +3,9 @@
 import { ScrollToSmoothSettings } from './interfaces/ScrollToSmoothSettings';
 import { linear } from '../easings';
 
-import { 
+import {
+	reqAnimFrame,
+	cancelAnimFrame,
 	_$, 
 	_$$,
 	isNodeOrElement,
