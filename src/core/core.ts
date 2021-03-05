@@ -17,11 +17,14 @@ import {
 	getWinHeight 
 } from './helper/scrollToSmoothHelper';
 
-import { d, b, w } from './global_vars';
+import { d, dEl, b, w } from './global_vars';
 
 let scrollAnimationFrame: number;
 
 export class ScrollToSmooth {
+
+	static id = 0;
+	__id = 0;
 
 	elements: NodeListOf<Element>;
 	container: Document | HTMLElement | Element;
@@ -29,10 +32,7 @@ export class ScrollToSmooth {
 
 	constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: ScrollToSmoothSettings) {
 
-		/**
-		 * Check this.elements and declare them based on their value
-		 */
-		this.elements = ( typeof nodes == 'string' ) ? _$$(nodes) : nodes as unknown as NodeListOf<Element>;
+		this.__id = ++ScrollToSmooth.id;
 
 		/**
 		 * Build Default Settings Object
@@ -83,7 +83,7 @@ export class ScrollToSmooth {
 		this.elements = ( typeof nodes == 'string' ) ? _$$(nodes, this.container) : nodes as unknown as NodeListOf<Element>;
 
 	}
-	
+
 	/**
 	 * Determine the target Element from the targetAttribute of a
 	 * scrollToSmooth selector
@@ -214,6 +214,27 @@ export class ScrollToSmooth {
 		return duration;
 	}
 
+	private expandDocument(easing: number, docHeight: number, winHeight: number) {
+		const exceeding = this.scrollExceedsDocument(easing, docHeight, winHeight);
+		const expanders = this.getDocumentExpanders();
+		const expT = expanders.filter(el=>el.getAttribute('data-scrolltosmooth-expand') === 'top')[0];
+		const expB = expanders.filter(el=>el.getAttribute('data-scrolltosmooth-expand') === 'bottom')[0];
+
+		if (exceeding && expT && exceeding.to === 'top') {
+			expT.style.height = exceeding.px + 'px';
+		} else if (exceeding && expB && exceeding.to === 'bottom') {
+			expB.style.height = exceeding.px + 'px';
+		} else {
+			expanders.forEach((exp) => {
+				exp.style.removeProperty('height');
+			});
+		}
+	}
+
+	private getDocumentExpanders(): Array<HTMLDivElement> {
+		return Array.prototype.slice.call(this.container.children).filter(el=>el.hasAttribute('data-scrolltosmooth-expand'));
+	}
+
 	/**
 	 * Animate scrolling 
 	 * 
@@ -246,6 +267,16 @@ export class ScrollToSmooth {
 
 		w.scroll(0, timeFunction);
 
+		if (!docHeight) {
+			docHeight = getDocHeight();
+		}
+
+		if (!winHeight) {
+			winHeight = getWinHeight();
+		}
+
+		this.expandDocument(timeFunction, docHeight, winHeight);
+
 		if (elapsed >= duration) {
 
 			// Callback onScrollEnd
@@ -268,42 +299,64 @@ export class ScrollToSmooth {
 	}
 
 	/**
-	 * Add and remove Events
+	 * Determine if the current scroll position exceeds the document to
+	 * the top or bottom.
 	 * 
-	 * @param {string} action The current state
-	 * @param {array} linksFiltered Array with all available Smooth Scroll Links
-	 * 
-	 * @returns {void}
+	 * @param {number} pos Current Scroll Position
 	 * 
 	 * @access private
 	 */
-	private handleEvents(action: string, linksFiltered: Array<Element>): void {
+	private scrollExceedsDocument(pos: number, docHeight: number, winHeight: number): false | Record<string, unknown> {
+		const min = 0;
+		const max = docHeight - winHeight;
 
-		Array.prototype.forEach.call(linksFiltered, (link) => {
-			if (action == 'add') {
-				link.addEventListener('click', this.clickHandler.bind(this, link), false);
-			} else if (action == 'remove') {
-				link.removeEventListener('click', this.clickHandler.bind(this, link), false);
-			}
-		});
+		if ( pos < min ) {
+			return {
+				to: 'top',
+				px: pos * -1
+			};
+		} else if ( pos > max ) {
+			return {
+				to: 'bottom',
+				px: (max - pos) * -1
+			};
+		} 
 
+		return false;
 	}
 
 	/**
-	 * Bind Events
-	 * 
-	 * @param {array} linksFiltered Array of anchor Elements
+	 * Initialize SmoothScroll
 	 * 
 	 * @returns {void}
-	 * 
-	 * @access private
 	 */
-	private BindEvents(linksFiltered: Array<Element>): void {
+	init(): void {
 
-		this.handleEvents('add', linksFiltered);
+		// Destroy any existing initialization
+		this.destroy();
+
+		// Setup Container Expansions
+		const expansionContainer = (this.container === d || this.container === dEl) ? b : this.container;
+
+		const expT = d.createElement('div');
+		expT.setAttribute('data-scrolltosmooth-expand', 'top');
+		expansionContainer.insertBefore(expT, expansionContainer.firstChild);
+
+		const expB = d.createElement('div');
+		expB.setAttribute('data-scrolltosmooth-expand', 'bottom');
+		expansionContainer.appendChild(expB);
+
+		// Bind Events
+		Array.prototype.forEach.call(this.linkCollector(), (link) => {
+			link.addEventListener('click', this.clickHandler.bind(this, link), false);
+		});
 
 		// Cancel Animation on User Scroll Interaction
-		const cancelAnimationOnEvents = ['mousewheel', 'wheel', 'touchstart'];
+		const cancelAnimationOnEvents = [
+			'mousewheel', 
+			'wheel', 
+			'touchmove'
+		];
 		cancelAnimationOnEvents.forEach((ev) => {
 			w.addEventListener(ev, () => {
 				this.cancelScroll();
@@ -313,58 +366,42 @@ export class ScrollToSmooth {
 	}
 
 	/**
-	 * Remove Events
-	 * 
-	 * @param {array} linksFiltered Array of anchor Elements
+	 * Destroy the current initialization.
 	 * 
 	 * @returns {void}
 	 * 
-	 * @access private
+	 * @access public
 	 */
-	private RemoveEvents(linksFiltered: Array<Element>): void {
+	destroy(): void {
 
 		// Do nothing if the plugin is not already initialized
 		if (!this.settings) {
 			return;
 		}
 
-		this.handleEvents('remove', linksFiltered);
+		this.cancelScroll();
 
-	}
-
-	/**
-	 * Method: init
-	 * 
-	 * @returns {void}
-	 */
-	init(): void {
-
-		// Destroy any existing initialization
-		this.destroy();
-
-		// Bind Events
-		this.BindEvents.call(this, this.linkCollector());
-
-	}
-
-	/**
-	 * Method: destroy
-	 * 
-	 * @returns {void}
-	 */
-	destroy(): void {
+		// Delete Container Expansions
+		this.getDocumentExpanders().forEach((expander) => {
+			(expander.parentNode as Node).removeChild(expander);
+		});
 
 		// Remove Events
-		this.RemoveEvents.call(this, this.linkCollector());
+		Array.prototype.forEach.call(this.linkCollector(), (link) => {
+			link.removeEventListener('click', this.clickHandler.bind(this, link), false);
+		});
 
 	}
 
 	/**
-	 * Method: scrollTo
+	 * Trigger the scrolling animation to a specific Element or 
+	 * a fixed position
 	 * 
 	 * @param {Element|number} target 
 	 * 
 	 * @returns {void}
+	 * 
+	 * @access public
 	 */
 	scrollTo(target: any): void {
 
