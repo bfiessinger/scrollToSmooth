@@ -70,13 +70,17 @@ export class ScrollToSmooth {
 		/**
 		 * Set a container Element
 		 */
-		this.container = b;
+		let container = b;
+		
 		if (typeof this.settings.container == 'string' && validateSelector(this.settings.container)) {
-			this.container = _$(this.settings.container) as HTMLElement;
+			container = _$(this.settings.container) as HTMLElement;
 		} else if (typeof this.settings.container != 'string' && isNodeOrElement(this.settings.container) && validateSelector(this.settings.container)) {
-			this.container = this.settings.container;
+			container = this.settings.container as HTMLElement;
 		}
 
+		container = (container === d as unknown || container === dEl) ? b : container;
+		this.container = container;
+		
 		/**
 		 * Check this.elements and declare them based on their value
 		 */
@@ -339,15 +343,13 @@ export class ScrollToSmooth {
 		this.destroy();
 
 		// Setup Container Expansions
-		const expansionContainer = (this.container === d || this.container === dEl) ? b : this.container;
-
 		const expT = d.createElement('div');
 		expT.setAttribute('data-scrolltosmooth-expand', 'top');
-		expansionContainer.insertBefore(expT, expansionContainer.firstChild);
+		this.container.insertBefore(expT, this.container.firstChild);
 
 		const expB = d.createElement('div');
 		expB.setAttribute('data-scrolltosmooth-expand', 'bottom');
-		expansionContainer.appendChild(expB);
+		this.container.appendChild(expB);
 
 		// Bind Events
 		Array.prototype.forEach.call(this.linkCollector(), (link) => {
