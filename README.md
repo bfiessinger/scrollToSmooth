@@ -1,6 +1,6 @@
 # scrollToSmooth
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/bfiessinger/scrollToSmooth)](https://www.codefactor.io/repository/github/bfiessinger/scrolltosmooth)
-[![Filesize](https://badge-size.herokuapp.com/bfiessinger/scrollToSmooth/master/dist/scrolltosmooth.min.js)](https://github.com/bfiessinger/scrollToSmooth/blob/master/dist/scrolltosmooth.min.js)
+[![Filesize](https://badge-size.herokuapp.com/bfiessinger/scrollToSmooth/scrollToSmooth-2/dist/scrolltosmooth.min.js)](https://github.com/bfiessinger/scrollToSmooth/blob/master/dist/scrolltosmooth.min.js)
 ![Version](https://img.shields.io/github/v/release/bfiessinger/scrollToSmooth?include_prereleases)
 
 a lightweight Vanilla JS Smooth Scroll to ⚓ script.
