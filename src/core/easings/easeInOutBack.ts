@@ -1,20 +1,18 @@
 /**
  * easeInOutBack
  * 
- * @param {number} elapsed 
- * @param {number} initialValue 
- * @param {number} amountOfChange 
- * @param {number} duration 
+ * @param {number} t represents the absolute progress of the animation in the bounds of 0 (beginning of the animation) and 1 (end of animation).
  * 
  * @return {number} timing function
  * 
  * @since 3.0.0
  */
-export const easeInOutBack = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
-	let s = 1.70158;
-	if ((elapsed /= duration / 2) < 1) {
-		return amountOfChange / 2 * (elapsed * elapsed * (((s *= 1.525) + 1) * elapsed - s)) + initialValue;
-	}
-	return amountOfChange / 2 * ((elapsed -= 2) * elapsed * (((s *= 1.525) + 1) * elapsed + s) + 2) + initialValue;
+export const easeInOutBack = (t: number): number => {
+	const c1 = 1.70158;
+	const c2 = c1 * 1.525;
+	
+	return t < 0.5
+		? (Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2)) / 2
+		: (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
 };
 export default easeInOutBack;

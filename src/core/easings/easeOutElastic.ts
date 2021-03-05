@@ -1,34 +1,19 @@
 /**
  * easeOutElastic
  * 
- * @param {number} elapsed 
- * @param {number} initialValue 
- * @param {number} amountOfChange 
- * @param {number} duration 
+ * @param {number} t represents the absolute progress of the animation in the bounds of 0 (beginning of the animation) and 1 (end of animation).
  * 
  * @return {number} timing function
  * 
  * @since 3.0.0
  */
-export const easeOutElastic = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
-	let s = 1.70158;
-	let p = 0;
-	let a = amountOfChange;
-	if (elapsed === 0) {
-		return initialValue;
-	}
-	if ((elapsed /= duration) === 1) {
-		return initialValue + amountOfChange;
-	}
-	if (!p) {
-		p = duration * 0.3;
-	}
-	if (a < Math.abs(amountOfChange)) {
-		a = amountOfChange;
-		s = p / 4;
-	} else {
-		s = p / (2 * Math.PI) * Math.asin(amountOfChange / a);
-	}
-	return a * Math.pow(2, -10 * elapsed) * Math.sin((elapsed * duration - s) * (2 * Math.PI) / p) + amountOfChange + initialValue;
+export const easeOutElastic = (t: number): number => {
+	const c4 = (2 * Math.PI) / 3;
+
+	return t === 0
+		? 0
+		: t === 1
+		? 1
+		: Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
 };
 export default easeOutElastic;

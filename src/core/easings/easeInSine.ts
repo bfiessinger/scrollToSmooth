@@ -1,16 +1,13 @@
 /**
  * easeInSine
  * 
- * @param {number} elapsed 
- * @param {number} initialValue 
- * @param {number} amountOfChange 
- * @param {number} duration 
+ * @param {number} t represents the absolute progress of the animation in the bounds of 0 (beginning of the animation) and 1 (end of animation).
  * 
  * @return {number} timing function
  * 
  * @since 3.0.0
  */
-export const easeInSine = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
-	return -amountOfChange * Math.cos(elapsed / duration * (Math.PI / 2)) + amountOfChange + initialValue;
+export const easeInSine = (t: number): number => {
+	return 1 - Math.cos((t * Math.PI) / 2);
 };
 export default easeInSine;

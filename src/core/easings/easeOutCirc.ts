@@ -1,16 +1,13 @@
 /**
  * easeOutCirc
  * 
- * @param {number} elapsed 
- * @param {number} initialValue 
- * @param {number} amountOfChange 
- * @param {number} duration 
+ * @param {number} t represents the absolute progress of the animation in the bounds of 0 (beginning of the animation) and 1 (end of animation).
  * 
  * @return {number} timing function
  * 
  * @since 3.0.0
  */
-export const easeOutCirc = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
-	return amountOfChange * Math.sqrt(1 - (elapsed = elapsed / duration - 1) * elapsed) + initialValue;
+export const easeOutCirc = (t: number): number => {
+	return Math.sqrt(1 - Math.pow(t - 1, 2));
 };
 export default easeOutCirc;

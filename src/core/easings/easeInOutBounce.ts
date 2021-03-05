@@ -1,24 +1,18 @@
 /**
  * easeInOutBounce
  * 
- * @param {number} elapsed 
- * @param {number} initialValue 
- * @param {number} amountOfChange 
- * @param {number} duration 
+ * @param {number} t represents the absolute progress of the animation in the bounds of 0 (beginning of the animation) and 1 (end of animation).
  * 
- * @uses easeinBounce
  * @uses easeOutBounce
  * 
  * @return {number} timing function
  * 
  * @since 3.0.0
  */
-import { easeInBounce } from './easeInBounce';
 import { easeOutBounce } from './easeOutBounce';
-export const easeInOutBounce = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
-	if (elapsed < duration / 2) {
-		return easeInBounce(elapsed * 2, 0, amountOfChange, duration) * 0.5 + initialValue;
-	}
-	return easeOutBounce(elapsed * 2 - duration, 0, amountOfChange, duration) * 0.5 + amountOfChange * 0.5 + initialValue;
+export const easeInOutBounce = (t: number): number => {
+	return t < 0.5
+		? (1 - easeOutBounce(1 - 2 * t)) / 2
+		: (1 + easeOutBounce(2 * t - 1)) / 2;
 };
 export default easeInOutBounce;

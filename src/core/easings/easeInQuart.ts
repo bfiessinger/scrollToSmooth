@@ -1,16 +1,13 @@
 /**
  * easeInQuart
  * 
- * @param {number} elapsed 
- * @param {number} initialValue 
- * @param {number} amountOfChange 
- * @param {number} duration 
+ * @param {number} t represents the absolute progress of the animation in the bounds of 0 (beginning of the animation) and 1 (end of animation).
  * 
  * @return {number} timing function
  * 
  * @since 3.0.0
  */
-export const easeInQuart = (elapsed: number, initialValue: number, amountOfChange: number, duration: number): number => {
-	return amountOfChange * (elapsed /= duration) * elapsed * elapsed * elapsed + initialValue;
+export const easeInQuart = (t: number): number => {
+	return t * t * t * t;
 };
 export default easeInQuart;

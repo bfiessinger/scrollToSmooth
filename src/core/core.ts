@@ -254,7 +254,10 @@ export class ScrollToSmooth {
 		const duration = this.getDuration(scrollPx, this.settings);		
 		const elapsed = Math.min(duration, getTime() - startTime);
 
-		const timeFunction = (typeof this.settings.easing === 'string') ? this.evalTimeFn(this.settings.easing, [elapsed, startPos, distToScroll, duration]) : this.settings.easing(elapsed, startPos, distToScroll, duration);
+		const t = elapsed / duration;
+		const easingPattern = (typeof this.settings.easing === 'string') ? this.evalTimeFn(this.settings.easing, [t]) : this.settings.easing(t);
+		
+		const timeFunction = startPos + (distToScroll * easingPattern);
 
 		// Callback onScrollUpdate
 		if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
