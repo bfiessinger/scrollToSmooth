@@ -406,7 +406,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @access public
 	 */
-	scrollTo(target: any): void {
+	scrollTo(target: Element|number): void {
 
 		const windowStartPos = getPos();
 		const docHeight = getDocHeight();
@@ -414,25 +414,25 @@ export class ScrollToSmooth {
 
 		let distFromTop = 0;
 
-		if (validateSelector(target, this.container)) {
+		if (validateSelector(target as string | HTMLElement, this.container)) {
 
 			if (typeof target == 'string') {
-				target = _$(target, this.container as HTMLElement);
+				target = _$(target, this.container as HTMLElement) as HTMLElement;
 			}
 
-			const targetOffset = target.getBoundingClientRect().top + windowStartPos;
+			const targetOffset = (target as HTMLElement).getBoundingClientRect().top + windowStartPos;
 
 			distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
 
-		} else if (!isNaN(target)) {
+		} else if (!isNaN(target as number)) {
 
 			if (typeof target === 'string') {
 				target = parseFloat(target);
 			}
 
-			target = docHeight - target < winHeight ? docHeight - winHeight : target;
+			target = docHeight - (target as number) < winHeight ? docHeight - winHeight : target;
 
-			distFromTop = target;
+			distFromTop = target as number;
 
 		}		
 
