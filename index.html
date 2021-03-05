@@ -8,126 +8,106 @@
   <title>Document</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" />
   <link href="https://highlightjs.org/static/demo/styles/night-owl.css" rel="stylesheet" />
-  <link href="https://rawcdn.githack.com/bfiessinger/scrollToSmooth/fe32047add29c7746505e8169df7008f8504c491/demo/demo.css" rel="stylesheet" />
+  <link href="https://raw.githubusercontent.com/bfiessinger/scrollToSmooth/master/demo/demo.css" rel="stylesheet" />
 </head>
 
-<body>
+<body id="scroll_container">
 
   <nav>
-    <a href="#">Test Top</a>
+    <a class="top" href="#">
+			<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="long-arrow-up" class="svg-inline--fa fa-long-arrow-up fa-w-10" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+				<path fill="#FFF" d="M58.427 225.456L124 159.882V456c0 13.255 10.745 24 24 24h24c13.255 0 24-10.745 24-24V159.882l65.573 65.574c9.373 9.373 24.569 9.373 33.941 0l16.971-16.971c9.373-9.373 9.373-24.569 0-33.941L176.971 39.029c-9.373-9.373-24.568-9.373-33.941 0L7.515 174.544c-9.373 9.373-9.373 24.569 0 33.941l16.971 16.971c9.372 9.373 24.568 9.373 33.941 0z"></path>
+			</svg>
+		</a>
     <a href="#section-1">Vanilla JS Smooth Scroll</a>
-    <a href="#section-2">Easy to use!</a>
-    <a href="#section-3">Usage</a>
-    <a href="#section-4">Options</a>
-    <a href="#section-5">That's it</a>
+    <a href="#section-2"></a>
+    <a href="#section-3"></a>
+    <a href="#section-5"></a>
   </nav>
   <section id="section-1">
     <div>
-      <strong>Vanilla JS Smooth Scroll</strong>
+      <strong>ScrollToSmooth</strong>
     </div>
   </section>
   <section id="section-2">
     <div>
-      <strong>Easy to use!</strong>
+      <strong>Section</strong>
     </div>
   </section>
   <section id="section-3">
     <div>
-      <span>Usage:</span>
-      <pre>
-      <code class="javascript">
-var smoothScroll = new scrollToSmooth('a', {
-  targetAttribute: 'href',
-  duration: 800,
-  easing: 'easeOutCubic',
-  callback: function () { console.log('we reached it!'); },
-  fixedHeader: null
-})
-smoothScroll.init();
-      </code>
-      </pre>
-    </div>
-  </section>
-  <section id="section-4">
-    <div>
-      <h3>Options:</h3>
-      <dl class="options">
-        <dt>speed</dt>
-        <dd>
-          Type: <code>Number</code><br>
-          Default: <code>400</code>
-          <p>
-            Scroll time in milliseconds
-          </p>
-        </dd>
-        <dt>easing</dt>
-        <dd>
-          Type: <code>string</code><br>
-          Default: <code>linear</code>
-          <p>
-            Easing function used for scrolling.<br>
-            Available Easings:
-            <ul>
-              <li>linear</li>
-              <li>easeInQuad</li>
-              <li>easeOutQuad</li>
-              <li>easeInOutQuad</li>
-              <li>easeInCubic</li>
-              <li>easeOutCubic</li>
-              <li>easeInOutCubic</li>
-              <li>easeInQuart</li>
-              <li>easeOutQuart</li>
-              <li>easeInOutQuart</li>
-              <li>easeInQuint</li>
-              <li>easeOutQuint</li>
-              <li>easeInOutQuint</li>
-              <li>easeInElastic</li>
-              <li>easeOutElastic</li>
-              <li>easeInOutElastic</li>
-            </ul>
-          </p>
-        </dd>
-        <dt>callback</dt>
-        <dd>
-          Type: <code>function</code><br>
-          Default: <code>null</code>
-          <p>
-            Callback to be executed when scrolling is finished
-          </p>
-        </dd>
-        <dt>fixedHeader</dt>
-        <dd>
-          Type: <code>string</code><br>
-          Default: <code>null</code>
-          <p>
-            The header element<br>
-            Example: '#fixed-header'
-          </p>
-        </dd>
-      </dl>
+      <strong>Section</strong>
     </div>
   </section>
   <section id="section-5">
     <div>
-      <strong>Here we go!</strong>
+      <strong>Section</strong>
     </div>
   </section>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-  <script src="https://rawcdn.githack.com/bfiessinger/scrollToSmooth/fe32047add29c7746505e8169df7008f8504c491/dist/scrolltosmooth.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
+  <script src="https://raw.githubusercontent.com/bfiessinger/scrollToSmooth/master/dist/scrolltosmooth.pkgd.min.js"></script>
   <script>
-    var smoothScroll = new scrollToSmooth('a', {
-    	duration: 300,
-      durationRelative: true,
-      updateURL: true,
-      onScrollStart: (data) => { console.log(data); },
-      onScrollUpdate: (data) => { console.log(data); },
-      onScrollEnd: (data) => { console.log(data) }
-    })
+
+		const scrollToSmoothSettings = {
+			// Selectors
+			container: document,
+			targetAttribute: 'href',
+			topOnEmptyHash: true,
+			offset: null,
+			// Speed and duration
+			duration: 800,
+			durationRelative: false,
+			durationMin: 300,
+			durationMax: 5000,
+			easing: easeInOutBack,
+			// Callbacks
+			onScrollStart: null,
+			onScrollUpdate: null,
+			onScrollEnd: null
+    };
+
+		const smoothScroll = new scrollToSmooth('a', scrollToSmoothSettings);
     smoothScroll.init();
 
-    // Init Highlight JS
-    hljs.initHighlightingOnLoad();
+		const gui = new dat.GUI({name: 'ScrollToSmooth Settings'});
+		gui.add(scrollToSmoothSettings, 'duration', 0, 5000);
+		gui.add(scrollToSmoothSettings, 'durationRelative');
+		gui.add(scrollToSmoothSettings, 'durationMin', 0, 5000);
+		gui.add(scrollToSmoothSettings, 'durationMax', 0, 5000);
+		gui.add(scrollToSmoothSettings, 'easing', {
+			linear,
+			easeInQuad,
+			easeOutQuad,
+			easeInOutQuad,
+			easeInCubic,
+			easeOutCubic,
+			easeInOutCubic,
+			easeInQuart,
+			easeOutQuart,
+			easeInOutQuart,
+			easeInQuint,
+			easeOutQuint,
+			easeInOutQuint,
+			easeInSine,
+			easeOutSine,
+			easeInOutSine,
+			easeInExpo,
+			easeOutExpo,
+			easeInOutExpo,
+			easeInCirc,
+			easeOutCirc,
+			easeInOutCirc,
+			easeInElastic,
+			easeOutElastic,
+			easeInOutElastic,
+			easeInBack,
+			easeOutBack,
+			easeInOutBack,
+			easeInBounce,
+			easeOutBounce,
+			easeInOutBounce
+		});
   </script>
 
 </body>

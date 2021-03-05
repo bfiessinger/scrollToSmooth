@@ -18,14 +18,19 @@ nav a {
   font-size: 0px;
   line-height: 0px;
   display: block;
-  width: 20px;
-  height: 20px;
-  background: transparent;
-  border: 4px solid #FFF;
-  border-radius: 50%;
-  margin: 10px 0;
+	background: transparent;
+	margin: 10px 0;
   -webkit-filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
           filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.5));
+}
+nav a:not(.top) {
+  width: 20px;
+  height: 20px;
+  border: 4px solid #FFF;
+  border-radius: 50%;
+}
+nav a.top {
+
 }
 
 section {
@@ -40,8 +45,15 @@ section {
   color: #FFF;
   padding: 5rem;
 }
-section#section-1 {
+
+section#section-1, [data-scrolltosmooth-expand="top"] {
   background-color: #e67e22;
+	/**
+	 * Photo by Paul IJsendoorn from Pexels
+	 */
+	background-image: url(https://raw.githubusercontent.com/bfiessinger/scrollToSmooth/master/demo/pexels-paul-ijsendoorn-33041.jpg);
+	background-size: cover;
+	background-attachment: fixed;
 }
 section#section-2 {
   background-color: #2980b9;
@@ -52,7 +64,7 @@ section#section-3 {
 section#section-4 {
   color: #000;
 }
-section#section-5 {
+section#section-5, [data-scrolltosmooth-expand="bottom"] {
   background-color: #c0392b;
 }
 section > div {
