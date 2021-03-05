@@ -8,8 +8,6 @@ import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 
-const srcScript = pkg.main;
-
 const banner = '/*!\n\
 * ScrollToSmooth\n\
 * Author: ' + pkg.author + '\n\
@@ -37,13 +35,25 @@ const defaultPlugins = [
 ];
 
 // Default
-export default [{
-  input: srcScript,
-  output: {
-    file: 'dist/scrolltosmooth.min.js',
-    format: 'umd',
-    name: 'scrollToSmooth',
-    banner: banner
-  },
-  plugins: defaultPlugins
-}];
+export default [
+	{
+		input: 'build/core.ts',
+		output: {
+			file: 'dist/scrolltosmooth.min.js',
+			format: 'umd',
+			name: 'scrollToSmooth',
+			banner: banner
+		},
+		plugins: defaultPlugins
+	},
+	{
+		input: 'build/pkgd.ts',
+		output: {
+			file: 'dist/scrolltosmooth.pkgd.min.js',
+			format: 'umd',
+			name: 'scrollToSmooth',
+			banner: banner
+		},
+		plugins: defaultPlugins
+	}
+]

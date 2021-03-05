@@ -4,10 +4,8 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true,
 		"allowJs": true,
-		//"noEmit": true,
 		"noImplicitAny": false,
 		"strict": true,
-		"isolatedModules": true,
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"typeRoots": [
@@ -16,6 +14,7 @@
 		]
 	},
 	"include": [
-		"src"
+		"src/**/*",
+		"build/**/*"
 	]
 }
