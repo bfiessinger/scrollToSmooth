@@ -23,16 +23,11 @@ let scrollAnimationFrame: number;
 
 export class ScrollToSmooth {
 
-	static id = 0;
-	__id = 0;
-
 	elements: NodeListOf<Element>;
 	container: Document | HTMLElement | Element;
 	settings: ScrollToSmoothSettings;
 
 	constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: ScrollToSmoothSettings) {
-
-		this.__id = ++ScrollToSmooth.id;
 
 		/**
 		 * Build Default Settings Object

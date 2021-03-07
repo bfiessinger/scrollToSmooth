@@ -3,8 +3,10 @@
   "sideEffects": false,
   "version": "2.2.1",
   "description": "a vanilla JS smooth scroll to anchor script",
-  "main": "src/scrolltosmooth.ts",
-	"types": "@types/scrolltosmooth.d.ts",
+	"main": "dist/scrolltosmooth.cjs.js",
+	"module": "dist/scrolltosmooth.esm.js",
+	"browser": "dist/scrolltosmooth.pkgd.min.js",
+  "types": "@types/scrolltosmooth.d.ts",
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build:types": "tsc --emitDeclarationOnly",

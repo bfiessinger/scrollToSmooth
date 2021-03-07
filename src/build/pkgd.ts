@@ -31,7 +31,7 @@ import {
 	easeInBounce,
 	easeOutBounce,
 	easeInOutBounce
-} from '../src/scrolltosmooth';
+} from '../scrolltosmooth';
 
 window['linear'] = linear;
 window['easeInQuad'] = easeInQuad;

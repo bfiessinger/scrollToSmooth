@@ -8,17 +8,30 @@ import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import { terser } from 'rollup-plugin-terser';
 
+const extensions = [
+  '.js', '.jsx', '.ts', '.tsx',
+];
+
 const banner = '/*!\n\
 * ScrollToSmooth\n\
 * Author: ' + pkg.author + '\n\
 * Version: ' + pkg.version + '\n\
 */';
 
-const defaultPlugins = [
-	resolve(),
+const iifePlugins = [
+	resolve({
+		extensions: extensions
+	}),
 	commonjs(),
 	typescript(),
-	babel(),
+	babel({
+		"extensions": extensions,
+		"babelHelpers": "bundled",
+		"include": [
+			"build/**/*",
+			"src/**/*"
+		],
+	}),
 	terser({
 		compress: {
 			typeofs: false
@@ -34,26 +47,65 @@ const defaultPlugins = [
 	})
 ];
 
+const modulePlugins = [
+	// Allows node_modules resolution
+	resolve({
+		extensions
+	}),
+
+	// Allow bundling cjs modules. Rollup doesn't understand cjs
+	commonjs(),
+
+	// Compile TypeScript/JavaScript files
+	babel({
+		extensions,
+		babelHelpers: 'bundled',
+		include: ['src/**/*'],
+	}),
+];
+
 // Default
 export default [
 	{
-		input: 'build/core.ts',
-		output: {
+		input: 'src/build/core.ts',
+		external: [],
+		output: [{
 			file: 'dist/scrolltosmooth.min.js',
-			format: 'umd',
+			format: 'iife',
 			name: 'scrollToSmooth',
 			banner: banner
-		},
-		plugins: defaultPlugins
+		}],
+		plugins: iifePlugins
 	},
 	{
-		input: 'build/pkgd.ts',
+		input: 'src/build/pkgd.ts',
+		external: [],
 		output: {
-			file: 'dist/scrolltosmooth.pkgd.min.js',
-			format: 'umd',
+			file: pkg.main,
+			format: 'iife',
 			name: 'scrollToSmooth',
 			banner: banner
 		},
-		plugins: defaultPlugins
+		plugins: iifePlugins
+	},
+	{
+		input: 'src/scrolltosmooth.ts',
+		external: [],
+		output: {
+			file: 'dist/scrolltosmooth.cjs.js',
+			format: 'cjs',
+			banner: banner
+		},
+		plugins: modulePlugins
+	},
+	{
+		input: 'src/scrolltosmooth.ts',
+		external: [],
+		output: {
+			file: pkg.module,
+			format: 'es',
+			banner: banner
+		},
+		plugins: modulePlugins
 	}
 ]
