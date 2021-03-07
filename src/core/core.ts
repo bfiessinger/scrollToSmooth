@@ -178,44 +178,70 @@ export class ScrollToSmooth {
 	 * a real function
 	 * 
 	 * @param {string} fn 
-	 * @param {Array} easingArgs 
+	 * @param {number} t 
 	 * 
 	 * @returns {Function}
 	 * 
 	 * @access private
 	 */
-	private evalTimeFn(fn: string, easingArgs: Array<unknown>): CallableFunction {
-		return Function('"use strict"; return (' + fn + '(' + Array.prototype.join.call(easingArgs, ',') + '))')();
+	private evalTimeFn(fn: string, t: number): CallableFunction {
+		return Function('"use strict"; return (' + fn + '(' + t + '))')();
 	}
 
 	/**
 	 * Calculate scroll animation duration
 	 * 
 	 * @param distance 
-	 * @param settings 
 	 * 
 	 * @access private
 	 */
-	private getDuration(distance: number, settings: ScrollToSmoothSettings) {
-		let duration = Math.max(1, settings.duration as number);
-		if (settings.durationRelative) {
+	private getDuration(distance: number) {
+		let duration = Math.max(1, this.settings.duration as number);
+		if (this.settings.durationRelative) {
 
-			const durationRelativePx = (typeof settings.durationRelative == 'number') ? settings.durationRelative : 1000;
-			duration = Math.max(settings.duration as number, distance * (duration / durationRelativePx));
+			const durationRelativePx = (typeof this.settings.durationRelative == 'number') ? this.settings.durationRelative : 1000;
+			duration = Math.max(this.settings.duration as number, distance * (duration / durationRelativePx));
 
 		}
 
 		// Set a minimum duration
-		if (settings.durationMin && duration < ( settings.durationMin as number ) ) {
-			duration = settings.durationMin as number;
+		if (this.settings.durationMin && duration < ( this.settings.durationMin as number ) ) {
+			duration = this.settings.durationMin as number;
 		}
 
 		// Set a maximum duration
-		if (settings.durationMax && duration > ( settings.durationMax as number ) ) {
-			duration = settings.durationMax as number;
+		if (this.settings.durationMax && duration > ( this.settings.durationMax as number ) ) {
+			duration = this.settings.durationMax as number;
 		}
 
 		return duration;
+	}
+
+	/**
+	 * Determine if the current scroll position exceeds the document to
+	 * the top or bottom.
+	 * 
+	 * @param {number} pos Current Scroll Position
+	 * 
+	 * @access private
+	 */
+	private scrollExceedsDocument(pos: number, docHeight: number, winHeight: number): false | Record<string, unknown> {
+		const min = 0;
+		const max = docHeight - winHeight;
+
+		if ( pos < min ) {
+			return {
+				to: 'top',
+				px: pos * -1
+			};
+		} else if ( pos > max ) {
+			return {
+				to: 'bottom',
+				px: (max - pos) * -1
+			};
+		} 
+
+		return false;
 	}
 
 	private expandDocument(easing: number, docHeight: number, winHeight: number) {
@@ -255,11 +281,11 @@ export class ScrollToSmooth {
 		const distToScroll = distFromTop - startPos;
 		const scrollPx = (distToScroll < 0) ? distToScroll * -1 : distToScroll;
 		
-		const duration = this.getDuration(scrollPx, this.settings);		
+		const duration = this.getDuration(scrollPx);		
 		const elapsed = Math.min(duration, getTime() - startTime);
 
 		const t = elapsed / duration;
-		const easingPattern = (typeof this.settings.easing === 'string') ? this.evalTimeFn(this.settings.easing, [t]) : this.settings.easing(t);
+		const easingPattern = (typeof this.settings.easing === 'string') ? this.evalTimeFn(this.settings.easing, t) : this.settings.easing(t);
 		
 		const timeFunction = startPos + (distToScroll * easingPattern);
 
@@ -303,33 +329,6 @@ export class ScrollToSmooth {
 			this.animateScroll(distFromTop, startPos, startTime, docHeight, winHeight);
 		});
 
-	}
-
-	/**
-	 * Determine if the current scroll position exceeds the document to
-	 * the top or bottom.
-	 * 
-	 * @param {number} pos Current Scroll Position
-	 * 
-	 * @access private
-	 */
-	private scrollExceedsDocument(pos: number, docHeight: number, winHeight: number): false | Record<string, unknown> {
-		const min = 0;
-		const max = docHeight - winHeight;
-
-		if ( pos < min ) {
-			return {
-				to: 'top',
-				px: pos * -1
-			};
-		} else if ( pos > max ) {
-			return {
-				to: 'bottom',
-				px: (max - pos) * -1
-			};
-		} 
-
-		return false;
 	}
 
 	/**
