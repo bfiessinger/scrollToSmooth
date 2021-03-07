@@ -169,7 +169,7 @@ export class ScrollToSmooth {
 		}
 
 		// Start Scrolling
-		this.scrollTo(currentTarget);
+		this.scrollTo(currentTarget as HTMLElement);
 
 	}
 
@@ -408,7 +408,7 @@ export class ScrollToSmooth {
 	 * 
 	 * @access public
 	 */
-	scrollTo(target: Element|number): void {
+	scrollTo(target: HTMLElement|string|number): void {
 
 		const windowStartPos = getPos();
 		const docHeight = getDocHeight();
@@ -416,17 +416,7 @@ export class ScrollToSmooth {
 
 		let distFromTop = 0;
 
-		if (validateSelector(target as string | HTMLElement, this.container)) {
-
-			if (typeof target == 'string') {
-				target = _$(target, this.container as HTMLElement) as HTMLElement;
-			}
-
-			const targetOffset = (target as HTMLElement).getBoundingClientRect().top + windowStartPos;
-
-			distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
-
-		} else if (!isNaN(target as number)) {
+		if (!isNaN(target as number)) {
 
 			if (typeof target === 'string') {
 				target = parseFloat(target);
@@ -436,7 +426,22 @@ export class ScrollToSmooth {
 
 			distFromTop = target as number;
 
-		}		
+		}	else if ((typeof target === 'object' || typeof target === 'string') && validateSelector(target as string | HTMLElement, this.container)) {
+
+			if (typeof target == 'string') {
+				target = _$(target, this.container as HTMLElement) as HTMLElement;
+			}
+
+			target.focus();
+			if (d.activeElement !== target) {
+				target.setAttribute('tabindex', '-1');
+			}
+
+			const targetOffset = (target as HTMLElement).getBoundingClientRect().top + windowStartPos;
+
+			distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
+
+		} 	
 
 		if (this.settings.offset !== null) {
 
