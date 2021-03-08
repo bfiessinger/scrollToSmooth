@@ -1,5 +1,35 @@
 # Changelog
 
+### 3.0.0
+
+#### Features
+- Allow custom easing functions
+- Allow a custom amount of pixels to use as an offset (#3)
+- Animated scrolling links at the very top or bottom can now exceed the actual document so that easing functions like for example `easeInOutBounce` don't stop animating while exceeding the document.
+- Introduced `scrollBy` method
+- `scrollTo` now accepts numeric values
+
+#### Enhancements
+- Make imports of easings optional to enhance filesize control
+- Import linear only per default (see Important Notes)
+- Enhanced easing patterns
+
+#### Bug Fixes
+- Fixed a bug where the final position was calculated wrong in some situations
+- Bundled browser file was not transpiled to es5 
+
+#### Code Quality
+- Created a seperate file for each easing function
+- Create Typescript declaration files
+- Various minor bug fixes and structural improvements
+- Add esm bundle
+- Add cjs bundle
+
+#### Important Notes
+Version 3.0.0 is a major update and comes with some breaking changes:
+- Easings are no longer imported by default, you have to import individual easings like `import { easeInQuad, easeOutQuad } from 'scrolltosmooth';`
+- The `fixedHeader` option has been renamed to `offset` and accepts a fixed amount of pixels now
+
 ### 2.2.1
 - Fix broken easings (easeInBack, easeOutBack, easeInOutBack)
 
