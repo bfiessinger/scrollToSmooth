@@ -97,8 +97,8 @@ You may use other attributes than `href` like for example `data-scrollto` so tha
 default behaviour for anchor links does not change.
 
 ```html
-<span data-scrollto="[data-target='1']">Scroll to Section 1<span>
-<section data-target="1">
+<span data-scrollto="#target">Scroll to Section 1<span>
+<section id="target">
   Target Section
 </section>
 ```
