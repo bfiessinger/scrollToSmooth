@@ -19,13 +19,15 @@ import {
 	cancelAnimFrame,
 	_$, 
 	_$$,
+	forEach,
 	isNodeOrElement,
 	validateSelector,
 	getPos,
 	getTime, 
 	getBaseURI, 
 	getDocHeight,
-	getWinHeight 
+	getWinHeight,
+	toPxString
 } from './helper/scrollToSmoothHelper';
 
 import { 
@@ -36,6 +38,10 @@ import {
 } from './global_vars';
 
 let scrollAnimationFrame: number;
+
+const docExpanderAttr = 'data-scrolltosmooth-expand';
+const docExpanderAttrTopValue = 'top';
+const docExpanderAttrBottomValue = 'bottom';
 
 export class ScrollToSmooth {
 
@@ -138,7 +144,7 @@ export class ScrollToSmooth {
 
 		const links: Array<Element> = [];
 
-		Array.prototype.forEach.call(this.elements, (el) => {
+		forEach(this.elements, (el) => {
 
 			// Check if the selector is found on the page
 			if (this.getTargetElement(el)) {
@@ -236,18 +242,18 @@ export class ScrollToSmooth {
 	 * 
 	 * @access private
 	 */
-	private scrollExceedsDocument(pos: number, docHeight: number, winHeight: number): false | Record<string, unknown> {
+	private scrollExceedsDocument(pos: number, docHeight: number, winHeight: number): false | exceeding {
 		const min = 0;
 		const max = docHeight - winHeight;
 
 		if ( pos < min ) {
 			return {
-				to: 'top',
+				to: docExpanderAttrTopValue,
 				px: pos * -1
 			};
 		} else if ( pos > max ) {
 			return {
-				to: 'bottom',
+				to: docExpanderAttrBottomValue,
 				px: (max - pos) * -1
 			};
 		} 
@@ -258,22 +264,22 @@ export class ScrollToSmooth {
 	private expandDocument(easing: number, docHeight: number, winHeight: number) {
 		const exceeding = this.scrollExceedsDocument(easing, docHeight, winHeight);
 		const expanders = this.getDocumentExpanders();
-		const expT = expanders.filter(el=>el.getAttribute('data-scrolltosmooth-expand') === 'top')[0];
-		const expB = expanders.filter(el=>el.getAttribute('data-scrolltosmooth-expand') === 'bottom')[0];
+		const expT = expanders.filter(el=>el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue)[0];
+		const expB = expanders.filter(el=>el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue)[0];
 
-		if (exceeding && expT && exceeding.to === 'top') {
-			expT.style.height = exceeding.px + 'px';
-		} else if (exceeding && expB && exceeding.to === 'bottom') {
-			expB.style.height = exceeding.px + 'px';
+		if (exceeding && expT && exceeding.to === docExpanderAttrTopValue) {
+			expT.style.height = toPxString(exceeding.px);
+		} else if (exceeding && expB && exceeding.to === docExpanderAttrBottomValue) {
+			expB.style.height = toPxString(exceeding.px);
 		} else {
-			expanders.forEach((exp) => {
+			forEach(expanders, (exp) => {
 				exp.style.removeProperty('height');
 			});
 		}
 	}
 
 	private getDocumentExpanders(): Array<HTMLDivElement> {
-		return Array.prototype.slice.call(this.container.children).filter(el=>el.hasAttribute('data-scrolltosmooth-expand'));
+		return Array.prototype.slice.call(this.container.children).filter(el=>el.hasAttribute(docExpanderAttr));
 	}
 
 	/**
@@ -354,15 +360,15 @@ export class ScrollToSmooth {
 
 		// Setup Container Expansions
 		const expT = d.createElement('div');
-		expT.setAttribute('data-scrolltosmooth-expand', 'top');
+		expT.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
 		this.container.insertBefore(expT, this.container.firstChild);
 
 		const expB = d.createElement('div');
-		expB.setAttribute('data-scrolltosmooth-expand', 'bottom');
+		expB.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
 		this.container.appendChild(expB);
 
 		// Bind Events
-		Array.prototype.forEach.call(this.linkCollector(), (link) => {
+		forEach(this.linkCollector(), (link) => {
 			link.addEventListener('click', this.clickHandler.bind(this, link), false);
 		});
 
@@ -372,7 +378,7 @@ export class ScrollToSmooth {
 			'wheel', 
 			'touchmove'
 		];
-		cancelAnimationOnEvents.forEach((ev) => {
+		forEach(cancelAnimationOnEvents, (ev) => {
 			w.addEventListener(ev, () => {
 				this.cancelScroll();
 			});
@@ -397,12 +403,12 @@ export class ScrollToSmooth {
 		this.cancelScroll();
 
 		// Delete Container Expansions
-		this.getDocumentExpanders().forEach((expander) => {
+		forEach(this.getDocumentExpanders(), (expander) => {
 			(expander.parentNode as Node).removeChild(expander);
 		});
 
 		// Remove Events
-		Array.prototype.forEach.call(this.linkCollector(), (link) => {
+		forEach(this.linkCollector(), (link) => {
 			link.removeEventListener('click', this.clickHandler.bind(this, link), false);
 		});
 
@@ -532,7 +538,7 @@ export class ScrollToSmooth {
 	 */
 	update(obj: ScrollToSmoothSettings): void {
 
-		if (!(obj instanceof Object)) {
+		if (typeof obj !== 'object') {
 			return;
 		}
 

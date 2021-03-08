@@ -25,6 +25,15 @@ export declare const _$: (s: string, container?: HTMLElement | Document) => Elem
  */
 export declare const _$$: (s: string, container?: HTMLElement | Document | Element) => NodeListOf<Element>;
 /**
+ * Shorthand for Array.prototype.forEach.call
+ *
+ * @param arr
+ * @param callback
+ *
+ * @returns {void}
+ */
+export declare const forEach: (arr: ArrayLike<unknown>, callback: (value: any, index: number, array: any[]) => void) => void;
+/**
  * Check if a selector exists on the current page
  *
  * @param {selector} selector
@@ -35,7 +44,12 @@ export declare const validateSelector: (selector: string | Node | HTMLElement, c
 /**
  * Test if an object is typeof Node or HTMLElement
  *
+ * @uses isNode
+ * @uses isElement
+ *
  * @param obj
+ *
+ * @return {boolean}
  */
 export declare const isNodeOrElement: (obj: Node | HTMLElement) => boolean;
 /**
@@ -66,3 +80,9 @@ export declare const getDocHeight: () => number;
  * @returns {number}
  */
 export declare const getWinHeight: () => number;
+/**
+ * Simple helper to create a numeric string with px suffix
+ *
+ * @returns {string}
+ */
+export declare const toPxString: (int: number) => string;

@@ -36,6 +36,19 @@ export const _$ = (s: string, container: HTMLElement | Document = d): Element | 
 export const _$$ = (s: string, container: HTMLElement | Document | Element = d): NodeListOf<Element> => { return container.querySelectorAll(s); }
 
 /**
+ * Shorthand for Array.prototype.forEach.call
+ * 
+ * @param arr 
+ * @param callback 
+ * 
+ * @returns {void}
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const forEach = (arr: ArrayLike<unknown>, callback: (value: any, index: number, array: any[]) => void): void => {
+	Array.prototype.forEach.call(arr, callback);
+};
+
+/**
  * Check if a selector exists on the current page
  * 
  * @param {selector} selector 
@@ -97,7 +110,12 @@ const isElement = (obj: HTMLElement): boolean => {
 /**
  * Test if an object is typeof Node or HTMLElement
  * 
+ * @uses isNode
+ * @uses isElement
+ * 
  * @param obj 
+ * 
+ * @return {boolean}
  */
 export const isNodeOrElement = (obj: Node | HTMLElement): boolean => {
 	return isNode(obj as Node) || isElement(obj as HTMLElement);
@@ -159,3 +177,12 @@ export const getDocHeight = (): number => {
  * @returns {number}
  */
 export const getWinHeight = (): number => w.innerHeight || dEl.clientHeight || b.clientHeight;
+
+/**
+ * Simple helper to create a numeric string with px suffix
+ * 
+ * @returns {string}
+ */
+export const toPxString = (int: number): string => {
+	return int + 'px';
+}

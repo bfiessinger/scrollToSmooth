@@ -577,6 +577,19 @@ var _$$ = function _$$(s) {
   return container.querySelectorAll(s);
 };
 /**
+ * Shorthand for Array.prototype.forEach.call
+ * 
+ * @param arr 
+ * @param callback 
+ * 
+ * @returns {void}
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+var forEach = function forEach(arr, callback) {
+  Array.prototype.forEach.call(arr, callback);
+};
+/**
  * Check if a selector exists on the current page
  * 
  * @param {selector} selector 
@@ -632,7 +645,12 @@ var isElement = function isElement(obj) {
 /**
  * Test if an object is typeof Node or HTMLElement
  * 
+ * @uses isNode
+ * @uses isElement
+ * 
  * @param obj 
+ * 
+ * @return {boolean}
  */
 
 
@@ -686,8 +704,20 @@ var getDocHeight = function getDocHeight() {
 var getWinHeight = function getWinHeight() {
   return w.innerHeight || dEl.clientHeight || b.clientHeight;
 };
+/**
+ * Simple helper to create a numeric string with px suffix
+ * 
+ * @returns {string}
+ */
+
+var toPxString = function toPxString(int) {
+  return int + 'px';
+};
 
 var scrollAnimationFrame;
+var docExpanderAttr = 'data-scrolltosmooth-expand';
+var docExpanderAttrTopValue = 'top';
+var docExpanderAttrBottomValue = 'bottom';
 var ScrollToSmooth = /*#__PURE__*/function () {
   function ScrollToSmooth(nodes, settings) {
     _classCallCheck(this, ScrollToSmooth);
@@ -795,7 +825,7 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       var _this = this;
 
       var links = [];
-      Array.prototype.forEach.call(this.elements, function (el) {
+      forEach(this.elements, function (el) {
         // Check if the selector is found on the page
         if (_this.getTargetElement(el)) {
           // Handle href attributes
@@ -860,7 +890,7 @@ var ScrollToSmooth = /*#__PURE__*/function () {
   }, {
     key: "getDuration",
     value: function getDuration(distance) {
-      var duration = Math.max(1, this.settings.duration);
+      var duration = Math.max(1, this.settings.duration); // Calculate duration relative to the distance scrolled
 
       if (this.settings.durationRelative) {
         var durationRelativePx = typeof this.settings.durationRelative == 'number' ? this.settings.durationRelative : 1000;
@@ -896,12 +926,12 @@ var ScrollToSmooth = /*#__PURE__*/function () {
 
       if (pos < min) {
         return {
-          to: 'top',
+          to: docExpanderAttrTopValue,
           px: pos * -1
         };
       } else if (pos > max) {
         return {
-          to: 'bottom',
+          to: docExpanderAttrBottomValue,
           px: (max - pos) * -1
         };
       }
@@ -914,18 +944,18 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       var exceeding = this.scrollExceedsDocument(easing, docHeight, winHeight);
       var expanders = this.getDocumentExpanders();
       var expT = expanders.filter(function (el) {
-        return el.getAttribute('data-scrolltosmooth-expand') === 'top';
+        return el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue;
       })[0];
       var expB = expanders.filter(function (el) {
-        return el.getAttribute('data-scrolltosmooth-expand') === 'bottom';
+        return el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue;
       })[0];
 
-      if (exceeding && expT && exceeding.to === 'top') {
-        expT.style.height = exceeding.px + 'px';
-      } else if (exceeding && expB && exceeding.to === 'bottom') {
-        expB.style.height = exceeding.px + 'px';
+      if (exceeding && expT && exceeding.to === docExpanderAttrTopValue) {
+        expT.style.height = toPxString(exceeding.px);
+      } else if (exceeding && expB && exceeding.to === docExpanderAttrBottomValue) {
+        expB.style.height = toPxString(exceeding.px);
       } else {
-        expanders.forEach(function (exp) {
+        forEach(expanders, function (exp) {
           exp.style.removeProperty('height');
         });
       }
@@ -934,7 +964,7 @@ var ScrollToSmooth = /*#__PURE__*/function () {
     key: "getDocumentExpanders",
     value: function getDocumentExpanders() {
       return Array.prototype.slice.call(this.container.children).filter(function (el) {
-        return el.hasAttribute('data-scrolltosmooth-expand');
+        return el.hasAttribute(docExpanderAttr);
       });
     }
     /**
@@ -1014,18 +1044,18 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       this.destroy(); // Setup Container Expansions
 
       var expT = d.createElement('div');
-      expT.setAttribute('data-scrolltosmooth-expand', 'top');
+      expT.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
       this.container.insertBefore(expT, this.container.firstChild);
       var expB = d.createElement('div');
-      expB.setAttribute('data-scrolltosmooth-expand', 'bottom');
+      expB.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
       this.container.appendChild(expB); // Bind Events
 
-      Array.prototype.forEach.call(this.linkCollector(), function (link) {
+      forEach(this.linkCollector(), function (link) {
         link.addEventListener('click', _this3.clickHandler.bind(_this3, link), false);
       }); // Cancel Animation on User Scroll Interaction
 
       var cancelAnimationOnEvents = ['mousewheel', 'wheel', 'touchmove'];
-      cancelAnimationOnEvents.forEach(function (ev) {
+      forEach(cancelAnimationOnEvents, function (ev) {
         w.addEventListener(ev, function () {
           _this3.cancelScroll();
         });
@@ -1051,11 +1081,11 @@ var ScrollToSmooth = /*#__PURE__*/function () {
 
       this.cancelScroll(); // Delete Container Expansions
 
-      this.getDocumentExpanders().forEach(function (expander) {
+      forEach(this.getDocumentExpanders(), function (expander) {
         expander.parentNode.removeChild(expander);
       }); // Remove Events
 
-      Array.prototype.forEach.call(this.linkCollector(), function (link) {
+      forEach(this.linkCollector(), function (link) {
         link.removeEventListener('click', _this4.clickHandler.bind(_this4, link), false);
       });
     }
@@ -1088,12 +1118,12 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       } else if ((_typeof(target) === 'object' || typeof target === 'string') && validateSelector(target, this.container)) {
         if (typeof target == 'string') {
           target = _$(target, this.container);
-        }
+        } // a11y bring active element into focus
+        //target.focus();
 
-        target.focus();
 
         if (d.activeElement !== target) {
-          target.setAttribute('tabindex', '-1');
+          target.setAttribute('tabindex', '-1'); //target.focus();
         }
 
         var targetOffset = target.getBoundingClientRect().top + windowStartPos;
@@ -1177,7 +1207,7 @@ var ScrollToSmooth = /*#__PURE__*/function () {
   }, {
     key: "update",
     value: function update(obj) {
-      if (!(obj instanceof Object)) {
+      if (_typeof(obj) !== 'object') {
         return;
       }
 

@@ -81,7 +81,7 @@ export default [
 		input: 'src/build/pkgd.ts',
 		external: [],
 		output: {
-			file: pkg.main,
+			file: pkg.browser,
 			format: 'iife',
 			name: 'scrollToSmooth',
 			banner: banner
@@ -92,9 +92,10 @@ export default [
 		input: 'src/scrolltosmooth.ts',
 		external: [],
 		output: {
-			file: 'dist/scrolltosmooth.cjs.js',
+			file: pkg.main,
 			format: 'cjs',
-			banner: banner
+			banner: banner,
+			exports: 'named'
 		},
 		plugins: modulePlugins
 	},

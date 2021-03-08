@@ -1,3 +1,6 @@
+/**
+ * Interfaces
+ */
 import { ScrollToSmoothSettings } from './interfaces/ScrollToSmoothSettings';
 export declare class ScrollToSmooth {
     elements: NodeListOf<Element>;
