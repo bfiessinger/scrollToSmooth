@@ -1,3 +1,7 @@
+import {
+	w
+} from '../core/global_vars';
+
 import { 
 	ScrollToSmooth,
 	linear,
@@ -33,36 +37,36 @@ import {
 	easeInOutBounce
 } from '../scrolltosmooth';
 
-window['linear'] = linear;
-window['easeInQuad'] = easeInQuad;
-window['easeOutQuad'] = easeOutQuad;
-window['easeInOutQuad'] = easeInOutQuad;
-window['easeInCubic'] = easeInCubic;
-window['easeOutCubic'] = easeOutCubic;
-window['easeInOutCubic'] = easeInOutCubic;
-window['easeInQuart'] = easeInQuart;
-window['easeOutQuart'] = easeOutQuart;
-window['easeInOutQuart'] = easeInOutQuart;
-window['easeInQuint'] = easeInQuint;
-window['easeOutQuint'] = easeOutQuint;
-window['easeInOutQuint'] = easeInOutQuint;
-window['easeInSine'] = easeInSine;
-window['easeOutSine'] = easeOutSine;
-window['easeInOutSine'] = easeInOutSine;
-window['easeInExpo'] = easeInExpo;
-window['easeOutExpo'] = easeOutExpo;
-window['easeInOutExpo'] = easeInOutExpo;
-window['easeInCirc'] = easeInCirc;
-window['easeOutCirc'] = easeOutCirc;
-window['easeInOutCirc'] = easeInOutCirc;
-window['easeInElastic'] = easeInElastic;
-window['easeOutElastic'] = easeOutElastic;
-window['easeInOutElastic'] = easeInOutElastic;
-window['easeInBack'] = easeInBack;
-window['easeOutBack'] = easeOutBack;
-window['easeInOutBack'] = easeInOutBack;
-window['easeInBounce'] = easeInBounce;
-window['easeOutBounce'] = easeOutBounce;
-window['easeInOutBounce'] = easeInOutBounce;
+w['linear'] = linear;
+w['easeInQuad'] = easeInQuad;
+w['easeOutQuad'] = easeOutQuad;
+w['easeInOutQuad'] = easeInOutQuad;
+w['easeInCubic'] = easeInCubic;
+w['easeOutCubic'] = easeOutCubic;
+w['easeInOutCubic'] = easeInOutCubic;
+w['easeInQuart'] = easeInQuart;
+w['easeOutQuart'] = easeOutQuart;
+w['easeInOutQuart'] = easeInOutQuart;
+w['easeInQuint'] = easeInQuint;
+w['easeOutQuint'] = easeOutQuint;
+w['easeInOutQuint'] = easeInOutQuint;
+w['easeInSine'] = easeInSine;
+w['easeOutSine'] = easeOutSine;
+w['easeInOutSine'] = easeInOutSine;
+w['easeInExpo'] = easeInExpo;
+w['easeOutExpo'] = easeOutExpo;
+w['easeInOutExpo'] = easeInOutExpo;
+w['easeInCirc'] = easeInCirc;
+w['easeOutCirc'] = easeOutCirc;
+w['easeInOutCirc'] = easeInOutCirc;
+w['easeInElastic'] = easeInElastic;
+w['easeOutElastic'] = easeOutElastic;
+w['easeInOutElastic'] = easeInOutElastic;
+w['easeInBack'] = easeInBack;
+w['easeOutBack'] = easeOutBack;
+w['easeInOutBack'] = easeInOutBack;
+w['easeInBounce'] = easeInBounce;
+w['easeOutBounce'] = easeOutBounce;
+w['easeInOutBounce'] = easeInOutBounce;
 
 export default ScrollToSmooth;
