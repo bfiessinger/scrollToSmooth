@@ -722,6 +722,244 @@ var scrollAnimationFrame;
 var docExpanderAttr = 'data-scrolltosmooth-expand';
 var docExpanderAttrTopValue = 'top';
 var docExpanderAttrBottomValue = 'bottom';
+/**
+ * Determine the target Element from the targetAttribute of a
+ * scrollToSmooth selector
+ * 
+ * @param {Element} el element with the target Attribute
+ * 
+ * @returns {Element | null} valid targetSelector or null
+ * 
+ * @access private
+ */
+
+function getTargetElement(el) {
+  var targetSelector = '';
+
+  if (this.settings.targetAttribute === 'href' && el.href) {
+    targetSelector = el.href.replace(getBaseURI(el), '');
+  } else if (el.getAttribute(this.settings.targetAttribute)) {
+    targetSelector = el.getAttribute(this.settings.targetAttribute);
+  } // Top on Empty Hash
+
+
+  if (this.settings.topOnEmptyHash && targetSelector == '#') {
+    return this.container;
+  }
+
+  return validateSelector(targetSelector, this.container) ? _$(targetSelector, this.container) : null;
+}
+/**
+ * Filter all scrollto elements that have target attributes related to the current page
+ * 
+ * @returns {array} Array with all links found
+ * 
+ * @access private
+ */
+
+
+function linkCollector() {
+  var _this = this;
+
+  var links = [];
+  forEach(this.elements, function (el) {
+    // Check if the selector is found on the page
+    if (getTargetElement.call(_this, el)) {
+      // Handle href attributes
+      if (_this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || _this.settings.topOnEmptyHash) || _this.settings.targetAttribute != 'href') {
+        links.push(el);
+      }
+    }
+  });
+  return links;
+}
+/**
+ * Event handler for click events on scrollToSmooth selectors
+ * 
+ * @param {Element} el 
+ * @param {Event} e The current Event 
+ * 
+ * @returns {void}
+ * 
+ * @access private
+ */
+
+
+function clickHandler(el, e) {
+  e.stopPropagation(); // Prevent Default Behaviour of how the browser would treat the click event
+
+  e.preventDefault();
+  var currentTarget = getTargetElement.call(this, el);
+
+  if (!currentTarget) {
+    return;
+  } // Start Scrolling
+
+
+  this.scrollTo(currentTarget);
+}
+/**
+ * Take a function name of an easing function and treat it like
+ * a real function
+ * 
+ * @param {string} fn 
+ * @param {number} t 
+ * 
+ * @returns {Function}
+ * 
+ * @access private
+ */
+
+
+function evalTimeFn(fn, t) {
+  return Function('"use strict"; return (' + fn + '(' + t + '))')();
+}
+/**
+ * Calculate scroll animation duration
+ * 
+ * @param distance 
+ * 
+ * @access private
+ */
+
+
+function getDuration(distance) {
+  var duration = Math.max(1, this.settings.duration); // Calculate duration relative to the distance scrolled
+
+  if (this.settings.durationRelative) {
+    var durationRelativePx = typeof this.settings.durationRelative == 'number' ? this.settings.durationRelative : 1000;
+    duration = Math.max(this.settings.duration, distance * (duration / durationRelativePx));
+  } // Set a minimum duration
+
+
+  if (this.settings.durationMin && duration < this.settings.durationMin) {
+    duration = this.settings.durationMin;
+  } // Set a maximum duration
+
+
+  if (this.settings.durationMax && duration > this.settings.durationMax) {
+    duration = this.settings.durationMax;
+  }
+
+  return duration;
+}
+/**
+ * Determine if the current scroll position exceeds the document to
+ * the top or bottom.
+ * 
+ * @param {number} pos Current Scroll Position
+ * 
+ * @access private
+ */
+
+
+function scrollExceedsDocument(pos, docHeight, winHeight) {
+  var min = 0;
+  var max = docHeight - winHeight;
+
+  if (pos < min) {
+    return {
+      to: docExpanderAttrTopValue,
+      px: pos * -1
+    };
+  } else if (pos > max) {
+    return {
+      to: docExpanderAttrBottomValue,
+      px: (max - pos) * -1
+    };
+  }
+
+  return false;
+}
+
+function expandDocument(easing, docHeight, winHeight) {
+  var exceeding = scrollExceedsDocument(easing, docHeight, winHeight);
+  var expanders = getDocumentExpanders.call(this);
+  var expT = expanders.filter(function (el) {
+    return el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue;
+  })[0];
+  var expB = expanders.filter(function (el) {
+    return el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue;
+  })[0];
+
+  if (exceeding && expT && exceeding.to === docExpanderAttrTopValue) {
+    expT.style.height = toPxString(exceeding.px);
+  } else if (exceeding && expB && exceeding.to === docExpanderAttrBottomValue) {
+    expB.style.height = toPxString(exceeding.px);
+  } else {
+    forEach(expanders, function (exp) {
+      exp.style.removeProperty('height');
+    });
+  }
+}
+
+function getDocumentExpanders() {
+  return Array.prototype.slice.call(this.container.children).filter(function (el) {
+    return el.hasAttribute(docExpanderAttr);
+  });
+}
+/**
+ * Animate scrolling 
+ * 
+ * @param {number} distFromTop Distance to be scrolled from top
+ * @param {number} startPos Distance from top when the animation has started
+ * @param {number} startTime The time in ms when the animation has started
+ * 
+ * @returns {void}
+ * 
+ * @access private
+ */
+
+
+function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
+  var _this2 = this;
+
+  var distToScroll = distFromTop - startPos;
+  var scrollPx = distToScroll < 0 ? distToScroll * -1 : distToScroll;
+  var duration = getDuration.call(this, scrollPx);
+  var elapsed = Math.min(duration, getTime() - startTime);
+  var t = elapsed / duration;
+  var easingPattern = typeof this.settings.easing === 'string' ? evalTimeFn(this.settings.easing, t) : this.settings.easing(t);
+  var timeFunction = startPos + distToScroll * easingPattern; // Callback onScrollUpdate
+
+  if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
+    this.settings.onScrollUpdate({
+      startPosition: startPos,
+      currentPosition: timeFunction,
+      endPosition: distFromTop
+    });
+  }
+
+  w.scroll(0, timeFunction);
+
+  if (!docHeight) {
+    docHeight = getDocHeight();
+  }
+
+  if (!winHeight) {
+    winHeight = getWinHeight();
+  }
+
+  expandDocument.call(this, timeFunction, docHeight, winHeight);
+
+  if (elapsed >= duration) {
+    // Callback onScrollEnd
+    if (this.settings.onScrollEnd && typeof this.settings.onScrollEnd == 'function') {
+      this.settings.onScrollEnd({
+        startPosition: startPos,
+        endPosition: distFromTop
+      });
+    } // Stop when the element is reached
+
+
+    return;
+  }
+
+  scrollAnimationFrame = reqAnimFrame(function () {
+    animateScroll.call(_this2, distFromTop, startPos, startTime, docHeight, winHeight);
+  });
+}
+
 var ScrollToSmooth = /*#__PURE__*/function () {
   function ScrollToSmooth(nodes, settings) {
     _classCallCheck(this, ScrollToSmooth);
@@ -786,260 +1024,13 @@ var ScrollToSmooth = /*#__PURE__*/function () {
     this.elements = typeof nodes == 'string' ? _$$(nodes, this.container) : nodes;
   }
   /**
-   * Determine the target Element from the targetAttribute of a
-   * scrollToSmooth selector
+   * Initialize SmoothScroll
    * 
-   * @param {Element} el element with the target Attribute
-   * 
-   * @returns {Element | null} valid targetSelector or null
-   * 
-   * @access private
+   * @returns {void}
    */
 
 
   _createClass(ScrollToSmooth, [{
-    key: "getTargetElement",
-    value: function getTargetElement(el) {
-      var targetSelector = '';
-
-      if (this.settings.targetAttribute === 'href' && el.href) {
-        targetSelector = el.href.replace(getBaseURI(el), '');
-      } else if (el.getAttribute(this.settings.targetAttribute)) {
-        targetSelector = el.getAttribute(this.settings.targetAttribute);
-      } // Top on Empty Hash
-
-
-      if (this.settings.topOnEmptyHash && targetSelector == '#') {
-        return this.container;
-      }
-
-      return validateSelector(targetSelector, this.container) ? _$(targetSelector, this.container) : null;
-    }
-    /**
-     * Filter all scrollto elements that have target attributes related to the current page
-     * 
-     * @returns {array} Array with all links found
-     * 
-     * @access private
-     */
-
-  }, {
-    key: "linkCollector",
-    value: function linkCollector() {
-      var _this = this;
-
-      var links = [];
-      forEach(this.elements, function (el) {
-        // Check if the selector is found on the page
-        if (_this.getTargetElement(el)) {
-          // Handle href attributes
-          if (_this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || _this.settings.topOnEmptyHash) || _this.settings.targetAttribute != 'href') {
-            links.push(el);
-          }
-        }
-      });
-      return links;
-    }
-    /**
-     * Event handler for click events on scrollToSmooth selectors
-     * 
-     * @param {Element} el 
-     * @param {Event} e The current Event 
-     * 
-     * @returns {void}
-     * 
-     * @access private
-     */
-
-  }, {
-    key: "clickHandler",
-    value: function clickHandler(el, e) {
-      e.stopPropagation(); // Prevent Default Behaviour of how the browser would treat the click event
-
-      e.preventDefault();
-      var currentTarget = this.getTargetElement(el);
-
-      if (!currentTarget) {
-        return;
-      } // Start Scrolling
-
-
-      this.scrollTo(currentTarget);
-    }
-    /**
-     * Take a function name of an easing function and treat it like
-     * a real function
-     * 
-     * @param {string} fn 
-     * @param {number} t 
-     * 
-     * @returns {Function}
-     * 
-     * @access private
-     */
-
-  }, {
-    key: "evalTimeFn",
-    value: function evalTimeFn(fn, t) {
-      return Function('"use strict"; return (' + fn + '(' + t + '))')();
-    }
-    /**
-     * Calculate scroll animation duration
-     * 
-     * @param distance 
-     * 
-     * @access private
-     */
-
-  }, {
-    key: "getDuration",
-    value: function getDuration(distance) {
-      var duration = Math.max(1, this.settings.duration); // Calculate duration relative to the distance scrolled
-
-      if (this.settings.durationRelative) {
-        var durationRelativePx = typeof this.settings.durationRelative == 'number' ? this.settings.durationRelative : 1000;
-        duration = Math.max(this.settings.duration, distance * (duration / durationRelativePx));
-      } // Set a minimum duration
-
-
-      if (this.settings.durationMin && duration < this.settings.durationMin) {
-        duration = this.settings.durationMin;
-      } // Set a maximum duration
-
-
-      if (this.settings.durationMax && duration > this.settings.durationMax) {
-        duration = this.settings.durationMax;
-      }
-
-      return duration;
-    }
-    /**
-     * Determine if the current scroll position exceeds the document to
-     * the top or bottom.
-     * 
-     * @param {number} pos Current Scroll Position
-     * 
-     * @access private
-     */
-
-  }, {
-    key: "scrollExceedsDocument",
-    value: function scrollExceedsDocument(pos, docHeight, winHeight) {
-      var min = 0;
-      var max = docHeight - winHeight;
-
-      if (pos < min) {
-        return {
-          to: docExpanderAttrTopValue,
-          px: pos * -1
-        };
-      } else if (pos > max) {
-        return {
-          to: docExpanderAttrBottomValue,
-          px: (max - pos) * -1
-        };
-      }
-
-      return false;
-    }
-  }, {
-    key: "expandDocument",
-    value: function expandDocument(easing, docHeight, winHeight) {
-      var exceeding = this.scrollExceedsDocument(easing, docHeight, winHeight);
-      var expanders = this.getDocumentExpanders();
-      var expT = expanders.filter(function (el) {
-        return el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue;
-      })[0];
-      var expB = expanders.filter(function (el) {
-        return el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue;
-      })[0];
-
-      if (exceeding && expT && exceeding.to === docExpanderAttrTopValue) {
-        expT.style.height = toPxString(exceeding.px);
-      } else if (exceeding && expB && exceeding.to === docExpanderAttrBottomValue) {
-        expB.style.height = toPxString(exceeding.px);
-      } else {
-        forEach(expanders, function (exp) {
-          exp.style.removeProperty('height');
-        });
-      }
-    }
-  }, {
-    key: "getDocumentExpanders",
-    value: function getDocumentExpanders() {
-      return Array.prototype.slice.call(this.container.children).filter(function (el) {
-        return el.hasAttribute(docExpanderAttr);
-      });
-    }
-    /**
-     * Animate scrolling 
-     * 
-     * @param {number} distFromTop Distance to be scrolled from top
-     * @param {number} startPos Distance from top when the animation has started
-     * @param {number} startTime The time in ms when the animation has started
-     * 
-     * @returns {void}
-     * 
-     * @access private
-     */
-
-  }, {
-    key: "animateScroll",
-    value: function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
-      var _this2 = this;
-
-      var distToScroll = distFromTop - startPos;
-      var scrollPx = distToScroll < 0 ? distToScroll * -1 : distToScroll;
-      var duration = this.getDuration(scrollPx);
-      var elapsed = Math.min(duration, getTime() - startTime);
-      var t = elapsed / duration;
-      var easingPattern = typeof this.settings.easing === 'string' ? this.evalTimeFn(this.settings.easing, t) : this.settings.easing(t);
-      var timeFunction = startPos + distToScroll * easingPattern; // Callback onScrollUpdate
-
-      if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
-        this.settings.onScrollUpdate({
-          startPosition: startPos,
-          currentPosition: timeFunction,
-          endPosition: distFromTop
-        });
-      }
-
-      w.scroll(0, timeFunction);
-
-      if (!docHeight) {
-        docHeight = getDocHeight();
-      }
-
-      if (!winHeight) {
-        winHeight = getWinHeight();
-      }
-
-      this.expandDocument(timeFunction, docHeight, winHeight);
-
-      if (elapsed >= duration) {
-        // Callback onScrollEnd
-        if (this.settings.onScrollEnd && typeof this.settings.onScrollEnd == 'function') {
-          this.settings.onScrollEnd({
-            startPosition: startPos,
-            endPosition: distFromTop
-          });
-        } // Stop when the element is reached
-
-
-        return;
-      }
-
-      scrollAnimationFrame = reqAnimFrame(function () {
-        _this2.animateScroll(distFromTop, startPos, startTime, docHeight, winHeight);
-      });
-    }
-    /**
-     * Initialize SmoothScroll
-     * 
-     * @returns {void}
-     */
-
-  }, {
     key: "init",
     value: function init() {
       var _this3 = this;
@@ -1051,11 +1042,11 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       expT.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
       this.container.insertBefore(expT, this.container.firstChild);
       var expB = d.createElement('div');
-      expB.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
+      expB.setAttribute(docExpanderAttr, docExpanderAttrBottomValue);
       this.container.appendChild(expB); // Bind Events
 
-      forEach(this.linkCollector(), function (link) {
-        link.addEventListener('click', _this3.clickHandler.bind(_this3, link), false);
+      forEach(linkCollector.call(this), function (link) {
+        link.addEventListener('click', clickHandler.bind(_this3, link), false);
       }); // Cancel Animation on User Scroll Interaction
 
       var cancelAnimationOnEvents = ['mousewheel', 'wheel', 'touchmove'];
@@ -1085,12 +1076,12 @@ var ScrollToSmooth = /*#__PURE__*/function () {
 
       this.cancelScroll(); // Delete Container Expansions
 
-      forEach(this.getDocumentExpanders(), function (expander) {
+      forEach(getDocumentExpanders.call(this), function (expander) {
         expander.parentNode.removeChild(expander);
       }); // Remove Events
 
-      forEach(this.linkCollector(), function (link) {
-        link.removeEventListener('click', _this4.clickHandler.bind(_this4, link), false);
+      forEach(linkCollector.call(this), function (link) {
+        link.removeEventListener('click', clickHandler.bind(_this4, link), false);
       });
     }
     /**
@@ -1122,13 +1113,16 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       } else if ((_typeof(target) === 'object' || typeof target === 'string') && validateSelector(target, this.container)) {
         if (typeof target == 'string') {
           target = _$(target, this.container);
-        } // a11y bring active element into focus
-        //target.focus();
-
-
-        if (d.activeElement !== target) {
-          target.setAttribute('tabindex', '-1'); //target.focus();
         }
+        /*
+        // a11y bring active element into focus
+        //target.focus();
+        if (d.activeElement !== target) {
+        	target.setAttribute('tabindex', '-1');
+        	//target.focus();
+        }
+        */
+
 
         var targetOffset = target.getBoundingClientRect().top + windowStartPos;
         distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
@@ -1169,7 +1163,7 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       } // Start Scroll Animation
 
 
-      this.animateScroll(distFromTop, windowStartPos, getTime(), docHeight, winHeight);
+      animateScroll.call(this, distFromTop, windowStartPos, getTime(), docHeight, winHeight);
     }
     /**
      * Scroll by a fixed amount of pixels
