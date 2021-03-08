@@ -1,8 +1,19 @@
 'use strict';
 
+/**
+ * Interfaces
+ */
 import { ScrollToSmoothSettings } from './interfaces/ScrollToSmoothSettings';
+import { exceeding } from './interfaces/exceedingInterface';
+
+/**
+ * Easings
+ */
 import { linear } from '../easings';
 
+/**
+ * Utilities
+ */
 import {
 	reqAnimFrame,
 	cancelAnimFrame,
@@ -17,7 +28,12 @@ import {
 	getWinHeight 
 } from './helper/scrollToSmoothHelper';
 
-import { d, dEl, b, w } from './global_vars';
+import { 
+	d, 
+	dEl, 
+	b, 
+	w
+} from './global_vars';
 
 let scrollAnimationFrame: number;
 
@@ -192,11 +208,11 @@ export class ScrollToSmooth {
 	 */
 	private getDuration(distance: number) {
 		let duration = Math.max(1, this.settings.duration as number);
-		if (this.settings.durationRelative) {
 
+		// Calculate duration relative to the distance scrolled
+		if (this.settings.durationRelative) {
 			const durationRelativePx = (typeof this.settings.durationRelative == 'number') ? this.settings.durationRelative : 1000;
 			duration = Math.max(this.settings.duration as number, distance * (duration / durationRelativePx));
-
 		}
 
 		// Set a minimum duration
