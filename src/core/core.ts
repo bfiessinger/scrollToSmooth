@@ -364,7 +364,7 @@ export class ScrollToSmooth {
 		this.container.insertBefore(expT, this.container.firstChild);
 
 		const expB = d.createElement('div');
-		expB.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
+		expB.setAttribute(docExpanderAttr, docExpanderAttrBottomValue);
 		this.container.appendChild(expB);
 
 		// Bind Events
