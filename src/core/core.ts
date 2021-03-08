@@ -426,10 +426,14 @@ export class ScrollToSmooth {
 				target = _$(target, this.container as HTMLElement) as HTMLElement;
 			}
 
-			target.focus();
+			/*
+			// a11y bring active element into focus
+			//target.focus();
 			if (d.activeElement !== target) {
 				target.setAttribute('tabindex', '-1');
+				//target.focus();
 			}
+			*/
 
 			const targetOffset = (target as HTMLElement).getBoundingClientRect().top + windowStartPos;
 
