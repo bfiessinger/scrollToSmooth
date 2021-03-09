@@ -17,7 +17,9 @@ Powered by window.requestAnimationFrame() API and highly customizable.
 
 **Notice:** If you just need simple smooth scrolling for `a` tags you might not need this library. Check out the native [CSS scroll behavior](https://caniuse.com/css-scroll-behavior) and [CSS scroll margin top](https://caniuse.com/mdn-css_properties_scroll-margin-top).
 
-**[View the Demo on CodePen 🎉](https://codepen.io/bastian_fiessinger/full/WNbyOBN "ScrollToSmooth on Codepen")**
+---
+
+**[View the Demo on CodePen 🎉](https://codepen.io/bastian_fiessinger/full/vYyQNGr "ScrollToSmooth on Codepen")**
 
 ---
 
