@@ -2,7 +2,7 @@
   "name": "scrolltosmooth",
   "sideEffects": false,
   "version": "3.0.0",
-  "description": "a vanilla JS smooth scroll to anchor script",
+  "description": "Lightweight Vanilla JS Smooth Scroll animation library.",
 	"main": "dist/scrolltosmooth.cjs.js",
 	"module": "dist/scrolltosmooth.esm.js",
 	"browser": "dist/scrolltosmooth.pkgd.min.js",
