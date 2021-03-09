@@ -1,7 +1,7 @@
 # Smooth Scroll Library
 ## ScrollToSmooth
 [![CodeFactor](https://img.shields.io/codefactor/grade/github/bfiessinger/scrolltosmooth?style=for-the-badge)](https://www.codefactor.io/repository/github/bfiessinger/scrolltosmooth)
-[![Filesize](https://img.shields.io/bundlephobia/minzip/scrolltosmooth?style=for-the-badge)](https://github.com/bfiessinger/scrollToSmooth/blob/master/dist/scrolltosmooth.min.js)
+[![Filesize](https://img.shields.io/bundlephobia/minzip/scrolltosmooth?style=for-the-badge)](https://bundlephobia.com/result?p=scrolltosmooth)
 ![Version](https://img.shields.io/github/v/release/bfiessinger/scrollToSmooth?include_prereleases&style=for-the-badge)
 [![](https://img.shields.io/jsdelivr/gh/hy/bfiessinger/scrolltosmooth?style=for-the-badge)](https://www.jsdelivr.com/package/gh/bfiessinger/scrollToSmooth)
 
