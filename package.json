@@ -21,7 +21,11 @@
     "smooth",
     "scrolling",
     "anchor",
-    "scrolling"
+    "smooth scrolling",
+		"animated scrolling",
+		"scroll animations",
+		"anchor scrolling",
+		"scroll behavior"
   ],
   "author": "Bastian Fießinger",
   "license": "MIT",
