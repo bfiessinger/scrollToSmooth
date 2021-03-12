@@ -599,10 +599,16 @@ var forEach = function forEach(arr, callback) {
 
 var validateSelector = function validateSelector(selector) {
   var container = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : d;
-  var valid = false; // Check if the target is a valid selector inside the scrollToSmooth container
+  var valid = true; // Check if the target is a valid selector inside the scrollToSmooth container
 
-  if (typeof selector == 'string' && _$(selector, container) || isNodeOrElement(selector) && container.contains(selector)) {
-    valid = true;
+  try {
+    if (typeof selector === 'string') {
+      _$(selector, container);
+    } else if (isNodeOrElement(selector) && container.contains(selector)) {
+      selector;
+    }
+  } catch (e) {
+    valid = false;
   }
 
   return valid;
@@ -743,6 +749,7 @@ function getTargetElement(el) {
     return this.container;
   }
 
+  console.log(targetSelector, validateSelector(targetSelector, this.container));
   return validateSelector(targetSelector, this.container) ? _$(targetSelector, this.container) : null;
 }
 /**

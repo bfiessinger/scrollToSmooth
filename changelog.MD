@@ -1,5 +1,10 @@
 # Changelog
 
+### 3.0.1 (Hotfix release)
+
+#### Bug Fixes
+- ScrollToSmooth stopped working in version 3.0.0 when the selector to be validated would fail
+
 ### 3.0.0
 
 #### Features

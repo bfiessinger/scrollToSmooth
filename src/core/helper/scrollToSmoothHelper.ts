@@ -56,14 +56,17 @@ export const forEach = (arr: ArrayLike<unknown>, callback: (value: any, index: n
  * @returns {boolean} true if the selector exists
  */
 export const validateSelector = (selector: string | Node | HTMLElement, container: HTMLElement | Document | Element = d): boolean => {
-	let valid = false;
+	let valid = true;
 
 	// Check if the target is a valid selector inside the scrollToSmooth container
-	if (
-		(typeof selector == 'string' && _$(selector, container as HTMLElement)) || 
-		(isNodeOrElement(selector as Node | HTMLElement) && container.contains(selector as Element))
-	) {
-		valid = true;
+	try {
+		if (typeof selector === 'string') {
+			_$(selector, container as HTMLElement)
+		} else if ( isNodeOrElement(selector as Node | HTMLElement) && container.contains(selector as Element) ) {
+			selector;
+		}
+	} catch (e) {
+		valid = false;
 	}
 
 	return valid;
