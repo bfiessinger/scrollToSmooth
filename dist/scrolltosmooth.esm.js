@@ -1,7 +1,7 @@
 /*!
 * ScrollToSmooth
 * Author: Bastian Fießinger
-* Version: 3.0.0
+* Version: 3.0.1
 */
 function _typeof(obj) {
   "@babel/helpers - typeof";
