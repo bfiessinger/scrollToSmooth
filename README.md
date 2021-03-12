@@ -36,9 +36,9 @@ Powered by window.requestAnimationFrame() API and highly customizable.
 #### From a CDN
 
 ```html
-<!-- Version 3.0.0 with all easings -->
+<!-- Latest version with all easings -->
 <script src="https://cdn.jsdelivr.net/npm/scrolltosmooth/dist/scrolltosmooth.pkgd.min.js"></script>
-<!-- Version 3.0.0 with linear easing only -->
+<!-- Latest version with linear easing only -->
 <script src="https://cdn.jsdelivr.net/npm/scrolltosmooth/dist/scrolltosmooth.min.js"></script>
 ```
 
