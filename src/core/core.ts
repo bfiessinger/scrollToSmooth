@@ -72,8 +72,6 @@ function getTargetElement(this: ScrollToSmooth, el: Element): Element | null {
 	if (this.settings.topOnEmptyHash && targetSelector == '#') {
 		return this.container as Element;
 	}
-
-	console.log(targetSelector, validateSelector(targetSelector, this.container));
 	
 	return ( validateSelector(targetSelector, this.container) ) ? _$(targetSelector, this.container as HTMLElement) : null;
 	
