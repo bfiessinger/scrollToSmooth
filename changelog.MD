@@ -1,5 +1,8 @@
 # Changelog
 
+### 3.0.2
+- remove forgotten console.log (#10)
+
 ### 3.0.1 (Hotfix release)
 
 #### Bug Fixes

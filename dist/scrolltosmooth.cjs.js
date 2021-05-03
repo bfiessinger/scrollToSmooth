@@ -1,7 +1,7 @@
 /*!
 * ScrollToSmooth
 * Author: Bastian Fießinger
-* Version: 3.0.1
+* Version: 3.0.2
 */
 'use strict';
 
@@ -753,7 +753,6 @@ function getTargetElement(el) {
     return this.container;
   }
 
-  console.log(targetSelector, validateSelector(targetSelector, this.container));
   return validateSelector(targetSelector, this.container) ? _$(targetSelector, this.container) : null;
 }
 /**
