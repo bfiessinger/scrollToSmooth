@@ -10,12 +10,10 @@
 import { d, dEl, b, w } from '../global_vars';
 
 /**
- * Maximize Browser Support of requestAnimationFrame
+ * requestAnimationFrame / cancelAnimationFrame wrappers
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const reqAnimFrame = w.requestAnimationFrame || (w as any).mozRequestAnimationFrame || w.webkitRequestAnimationFrame || (w as any).msRequestAnimationFrame;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const cancelAnimFrame = w.cancelAnimationFrame || (w as any).mozCancelAnimationFrame;
+export const reqAnimFrame = (cb: FrameRequestCallback): number => w.requestAnimationFrame(cb);
+export const cancelAnimFrame = (id: number): void => w.cancelAnimationFrame(id);
 
 /**
  * Shorthand for document.querySelector
@@ -127,9 +125,7 @@ export const isNodeOrElement = (obj: Node | HTMLElement): boolean => {
 /**
  * Get current Position
  */
-export const getPos = (): number => {
-	return w.pageYOffset || b.scrollTop || dEl.scrollTop;
-}
+export const getPos = (): number => w.scrollY ?? b.scrollTop ?? dEl.scrollTop;
 
 /**
  * Get the current Timestamp

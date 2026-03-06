@@ -4,10 +4,10 @@
  * @package scrolltosmooth
  */
 /**
- * Maximize Browser Support of requestAnimationFrame
+ * requestAnimationFrame / cancelAnimationFrame wrappers
  */
-export declare const reqAnimFrame: ((callback: FrameRequestCallback) => number) & typeof requestAnimationFrame;
-export declare const cancelAnimFrame: ((handle: number) => void) & typeof cancelAnimationFrame;
+export declare const reqAnimFrame: (cb: FrameRequestCallback) => number;
+export declare const cancelAnimFrame: (id: number) => void;
 /**
  * Shorthand for document.querySelector
  *

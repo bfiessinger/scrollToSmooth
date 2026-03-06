@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-		"suppressImplicitAnyIndexErrors": true,
     "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedParameters": true,
@@ -10,8 +9,7 @@
     "noUnusedLocals": true,
     "noImplicitAny": true,
 		"rootDir": "./src",
-    "declarationDir": "./@types",
-    "declaration": true,
+    "noEmit": true,
     "target": "esnext",
     "module": "esnext",
     "strict": true

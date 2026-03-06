@@ -3,113 +3,48 @@
 * Author: Bastian Fießinger
 * Version: 3.0.2
 */
-function _typeof(obj) {
-  "@babel/helpers - typeof";
-
-  if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") {
-    _typeof = function (obj) {
-      return typeof obj;
-    };
-  } else {
-    _typeof = function (obj) {
-      return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-    };
+function _defineProperty(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  }) : e[r] = t, e;
+}
+function ownKeys(e, r) {
+  var t = Object.keys(e);
+  if (Object.getOwnPropertySymbols) {
+    var o = Object.getOwnPropertySymbols(e);
+    r && (o = o.filter(function (r) {
+      return Object.getOwnPropertyDescriptor(e, r).enumerable;
+    })), t.push.apply(t, o);
   }
-
-  return _typeof(obj);
+  return t;
 }
-
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
-
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  return Constructor;
-}
-
-function _defineProperty(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
+function _objectSpread2(e) {
+  for (var r = 1; r < arguments.length; r++) {
+    var t = null != arguments[r] ? arguments[r] : {};
+    r % 2 ? ownKeys(Object(t), true).forEach(function (r) {
+      _defineProperty(e, r, t[r]);
+    }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) {
+      Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
     });
-  } else {
-    obj[key] = value;
   }
-
-  return obj;
+  return e;
 }
-
-function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
-}
-
-function _arrayWithHoles(arr) {
-  if (Array.isArray(arr)) return arr;
-}
-
-function _iterableToArrayLimit(arr, i) {
-  if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return;
-  var _arr = [];
-  var _n = true;
-  var _d = false;
-  var _e = undefined;
-
-  try {
-    for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
-      _arr.push(_s.value);
-
-      if (i && _arr.length === i) break;
-    }
-  } catch (err) {
-    _d = true;
-    _e = err;
-  } finally {
-    try {
-      if (!_n && _i["return"] != null) _i["return"]();
-    } finally {
-      if (_d) throw _e;
-    }
+function _toPrimitive(t, r) {
+  if ("object" != typeof t || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r);
+    if ("object" != typeof i) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
   }
-
-  return _arr;
+  return ("string" === r ? String : Number)(t);
 }
-
-function _unsupportedIterableToArray(o, minLen) {
-  if (!o) return;
-  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-  var n = Object.prototype.toString.call(o).slice(8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return Array.from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-}
-
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-
-  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
-  return arr2;
-}
-
-function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == typeof i ? i : i + "";
 }
 
 /**
@@ -121,7 +56,7 @@ function _nonIterableRest() {
  * 
  * @since 3.0.0
  */
-var linear = function linear(t) {
+const linear = t => {
   return t;
 };
 
@@ -134,7 +69,7 @@ var linear = function linear(t) {
  * 
  * @since 3.0.0
  */
-var easeInQuad = function easeInQuad(t) {
+const easeInQuad = t => {
   return t * t;
 };
 
@@ -147,7 +82,7 @@ var easeInQuad = function easeInQuad(t) {
  * 
  * @since 3.0.0
  */
-var easeOutQuad = function easeOutQuad(t) {
+const easeOutQuad = t => {
   return 1 - (1 - t) * (1 - t);
 };
 
@@ -160,7 +95,7 @@ var easeOutQuad = function easeOutQuad(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutQuad = function easeInOutQuad(t) {
+const easeInOutQuad = t => {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 };
 
@@ -173,7 +108,7 @@ var easeInOutQuad = function easeInOutQuad(t) {
  * 
  * @since 3.0.0
  */
-var easeInCubic = function easeInCubic(t) {
+const easeInCubic = t => {
   return t * t * t;
 };
 
@@ -186,7 +121,7 @@ var easeInCubic = function easeInCubic(t) {
  * 
  * @since 3.0.0
  */
-var easeOutCubic = function easeOutCubic(t) {
+const easeOutCubic = t => {
   return 1 - Math.pow(1 - t, 3);
 };
 
@@ -199,7 +134,7 @@ var easeOutCubic = function easeOutCubic(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutCubic = function easeInOutCubic(t) {
+const easeInOutCubic = t => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
 
@@ -212,7 +147,7 @@ var easeInOutCubic = function easeInOutCubic(t) {
  * 
  * @since 3.0.0
  */
-var easeInQuart = function easeInQuart(t) {
+const easeInQuart = t => {
   return t * t * t * t;
 };
 
@@ -225,7 +160,7 @@ var easeInQuart = function easeInQuart(t) {
  * 
  * @since 3.0.0
  */
-var easeOutQuart = function easeOutQuart(t) {
+const easeOutQuart = t => {
   return 1 - Math.pow(1 - t, 4);
 };
 
@@ -238,7 +173,7 @@ var easeOutQuart = function easeOutQuart(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutQuart = function easeInOutQuart(t) {
+const easeInOutQuart = t => {
   return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
 };
 
@@ -251,7 +186,7 @@ var easeInOutQuart = function easeInOutQuart(t) {
  * 
  * @since 3.0.0
  */
-var easeInQuint = function easeInQuint(t) {
+const easeInQuint = t => {
   return t * t * t * t * t;
 };
 
@@ -264,7 +199,7 @@ var easeInQuint = function easeInQuint(t) {
  * 
  * @since 3.0.0
  */
-var easeOutQuint = function easeOutQuint(t) {
+const easeOutQuint = t => {
   return 1 - Math.pow(1 - t, 5);
 };
 
@@ -277,7 +212,7 @@ var easeOutQuint = function easeOutQuint(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutQuint = function easeInOutQuint(t) {
+const easeInOutQuint = t => {
   return t < .5 ? 16 * t * t * t * t * t : 1 + 16 * --t * t * t * t * t;
 };
 
@@ -290,7 +225,7 @@ var easeInOutQuint = function easeInOutQuint(t) {
  * 
  * @since 3.0.0
  */
-var easeInSine = function easeInSine(t) {
+const easeInSine = t => {
   return 1 - Math.cos(t * Math.PI / 2);
 };
 
@@ -303,7 +238,7 @@ var easeInSine = function easeInSine(t) {
  * 
  * @since 3.0.0
  */
-var easeOutSine = function easeOutSine(t) {
+const easeOutSine = t => {
   return Math.sin(t * Math.PI / 2);
 };
 
@@ -316,7 +251,7 @@ var easeOutSine = function easeOutSine(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutSine = function easeInOutSine(t) {
+const easeInOutSine = t => {
   return -(Math.cos(Math.PI * t) - 1) / 2;
 };
 
@@ -329,7 +264,7 @@ var easeInOutSine = function easeInOutSine(t) {
  * 
  * @since 3.0.0
  */
-var easeInExpo = function easeInExpo(t) {
+const easeInExpo = t => {
   return t === 0 ? 0 : Math.pow(2, 10 * t - 10);
 };
 
@@ -342,7 +277,7 @@ var easeInExpo = function easeInExpo(t) {
  * 
  * @since 3.0.0
  */
-var easeOutExpo = function easeOutExpo(t) {
+const easeOutExpo = t => {
   return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
 };
 
@@ -355,7 +290,7 @@ var easeOutExpo = function easeOutExpo(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutExpo = function easeInOutExpo(t) {
+const easeInOutExpo = t => {
   return t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? Math.pow(2, 20 * t - 10) / 2 : (2 - Math.pow(2, -20 * t + 10)) / 2;
 };
 
@@ -368,7 +303,7 @@ var easeInOutExpo = function easeInOutExpo(t) {
  * 
  * @since 3.0.0
  */
-var easeInCirc = function easeInCirc(t) {
+const easeInCirc = t => {
   return 1 - Math.sqrt(1 - Math.pow(t, 2));
 };
 
@@ -381,7 +316,7 @@ var easeInCirc = function easeInCirc(t) {
  * 
  * @since 3.0.0
  */
-var easeOutCirc = function easeOutCirc(t) {
+const easeOutCirc = t => {
   return Math.sqrt(1 - Math.pow(t - 1, 2));
 };
 
@@ -394,7 +329,7 @@ var easeOutCirc = function easeOutCirc(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutCirc = function easeInOutCirc(t) {
+const easeInOutCirc = t => {
   return t < 0.5 ? (1 - Math.sqrt(1 - Math.pow(2 * t, 2))) / 2 : (Math.sqrt(1 - Math.pow(-2 * t + 2, 2)) + 1) / 2;
 };
 
@@ -407,8 +342,8 @@ var easeInOutCirc = function easeInOutCirc(t) {
  * 
  * @since 3.0.0
  */
-var easeInElastic = function easeInElastic(t) {
-  var c4 = 2 * Math.PI / 3;
+const easeInElastic = t => {
+  const c4 = 2 * Math.PI / 3;
   return t === 0 ? 0 : t === 1 ? 1 : -Math.pow(2, 10 * t - 10) * Math.sin((t * 10 - 10.75) * c4);
 };
 
@@ -421,8 +356,8 @@ var easeInElastic = function easeInElastic(t) {
  * 
  * @since 3.0.0
  */
-var easeOutElastic = function easeOutElastic(t) {
-  var c4 = 2 * Math.PI / 3;
+const easeOutElastic = t => {
+  const c4 = 2 * Math.PI / 3;
   return t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
 };
 
@@ -435,8 +370,8 @@ var easeOutElastic = function easeOutElastic(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutElastic = function easeInOutElastic(t) {
-  var c5 = 2 * Math.PI / 4.5;
+const easeInOutElastic = t => {
+  const c5 = 2 * Math.PI / 4.5;
   return t === 0 ? 0 : t === 1 ? 1 : t < 0.5 ? -(Math.pow(2, 20 * t - 10) * Math.sin((20 * t - 11.125) * c5)) / 2 : Math.pow(2, -20 * t + 10) * Math.sin((20 * t - 11.125) * c5) / 2 + 1;
 };
 
@@ -449,9 +384,9 @@ var easeInOutElastic = function easeInOutElastic(t) {
  * 
  * @since 3.0.0
  */
-var easeInBack = function easeInBack(t) {
-  var c1 = 1.70158;
-  var c3 = c1 + 1;
+const easeInBack = t => {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
   return c3 * t * t * t - c1 * t * t;
 };
 
@@ -464,9 +399,9 @@ var easeInBack = function easeInBack(t) {
  * 
  * @since 3.0.0
  */
-var easeOutBack = function easeOutBack(t) {
-  var c1 = 1.70158;
-  var c3 = c1 + 1;
+const easeOutBack = t => {
+  const c1 = 1.70158;
+  const c3 = c1 + 1;
   return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
 };
 
@@ -479,9 +414,9 @@ var easeOutBack = function easeOutBack(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutBack = function easeInOutBack(t) {
-  var c1 = 1.70158;
-  var c2 = c1 * 1.525;
+const easeInOutBack = t => {
+  const c1 = 1.70158;
+  const c2 = c1 * 1.525;
   return t < 0.5 ? Math.pow(2 * t, 2) * ((c2 + 1) * 2 * t - c2) / 2 : (Math.pow(2 * t - 2, 2) * ((c2 + 1) * (t * 2 - 2) + c2) + 2) / 2;
 };
 
@@ -494,10 +429,9 @@ var easeInOutBack = function easeInOutBack(t) {
  * 
  * @since 3.0.0
  */
-var easeOutBounce = function easeOutBounce(t) {
-  var n1 = 7.5625;
-  var d1 = 2.75;
-
+const easeOutBounce = t => {
+  const n1 = 7.5625;
+  const d1 = 2.75;
   if (t < 1 / d1) {
     return n1 * t * t;
   } else if (t < 2 / d1) {
@@ -520,7 +454,7 @@ var easeOutBounce = function easeOutBounce(t) {
  * 
  * @since 3.0.0
  */
-var easeInBounce = function easeInBounce(t) {
+const easeInBounce = t => {
   return 1 - easeOutBounce(1 - t);
 };
 
@@ -535,23 +469,69 @@ var easeInBounce = function easeInBounce(t) {
  * 
  * @since 3.0.0
  */
-var easeInOutBounce = function easeInOutBounce(t) {
+const easeInOutBounce = t => {
   return t < 0.5 ? (1 - easeOutBounce(1 - 2 * t)) / 2 : (1 + easeOutBounce(2 * t - 1)) / 2;
 };
 
-var d = document;
-var dEl = d.documentElement;
-var b = d.body;
-var w = window;
+/**
+ * ScrollToSmooth Easing Functions
+ * 
+ * @since 3.0.0
+ */
+
+var builtinEasings = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  easeInBack: easeInBack,
+  easeInBounce: easeInBounce,
+  easeInCirc: easeInCirc,
+  easeInCubic: easeInCubic,
+  easeInElastic: easeInElastic,
+  easeInExpo: easeInExpo,
+  easeInOutBack: easeInOutBack,
+  easeInOutBounce: easeInOutBounce,
+  easeInOutCirc: easeInOutCirc,
+  easeInOutCubic: easeInOutCubic,
+  easeInOutElastic: easeInOutElastic,
+  easeInOutExpo: easeInOutExpo,
+  easeInOutQuad: easeInOutQuad,
+  easeInOutQuart: easeInOutQuart,
+  easeInOutQuint: easeInOutQuint,
+  easeInOutSine: easeInOutSine,
+  easeInQuad: easeInQuad,
+  easeInQuart: easeInQuart,
+  easeInQuint: easeInQuint,
+  easeInSine: easeInSine,
+  easeOutBack: easeOutBack,
+  easeOutBounce: easeOutBounce,
+  easeOutCirc: easeOutCirc,
+  easeOutCubic: easeOutCubic,
+  easeOutElastic: easeOutElastic,
+  easeOutExpo: easeOutExpo,
+  easeOutQuad: easeOutQuad,
+  easeOutQuart: easeOutQuart,
+  easeOutQuint: easeOutQuint,
+  easeOutSine: easeOutSine,
+  linear: linear
+});
+
+const d = document;
+const dEl = d.documentElement;
+const b = d.body;
+const w = window;
 
 /**
- * Maximize Browser Support of requestAnimationFrame
+ * ScrollToSmooth Helper Utilities
+ * 
+ * @package scrolltosmooth
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 
-var reqAnimFrame = w.requestAnimationFrame || w.mozRequestAnimationFrame || w.webkitRequestAnimationFrame || w.msRequestAnimationFrame; // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
-var cancelAnimFrame = w.cancelAnimationFrame || w.mozCancelAnimationFrame;
+/**
+ * requestAnimationFrame / cancelAnimationFrame wrappers
+ */
+const reqAnimFrame = cb => w.requestAnimationFrame(cb);
+const cancelAnimFrame = id => w.cancelAnimationFrame(id);
+
 /**
  * Shorthand for document.querySelector
  * 
@@ -559,11 +539,10 @@ var cancelAnimFrame = w.cancelAnimationFrame || w.mozCancelAnimationFrame;
  * 
  * @returns {Element | null}
  */
-
-var _$ = function _$(s) {
-  var container = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : d;
+const _$ = (s, container = d) => {
   return container.querySelector(s);
 };
+
 /**
  * Shorthand for document.querySelectorAll
  * 
@@ -571,11 +550,10 @@ var _$ = function _$(s) {
  * 
  * @returns {NodeListOf<Element>}
  */
-
-var _$$ = function _$$(s) {
-  var container = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : d;
+const _$$ = (s, container = d) => {
   return container.querySelectorAll(s);
 };
+
 /**
  * Shorthand for Array.prototype.forEach.call
  * 
@@ -585,10 +563,10 @@ var _$$ = function _$$(s) {
  * @returns {void}
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-
-var forEach = function forEach(arr, callback) {
+const forEach = (arr, callback) => {
   Array.prototype.forEach.call(arr, callback);
 };
+
 /**
  * Check if a selector exists on the current page
  * 
@@ -596,11 +574,10 @@ var forEach = function forEach(arr, callback) {
  * 
  * @returns {boolean} true if the selector exists
  */
+const validateSelector = (selector, container = d) => {
+  let valid = true;
 
-var validateSelector = function validateSelector(selector) {
-  var container = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : d;
-  var valid = true; // Check if the target is a valid selector inside the scrollToSmooth container
-
+  // Check if the target is a valid selector inside the scrollToSmooth container
   try {
     if (typeof selector === 'string') {
       _$(selector, container);
@@ -610,16 +587,15 @@ var validateSelector = function validateSelector(selector) {
   } catch (e) {
     valid = false;
   }
-
   return valid;
 };
+
 /**
  * Test if an object is typeof Node
  * 
  * @param obj 
  */
-
-var isNode = function isNode(obj) {
+const isNode = obj => {
   try {
     // Using W3 DOM (works on modern browsers)
     return obj instanceof Node;
@@ -627,17 +603,16 @@ var isNode = function isNode(obj) {
     // Browsers not supporting W3 DOM3 don't have Node and
     // an exception is thrown and we end up here. Testing some
     // properties that all elements have
-    return _typeof(obj) === 'object' && typeof obj.nodeType === 'number' && typeof obj.nodeName === 'string' && _typeof(obj.ownerDocument) === 'object';
+    return typeof obj === 'object' && typeof obj.nodeType === 'number' && typeof obj.nodeName === 'string' && typeof obj.ownerDocument === 'object';
   }
 };
+
 /**
  * Test if an object is typeof HTMLElement
  * 
  * @param obj 
  */
-
-
-var isElement = function isElement(obj) {
+const isElement = obj => {
   try {
     // Using W3 DOM2 (works for FF, Opera and Chrome)
     return obj instanceof HTMLElement;
@@ -645,9 +620,10 @@ var isElement = function isElement(obj) {
     // Browsers not supporting W3 DOM2 don't have HTMLElement and
     // an exception is thrown and we end up here. Testing some
     // properties that all elements have
-    return _typeof(obj) === 'object' && obj.nodeType === 1 && _typeof(obj.style) === 'object' && _typeof(obj.ownerDocument) === 'object';
+    return typeof obj === 'object' && obj.nodeType === 1 && typeof obj.style === 'object' && typeof obj.ownerDocument === 'object';
   }
 };
+
 /**
  * Test if an object is typeof Node or HTMLElement
  * 
@@ -658,25 +634,22 @@ var isElement = function isElement(obj) {
  * 
  * @return {boolean}
  */
-
-
-var isNodeOrElement = function isNodeOrElement(obj) {
+const isNodeOrElement = obj => {
   return isNode(obj) || isElement(obj);
 };
+
 /**
  * Get current Position
  */
+const getPos = () => w.scrollY ?? b.scrollTop ?? dEl.scrollTop;
 
-var getPos = function getPos() {
-  return w.pageYOffset || b.scrollTop || dEl.scrollTop;
-};
 /**
  * Get the current Timestamp
  */
-
-var getTime = function getTime() {
+const getTime = () => {
   return w.performance && 'now' in w.performance ? performance.now() : new Date().getTime();
 };
+
 /**
  * Determine element baseURI
  * 
@@ -684,46 +657,52 @@ var getTime = function getTime() {
  * 
  * @returns {string}
  */
+const getBaseURI = el => {
+  const sanitizeBaseURIRegex = new RegExp('(' + location.hash + ')?$');
+  const elBaseURI = el.baseURI || d.URL;
 
-var getBaseURI = function getBaseURI(el) {
-  var sanitizeBaseURIRegex = new RegExp('(' + location.hash + ')?$');
-  var elBaseURI = el.baseURI || d.URL; // Remove Trailing Slash and Hash Parameters from the baseURI
-
-  var baseURI = elBaseURI.replace(sanitizeBaseURIRegex, '');
+  // Remove Trailing Slash and Hash Parameters from the baseURI
+  const baseURI = elBaseURI.replace(sanitizeBaseURIRegex, '');
   return baseURI;
 };
+
 /**
  * Get document's height
  * 
  * @returns {number}
  */
-
-var getDocHeight = function getDocHeight() {
+const getDocHeight = () => {
   return Math.max(b.scrollHeight, b.offsetHeight, b.clientHeight, dEl.scrollHeight, dEl.offsetHeight, dEl.clientHeight);
 };
+
 /**
  * Get window height
  * 
  * @returns {number}
  */
+const getWinHeight = () => w.innerHeight || dEl.clientHeight || b.clientHeight;
 
-var getWinHeight = function getWinHeight() {
-  return w.innerHeight || dEl.clientHeight || b.clientHeight;
-};
 /**
  * Simple helper to create a numeric string with px suffix
  * 
  * @returns {string}
  */
-
-var toPxString = function toPxString(int) {
+const toPxString = int => {
   return int + 'px';
 };
 
-var scrollAnimationFrame;
-var docExpanderAttr = 'data-scrolltosmooth-expand';
-var docExpanderAttrTopValue = 'top';
-var docExpanderAttrBottomValue = 'bottom';
+function resolveEasing(easing, t) {
+  if (typeof easing === 'function') {
+    return easing(t);
+  }
+  const fn = builtinEasings[easing];
+  return typeof fn === 'function' ? fn(t) : t;
+}
+let scrollAnimationFrame;
+const docExpanderAttr = 'data-scrolltosmooth-expand';
+const docExpanderAttrTopValue = 'top';
+const docExpanderAttrBottomValue = 'bottom';
+
 /**
  * Determine the target Element from the targetAttribute of a
  * scrollToSmooth selector
@@ -734,23 +713,21 @@ var docExpanderAttrBottomValue = 'bottom';
  * 
  * @access private
  */
-
 function getTargetElement(el) {
-  var targetSelector = '';
-
+  let targetSelector = '';
   if (this.settings.targetAttribute === 'href' && el.href) {
     targetSelector = el.href.replace(getBaseURI(el), '');
   } else if (el.getAttribute(this.settings.targetAttribute)) {
     targetSelector = el.getAttribute(this.settings.targetAttribute);
-  } // Top on Empty Hash
+  }
 
-
+  // Top on Empty Hash
   if (this.settings.topOnEmptyHash && targetSelector == '#') {
     return this.container;
   }
-
   return validateSelector(targetSelector, this.container) ? _$(targetSelector, this.container) : null;
 }
+
 /**
  * Filter all scrollto elements that have target attributes related to the current page
  * 
@@ -758,23 +735,20 @@ function getTargetElement(el) {
  * 
  * @access private
  */
-
-
 function linkCollector() {
-  var _this = this;
-
-  var links = [];
-  forEach(this.elements, function (el) {
+  const links = [];
+  forEach(this.elements, el => {
     // Check if the selector is found on the page
-    if (getTargetElement.call(_this, el)) {
+    if (getTargetElement.call(this, el)) {
       // Handle href attributes
-      if (_this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || _this.settings.topOnEmptyHash) || _this.settings.targetAttribute != 'href') {
+      if (this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || this.settings.topOnEmptyHash) || this.settings.targetAttribute != 'href') {
         links.push(el);
       }
     }
   });
   return links;
 }
+
 /**
  * Event handler for click events on scrollToSmooth selectors
  * 
@@ -785,37 +759,20 @@ function linkCollector() {
  * 
  * @access private
  */
-
-
 function clickHandler(el, e) {
-  e.stopPropagation(); // Prevent Default Behaviour of how the browser would treat the click event
+  e.stopPropagation();
 
+  // Prevent Default Behaviour of how the browser would treat the click event
   e.preventDefault();
-  var currentTarget = getTargetElement.call(this, el);
-
+  const currentTarget = getTargetElement.call(this, el);
   if (!currentTarget) {
     return;
-  } // Start Scrolling
+  }
 
-
+  // Start Scrolling
   this.scrollTo(currentTarget);
 }
-/**
- * Take a function name of an easing function and treat it like
- * a real function
- * 
- * @param {string} fn 
- * @param {number} t 
- * 
- * @returns {Function}
- * 
- * @access private
- */
 
-
-function evalTimeFn(fn, t) {
-  return Function('"use strict"; return (' + fn + '(' + t + '))')();
-}
 /**
  * Calculate scroll animation duration
  * 
@@ -823,28 +780,27 @@ function evalTimeFn(fn, t) {
  * 
  * @access private
  */
-
-
 function getDuration(distance) {
-  var duration = Math.max(1, this.settings.duration); // Calculate duration relative to the distance scrolled
+  let duration = Math.max(1, this.settings.duration);
 
+  // Calculate duration relative to the distance scrolled
   if (this.settings.durationRelative) {
-    var durationRelativePx = typeof this.settings.durationRelative == 'number' ? this.settings.durationRelative : 1000;
+    const durationRelativePx = typeof this.settings.durationRelative == 'number' ? this.settings.durationRelative : 1000;
     duration = Math.max(this.settings.duration, distance * (duration / durationRelativePx));
-  } // Set a minimum duration
+  }
 
-
+  // Set a minimum duration
   if (this.settings.durationMin && duration < this.settings.durationMin) {
     duration = this.settings.durationMin;
-  } // Set a maximum duration
+  }
 
-
+  // Set a maximum duration
   if (this.settings.durationMax && duration > this.settings.durationMax) {
     duration = this.settings.durationMax;
   }
-
   return duration;
 }
+
 /**
  * Determine if the current scroll position exceeds the document to
  * the top or bottom.
@@ -853,12 +809,9 @@ function getDuration(distance) {
  * 
  * @access private
  */
-
-
 function scrollExceedsDocument(pos, docHeight, winHeight) {
-  var min = 0;
-  var max = docHeight - winHeight;
-
+  const min = 0;
+  const max = docHeight - winHeight;
   if (pos < min) {
     return {
       to: docExpanderAttrTopValue,
@@ -870,36 +823,27 @@ function scrollExceedsDocument(pos, docHeight, winHeight) {
       px: (max - pos) * -1
     };
   }
-
   return false;
 }
-
 function expandDocument(easing, docHeight, winHeight) {
-  var exceeding = scrollExceedsDocument(easing, docHeight, winHeight);
-  var expanders = getDocumentExpanders.call(this);
-  var expT = expanders.filter(function (el) {
-    return el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue;
-  })[0];
-  var expB = expanders.filter(function (el) {
-    return el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue;
-  })[0];
-
+  const exceeding = scrollExceedsDocument(easing, docHeight, winHeight);
+  const expanders = getDocumentExpanders.call(this);
+  const expT = expanders.filter(el => el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue)[0];
+  const expB = expanders.filter(el => el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue)[0];
   if (exceeding && expT && exceeding.to === docExpanderAttrTopValue) {
     expT.style.height = toPxString(exceeding.px);
   } else if (exceeding && expB && exceeding.to === docExpanderAttrBottomValue) {
     expB.style.height = toPxString(exceeding.px);
   } else {
-    forEach(expanders, function (exp) {
+    forEach(expanders, exp => {
       exp.style.removeProperty('height');
     });
   }
 }
-
 function getDocumentExpanders() {
-  return Array.prototype.slice.call(this.container.children).filter(function (el) {
-    return el.hasAttribute(docExpanderAttr);
-  });
+  return Array.prototype.slice.call(this.container.children).filter(el => el.hasAttribute(docExpanderAttr));
 }
+
 /**
  * Animate scrolling 
  * 
@@ -911,19 +855,16 @@ function getDocumentExpanders() {
  * 
  * @access private
  */
-
-
 function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
-  var _this2 = this;
+  const distToScroll = distFromTop - startPos;
+  const scrollPx = distToScroll < 0 ? distToScroll * -1 : distToScroll;
+  const duration = getDuration.call(this, scrollPx);
+  const elapsed = Math.min(duration, getTime() - startTime);
+  const t = elapsed / duration;
+  const easingPattern = resolveEasing(this.settings.easing, t);
+  const timeFunction = startPos + distToScroll * easingPattern;
 
-  var distToScroll = distFromTop - startPos;
-  var scrollPx = distToScroll < 0 ? distToScroll * -1 : distToScroll;
-  var duration = getDuration.call(this, scrollPx);
-  var elapsed = Math.min(duration, getTime() - startTime);
-  var t = elapsed / duration;
-  var easingPattern = typeof this.settings.easing === 'string' ? evalTimeFn(this.settings.easing, t) : this.settings.easing(t);
-  var timeFunction = startPos + distToScroll * easingPattern; // Callback onScrollUpdate
-
+  // Callback onScrollUpdate
   if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
     this.settings.onScrollUpdate({
       startPosition: startPos,
@@ -931,19 +872,14 @@ function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
       endPosition: distFromTop
     });
   }
-
   w.scroll(0, timeFunction);
-
   if (!docHeight) {
     docHeight = getDocHeight();
   }
-
   if (!winHeight) {
     winHeight = getWinHeight();
   }
-
   expandDocument.call(this, timeFunction, docHeight, winHeight);
-
   if (elapsed >= duration) {
     // Callback onScrollEnd
     if (this.settings.onScrollEnd && typeof this.settings.onScrollEnd == 'function') {
@@ -951,31 +887,24 @@ function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
         startPosition: startPos,
         endPosition: distFromTop
       });
-    } // Stop when the element is reached
+    }
 
-
+    // Stop when the element is reached
     return;
   }
-
-  scrollAnimationFrame = reqAnimFrame(function () {
-    animateScroll.call(_this2, distFromTop, startPos, startTime, docHeight, winHeight);
+  scrollAnimationFrame = reqAnimFrame(() => {
+    animateScroll.call(this, distFromTop, startPos, startTime, docHeight, winHeight);
   });
 }
-
-var ScrollToSmooth = /*#__PURE__*/function () {
-  function ScrollToSmooth(nodes, settings) {
-    _classCallCheck(this, ScrollToSmooth);
-
+class ScrollToSmooth {
+  constructor(nodes, settings) {
     _defineProperty(this, "elements", void 0);
-
     _defineProperty(this, "container", void 0);
-
     _defineProperty(this, "settings", void 0);
-
     /**
      * Build Default Settings Object
      */
-    var defaults = {
+    const defaults = {
       // Selectors
       container: d,
       targetAttribute: 'href',
@@ -992,241 +921,199 @@ var ScrollToSmooth = /*#__PURE__*/function () {
       onScrollUpdate: null,
       onScrollEnd: null
     };
+
     /**
      * Build the final Settings Object
      */
+    this.settings = _objectSpread2(_objectSpread2({}, defaults), settings);
 
-    settings = settings || defaults;
-
-    for (var opt in defaults) {
-      if (Object.prototype.hasOwnProperty.call(defaults, opt) && !Object.prototype.hasOwnProperty.call(settings, opt)) {
-        settings[opt] = defaults[opt];
-      }
-    }
-
-    this.settings = settings;
     /**
      * Set a container Element
      */
-
-    var container = b;
-
+    let container = b;
     if (typeof this.settings.container == 'string' && validateSelector(this.settings.container)) {
       container = _$(this.settings.container);
     } else if (typeof this.settings.container != 'string' && isNodeOrElement(this.settings.container) && validateSelector(this.settings.container)) {
       container = this.settings.container;
     }
-
     container = container === d || container === dEl ? b : container;
     this.container = container;
+
     /**
      * Check this.elements and declare them based on their value
      */
-
     this.elements = typeof nodes == 'string' ? _$$(nodes, this.container) : nodes;
   }
+
   /**
    * Initialize SmoothScroll
    * 
    * @returns {void}
    */
+  init() {
+    // Destroy any existing initialization
+    this.destroy();
 
+    // Setup Container Expansions
+    const expT = d.createElement('div');
+    expT.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
+    this.container.insertBefore(expT, this.container.firstChild);
+    const expB = d.createElement('div');
+    expB.setAttribute(docExpanderAttr, docExpanderAttrBottomValue);
+    this.container.appendChild(expB);
 
-  _createClass(ScrollToSmooth, [{
-    key: "init",
-    value: function init() {
-      var _this3 = this;
+    // Bind Events
+    forEach(linkCollector.call(this), link => {
+      link.addEventListener('click', clickHandler.bind(this, link), false);
+    });
 
-      // Destroy any existing initialization
-      this.destroy(); // Setup Container Expansions
+    // Cancel Animation on User Scroll Interaction
+    const cancelAnimationOnEvents = ['mousewheel', 'wheel', 'touchmove'];
+    forEach(cancelAnimationOnEvents, ev => {
+      w.addEventListener(ev, () => {
+        this.cancelScroll();
+      });
+    });
+  }
 
-      var expT = d.createElement('div');
-      expT.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
-      this.container.insertBefore(expT, this.container.firstChild);
-      var expB = d.createElement('div');
-      expB.setAttribute(docExpanderAttr, docExpanderAttrBottomValue);
-      this.container.appendChild(expB); // Bind Events
+  /**
+   * Destroy the current initialization.
+   * 
+   * @returns {void}
+   * 
+   * @access public
+   */
+  destroy() {
+    // Do nothing if the plugin is not already initialized
+    if (!this.settings) {
+      return;
+    }
+    this.cancelScroll();
 
-      forEach(linkCollector.call(this), function (link) {
-        link.addEventListener('click', clickHandler.bind(_this3, link), false);
-      }); // Cancel Animation on User Scroll Interaction
+    // Delete Container Expansions
+    forEach(getDocumentExpanders.call(this), expander => {
+      expander.parentNode.removeChild(expander);
+    });
 
-      var cancelAnimationOnEvents = ['mousewheel', 'wheel', 'touchmove'];
-      forEach(cancelAnimationOnEvents, function (ev) {
-        w.addEventListener(ev, function () {
-          _this3.cancelScroll();
-        });
+    // Remove Events
+    forEach(linkCollector.call(this), link => {
+      link.removeEventListener('click', clickHandler.bind(this, link), false);
+    });
+  }
+
+  /**
+   * Trigger the scrolling animation to a specific Element or 
+   * a fixed position
+   * 
+   * @param {Element|number} target 
+   * 
+   * @returns {void}
+   * 
+   * @access public
+   */
+  scrollTo(target) {
+    const windowStartPos = getPos();
+    const docHeight = getDocHeight();
+    const winHeight = getWinHeight();
+    let distFromTop = 0;
+    if (!isNaN(target)) {
+      if (typeof target === 'string') {
+        target = parseFloat(target);
+      }
+      target = docHeight - target < winHeight ? docHeight - winHeight : target;
+      distFromTop = target;
+    } else if ((typeof target === 'object' || typeof target === 'string') && validateSelector(target, this.container)) {
+      if (typeof target == 'string') {
+        target = _$(target, this.container);
+      }
+
+      /*
+      // a11y bring active element into focus
+      //target.focus();
+      if (d.activeElement !== target) {
+      	target.setAttribute('tabindex', '-1');
+      	//target.focus();
+      }
+      */
+
+      const targetOffset = target.getBoundingClientRect().top + windowStartPos;
+      distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
+    }
+    if (this.settings.offset !== null) {
+      let offset = 0;
+      if (validateSelector(this.settings.offset, this.container)) {
+        let offsetElement = this.settings.offset;
+        if (typeof offsetElement == 'string') {
+          offsetElement = _$(this.settings.offset);
+        }
+        if (isNodeOrElement(offsetElement)) {
+          offset = offsetElement.getBoundingClientRect().height;
+        }
+      } else if (!isNaN(this.settings.offset)) {
+        offset = this.settings.offset;
+        if (typeof offset === 'string') {
+          offset = parseFloat(offset);
+        }
+      }
+      distFromTop -= offset;
+    }
+
+    // Distance can't be negative
+    distFromTop = distFromTop < 0 ? 0 : distFromTop;
+
+    // Callback onScrollStart
+    if (this.settings.onScrollStart && typeof this.settings.onScrollStart == 'function') {
+      this.settings.onScrollStart({
+        startPosition: windowStartPos,
+        endPosition: distFromTop
       });
     }
-    /**
-     * Destroy the current initialization.
-     * 
-     * @returns {void}
-     * 
-     * @access public
-     */
 
-  }, {
-    key: "destroy",
-    value: function destroy() {
-      var _this4 = this;
+    // Start Scroll Animation
+    animateScroll.call(this, distFromTop, windowStartPos, getTime(), docHeight, winHeight);
+  }
 
-      // Do nothing if the plugin is not already initialized
-      if (!this.settings) {
-        return;
-      }
+  /**
+   * Scroll by a fixed amount of pixels
+   * 
+   * @param px 
+   * 
+   * @return {void}
+   */
+  scrollBy(px) {
+    this.scrollTo(getPos() + px);
+  }
 
-      this.cancelScroll(); // Delete Container Expansions
-
-      forEach(getDocumentExpanders.call(this), function (expander) {
-        expander.parentNode.removeChild(expander);
-      }); // Remove Events
-
-      forEach(linkCollector.call(this), function (link) {
-        link.removeEventListener('click', clickHandler.bind(_this4, link), false);
-      });
+  /**
+   * Method: cancelScroll
+   * 
+   * @returns {void}
+   */
+  cancelScroll() {
+    // Do nothing if no scroll Event has fired
+    if (!scrollAnimationFrame) {
+      return;
     }
-    /**
-     * Trigger the scrolling animation to a specific Element or 
-     * a fixed position
-     * 
-     * @param {Element|number} target 
-     * 
-     * @returns {void}
-     * 
-     * @access public
-     */
+    cancelAnimFrame(scrollAnimationFrame);
+  }
 
-  }, {
-    key: "scrollTo",
-    value: function scrollTo(target) {
-      var windowStartPos = getPos();
-      var docHeight = getDocHeight();
-      var winHeight = getWinHeight();
-      var distFromTop = 0;
-
-      if (!isNaN(target)) {
-        if (typeof target === 'string') {
-          target = parseFloat(target);
-        }
-
-        target = docHeight - target < winHeight ? docHeight - winHeight : target;
-        distFromTop = target;
-      } else if ((_typeof(target) === 'object' || typeof target === 'string') && validateSelector(target, this.container)) {
-        if (typeof target == 'string') {
-          target = _$(target, this.container);
-        }
-        /*
-        // a11y bring active element into focus
-        //target.focus();
-        if (d.activeElement !== target) {
-        	target.setAttribute('tabindex', '-1');
-        	//target.focus();
-        }
-        */
-
-
-        var targetOffset = target.getBoundingClientRect().top + windowStartPos;
-        distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
-      }
-
-      if (this.settings.offset !== null) {
-        var offset = 0;
-
-        if (validateSelector(this.settings.offset, this.container)) {
-          var offsetElement = this.settings.offset;
-
-          if (typeof offsetElement == 'string') {
-            offsetElement = _$(this.settings.offset);
-          }
-
-          if (isNodeOrElement(offsetElement)) {
-            offset = offsetElement.getBoundingClientRect().height;
-          }
-        } else if (!isNaN(this.settings.offset)) {
-          offset = this.settings.offset;
-
-          if (typeof offset === 'string') {
-            offset = parseFloat(offset);
-          }
-        }
-
-        distFromTop -= offset;
-      } // Distance can't be negative
-
-
-      distFromTop = distFromTop < 0 ? 0 : distFromTop; // Callback onScrollStart
-
-      if (this.settings.onScrollStart && typeof this.settings.onScrollStart == 'function') {
-        this.settings.onScrollStart({
-          startPosition: windowStartPos,
-          endPosition: distFromTop
-        });
-      } // Start Scroll Animation
-
-
-      animateScroll.call(this, distFromTop, windowStartPos, getTime(), docHeight, winHeight);
+  /**
+   * Method: update
+   * 
+   * @param {ScrollToSmoothSettings} obj The settings to be updated from the original instance 
+   * 
+   * @returns {void}
+   */
+  update(obj) {
+    if (typeof obj !== 'object') {
+      return;
     }
-    /**
-     * Scroll by a fixed amount of pixels
-     * 
-     * @param px 
-     * 
-     * @return {void}
-     */
-
-  }, {
-    key: "scrollBy",
-    value: function scrollBy(px) {
-      this.scrollTo(getPos() + px);
-    }
-    /**
-     * Method: cancelScroll
-     * 
-     * @returns {void}
-     */
-
-  }, {
-    key: "cancelScroll",
-    value: function cancelScroll() {
-      // Do nothing if no scroll Event has fired
-      if (!scrollAnimationFrame) {
-        return;
-      }
-
-      cancelAnimFrame(scrollAnimationFrame);
-    }
-    /**
-     * Method: update
-     * 
-     * @param {ScrollToSmoothSettings} obj The settings to be updated from the original instance 
-     * 
-     * @returns {void}
-     */
-
-  }, {
-    key: "update",
-    value: function update(obj) {
-      if (_typeof(obj) !== 'object') {
-        return;
-      }
-
-      for (var _i = 0, _Object$entries = Object.entries(obj); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            key = _Object$entries$_i[0],
-            value = _Object$entries$_i[1];
-
-        this.settings[key] = value;
-      }
-    }
-  }]);
-
-  return ScrollToSmooth;
-}();
+    this.settings = _objectSpread2(_objectSpread2({}, this.settings), obj);
+  }
+}
 
 /**
  * ScrollToSmooth Core Library
  */
 
-export default ScrollToSmooth;
-export { ScrollToSmooth, easeInBack, easeInBounce, easeInCirc, easeInCubic, easeInElastic, easeInExpo, easeInOutBack, easeInOutBounce, easeInOutCirc, easeInOutCubic, easeInOutElastic, easeInOutExpo, easeInOutQuad, easeInOutQuart, easeInOutQuint, easeInOutSine, easeInQuad, easeInQuart, easeInQuint, easeInSine, easeOutBack, easeOutBounce, easeOutCirc, easeOutCubic, easeOutElastic, easeOutExpo, easeOutQuad, easeOutQuart, easeOutQuint, easeOutSine, linear };
+export { ScrollToSmooth, ScrollToSmooth as default, easeInBack, easeInBounce, easeInCirc, easeInCubic, easeInElastic, easeInExpo, easeInOutBack, easeInOutBounce, easeInOutCirc, easeInOutCubic, easeInOutElastic, easeInOutExpo, easeInOutQuad, easeInOutQuart, easeInOutQuint, easeInOutSine, easeInQuad, easeInQuart, easeInQuint, easeInSine, easeOutBack, easeOutBounce, easeOutCirc, easeOutCubic, easeOutElastic, easeOutExpo, easeOutQuad, easeOutQuart, easeOutQuint, easeOutSine, linear };

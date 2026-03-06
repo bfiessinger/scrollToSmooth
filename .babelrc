@@ -1,17 +1,16 @@
 {
-	//"babelHelpers": "bundled",
   "presets": [
-		"@babel/typescript",
-		[
-			"@babel/preset-env",
-			{ 
-				"targets": "> 1%, last 2 versions, Firefox ESR, not dead",
-				"modules": false 
-			}
-		]
-	],
-	"plugins": [
-		"@babel/proposal-class-properties",
-    "@babel/proposal-object-rest-spread"
-	]
+    "@babel/preset-typescript",
+    [
+      "@babel/preset-env",
+      {
+        "targets": "> 1%, last 2 versions, Firefox ESR, not dead",
+        "modules": false
+      }
+    ]
+  ],
+  "plugins": [
+    "@babel/plugin-transform-class-properties",
+    "@babel/plugin-transform-object-rest-spread"
+  ]
 }

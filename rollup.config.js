@@ -1,12 +1,12 @@
 // Pkg Information
-const pkg = require('./package.json');
+import pkg from './package.json' with { type: 'json' };
 
 // Plugins
 import babel from '@rollup/plugin-babel';
 import typescript from '@rollup/plugin-typescript';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 
 const extensions = [
   '.js', '.jsx', '.ts', '.tsx',
@@ -23,7 +23,7 @@ const iifePlugins = [
 		extensions: extensions
 	}),
 	commonjs(),
-	typescript(),
+	typescript({ declaration: false }),
 	babel({
 		"extensions": extensions,
 		"babelHelpers": "bundled",
@@ -36,13 +36,8 @@ const iifePlugins = [
 		compress: {
 			typeofs: false
 		},
-		output: {
-			comments: function (node, comment) {
-				if (comment.line === 1) {
-					return true;
-				}
-				return false;
-			}
+		format: {
+			comments: (_node, comment) => comment.line === 1
 		}
 	})
 ];

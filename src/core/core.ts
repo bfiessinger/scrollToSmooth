@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Interfaces
  */
@@ -13,9 +11,17 @@ import {
 /**
  * Easings
  */
-import { 
-	linear 
-} from '../easings';
+import * as builtinEasings from '../easings';
+
+type EasingFn = (t: number) => number;
+
+function resolveEasing(easing: string | CallableFunction, t: number): number {
+	if (typeof easing === 'function') {
+		return (easing as EasingFn)(t);
+	}
+	const fn = (builtinEasings as Record<string, EasingFn>)[easing];
+	return typeof fn === 'function' ? fn(t) : t;
+}
 
 /**
  * Utilities
@@ -135,21 +141,6 @@ function clickHandler(this: ScrollToSmooth, el: Element, e: Event): void {
 }
 
 /**
- * Take a function name of an easing function and treat it like
- * a real function
- * 
- * @param {string} fn 
- * @param {number} t 
- * 
- * @returns {Function}
- * 
- * @access private
- */
-function evalTimeFn(fn: string, t: number): CallableFunction {
-	return Function('"use strict"; return (' + fn + '(' + t + '))')();
-}
-
-/**
  * Calculate scroll animation duration
  * 
  * @param distance 
@@ -246,7 +237,7 @@ function animateScroll(this: ScrollToSmooth, distFromTop: number, startPos: numb
 	const elapsed = Math.min(duration, getTime() - startTime);
 	
 	const t = elapsed / duration;
-	const easingPattern = (typeof this.settings.easing === 'string') ? evalTimeFn(this.settings.easing, t) : this.settings.easing(t);
+	const easingPattern = resolveEasing(this.settings.easing, t);
 	
 	const timeFunction = startPos + (distToScroll * easingPattern);
 	
@@ -314,7 +305,7 @@ export class ScrollToSmooth {
 			durationRelative: false,
 			durationMin: null,
 			durationMax: null,
-			easing: linear,
+			easing: builtinEasings.linear,
 			// Callbacks
 			onScrollStart: null,
 			onScrollUpdate: null,
@@ -324,14 +315,7 @@ export class ScrollToSmooth {
 		/**
 		 * Build the final Settings Object
 		 */
-		settings = settings || defaults;
-		for (const opt in defaults) {
-			if (Object.prototype.hasOwnProperty.call(defaults, opt) && !Object.prototype.hasOwnProperty.call(settings, opt)) {
-				settings[opt] = defaults[opt];
-			}
-		}
-
-		this.settings = settings;
+		this.settings = { ...defaults, ...settings };
 
 		/**
 		 * Set a container Element
@@ -548,9 +532,7 @@ export class ScrollToSmooth {
 			return;
 		}
 
-		for (const [key, value] of Object.entries(obj)) {
-			this.settings[key] = value;
-		}
+		this.settings = { ...this.settings, ...obj };
 
 	}
 
