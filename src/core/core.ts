@@ -2,8 +2,14 @@
  * Interfaces
  */
 import { 
-	ScrollToSmoothSettings 
+	ScrollToSmoothSettings,
+	ScrollData,
+	ScrollUpdateData,
+	EasingFunction
 } from './interfaces/ScrollToSmoothSettings';
+
+export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction };
+
 import { 
 	exceeding 
 } from './interfaces/exceedingInterface';
@@ -15,12 +21,16 @@ import * as builtinEasings from '../easings';
 
 type EasingFn = (t: number) => number;
 
-function resolveEasing(easing: string | CallableFunction, t: number): number {
+function resolveEasing(easing: string | CallableFunction | undefined, t: number): number {
 	if (typeof easing === 'function') {
 		return (easing as EasingFn)(t);
 	}
-	const fn = (builtinEasings as Record<string, EasingFn>)[easing];
-	return typeof fn === 'function' ? fn(t) : t;
+	if (typeof easing === 'string') {
+		const fn = (builtinEasings as Record<string, EasingFn>)[easing];
+		return typeof fn === 'function' ? fn(t) : t;
+	}
+	// fallback when easing is undefined
+	return t;
 }
 
 /**
@@ -289,12 +299,12 @@ export class ScrollToSmooth {
 	container: Document | HTMLElement | Element;
 	settings: ScrollToSmoothSettings;
 
-	constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: ScrollToSmoothSettings) {
+	constructor(nodes: string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element | (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings?: ScrollToSmoothSettings) {
 
 		/**
 		 * Build Default Settings Object
 		 */
-		const defaults = {
+		const defaults: ScrollToSmoothSettings = {
 			// Selectors
 			container: d,
 			targetAttribute: 'href',
@@ -310,7 +320,7 @@ export class ScrollToSmooth {
 			onScrollStart: null,
 			onScrollUpdate: null,
 			onScrollEnd: null
-		} as ScrollToSmoothSettings;
+		};
 	
 		/**
 		 * Build the final Settings Object
@@ -322,10 +332,11 @@ export class ScrollToSmooth {
 		 */
 		let container = b;
 		
-		if (typeof this.settings.container == 'string' && validateSelector(this.settings.container)) {
-			container = _$(this.settings.container) as HTMLElement;
-		} else if (typeof this.settings.container != 'string' && isNodeOrElement(this.settings.container) && validateSelector(this.settings.container)) {
-			container = this.settings.container as HTMLElement;
+		const containerSetting = this.settings.container;
+		if (typeof containerSetting === 'string' && validateSelector(containerSetting)) {
+			container = _$(containerSetting) as HTMLElement;
+		} else if (containerSetting && typeof containerSetting !== 'string' && isNodeOrElement(containerSetting) && validateSelector(containerSetting)) {
+			container = containerSetting as HTMLElement;
 		}
 
 		container = (container === d as unknown || container === dEl) ? b : container;

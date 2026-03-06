@@ -53,6 +53,20 @@ Include the script in your code:
 
 ## Usage
 
+> **TypeScript users:** the package ships with built-in declaration files. 
+> You can import the `Options`, `ScrollData` and other types directly:
+>
+> ```ts
+> import ScrollToSmooth, { Options, ScrollData, easeOutCubic } from 'scrolltosmooth';
+>
+> const options: Options = { duration: 500, easing: easeOutCubic };
+> const scroller = new ScrollToSmooth('a', options);
+> // scroller.onScrollStart = (data: ScrollData) => { ... };
+> ```
+>
+> The `Options` interface reflects all configuration properties and callbacks.
+
+
 ```javascript
 import { 
   scrollToSmooth, 

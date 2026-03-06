@@ -695,8 +695,12 @@ function resolveEasing(easing, t) {
   if (typeof easing === 'function') {
     return easing(t);
   }
-  const fn = builtinEasings[easing];
-  return typeof fn === 'function' ? fn(t) : t;
+  if (typeof easing === 'string') {
+    const fn = builtinEasings[easing];
+    return typeof fn === 'function' ? fn(t) : t;
+  }
+  // fallback when easing is undefined
+  return t;
 }
 let scrollAnimationFrame;
 const docExpanderAttr = 'data-scrolltosmooth-expand';
@@ -931,10 +935,11 @@ class ScrollToSmooth {
      * Set a container Element
      */
     let container = b;
-    if (typeof this.settings.container == 'string' && validateSelector(this.settings.container)) {
-      container = _$(this.settings.container);
-    } else if (typeof this.settings.container != 'string' && isNodeOrElement(this.settings.container) && validateSelector(this.settings.container)) {
-      container = this.settings.container;
+    const containerSetting = this.settings.container;
+    if (typeof containerSetting === 'string' && validateSelector(containerSetting)) {
+      container = _$(containerSetting);
+    } else if (containerSetting && typeof containerSetting !== 'string' && isNodeOrElement(containerSetting) && validateSelector(containerSetting)) {
+      container = containerSetting;
     }
     container = container === d || container === dEl ? b : container;
     this.container = container;

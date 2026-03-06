@@ -1,7 +1,9 @@
 /**
  * ScrollToSmooth Core Library
  */
-import { ScrollToSmooth } from "./core/core";
+import ScrollToSmooth from "./core/core";
+import type { Options, ScrollData, ScrollUpdateData, EasingFunction } from "./core/core";
+export type { Options, ScrollData, ScrollUpdateData, EasingFunction };
 /**
  * ScrollToSmooth Custom Easings
  */

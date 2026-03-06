@@ -1,12 +1,13 @@
 /**
  * Interfaces
  */
-import { ScrollToSmoothSettings } from './interfaces/ScrollToSmoothSettings';
+import { ScrollToSmoothSettings, ScrollData, ScrollUpdateData, EasingFunction } from './interfaces/ScrollToSmoothSettings';
+export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction };
 export declare class ScrollToSmooth {
     elements: NodeListOf<Element>;
     container: Document | HTMLElement | Element;
     settings: ScrollToSmoothSettings;
-    constructor(nodes: (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings: ScrollToSmoothSettings);
+    constructor(nodes: string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element | (string | HTMLCollectionOf<Element> | NodeListOf<Element> | Element)[], settings?: ScrollToSmoothSettings);
     /**
      * Initialize SmoothScroll
      *
