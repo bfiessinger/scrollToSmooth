@@ -1,2 +1,2 @@
-import { ScrollToSmooth } from '../scrolltosmooth';
+import { ScrollToSmooth } from '../index';
 export default ScrollToSmooth;

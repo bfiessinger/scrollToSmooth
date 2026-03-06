@@ -682,41 +682,9 @@ const getDocHeight = () => {
  */
 const getWinHeight = () => w.innerHeight || dEl.clientHeight || b.clientHeight;
 
-/**
- * Simple helper to create a numeric string with px suffix
- * 
- * @returns {string}
- */
-const toPxString = int => {
-  return int + 'px';
-};
-
-function resolveEasing(easing, t) {
-  if (typeof easing === 'function') {
-    return easing(t);
-  }
-  if (typeof easing === 'string') {
-    const fn = builtinEasings[easing];
-    return typeof fn === 'function' ? fn(t) : t;
-  }
-  // fallback when easing is undefined
-  return t;
-}
-let scrollAnimationFrame;
 const docExpanderAttr = 'data-scrolltosmooth-expand';
 const docExpanderAttrTopValue = 'top';
 const docExpanderAttrBottomValue = 'bottom';
-
-/**
- * Determine the target Element from the targetAttribute of a
- * scrollToSmooth selector
- * 
- * @param {Element} el element with the target Attribute
- * 
- * @returns {Element | null} valid targetSelector or null
- * 
- * @access private
- */
 function getTargetElement(el) {
   let targetSelector = '';
   if (this.settings.targetAttribute === 'href' && el.href) {
@@ -731,59 +699,49 @@ function getTargetElement(el) {
   }
   return validateSelector(targetSelector, this.container) ? _$(targetSelector, this.container) : null;
 }
-
-/**
- * Filter all scrollto elements that have target attributes related to the current page
- * 
- * @returns {array} Array with all links found
- * 
- * @access private
- */
 function linkCollector() {
   const links = [];
   forEach(this.elements, el => {
-    // Check if the selector is found on the page
     if (getTargetElement.call(this, el)) {
-      // Handle href attributes
-      if (this.settings.targetAttribute === 'href' && el.href.indexOf(getBaseURI(el)) != -1 && el.href.indexOf('#') != -1 && (el.hash != '' || this.settings.topOnEmptyHash) || this.settings.targetAttribute != 'href') {
+      const anchor = el;
+      if (this.settings.targetAttribute === 'href' && anchor.href.indexOf(getBaseURI(el)) != -1 && anchor.href.indexOf('#') != -1 && (anchor.hash != '' || this.settings.topOnEmptyHash) || this.settings.targetAttribute != 'href') {
         links.push(el);
       }
     }
   });
   return links;
 }
-
-/**
- * Event handler for click events on scrollToSmooth selectors
- * 
- * @param {Element} el 
- * @param {Event} e The current Event 
- * 
- * @returns {void}
- * 
- * @access private
- */
 function clickHandler(el, e) {
   e.stopPropagation();
-
-  // Prevent Default Behaviour of how the browser would treat the click event
   e.preventDefault();
   const currentTarget = getTargetElement.call(this, el);
   if (!currentTarget) {
     return;
   }
-
-  // Start Scrolling
   this.scrollTo(currentTarget);
 }
 
 /**
- * Calculate scroll animation duration
- * 
- * @param distance 
- * 
- * @access private
+ * Easing utility – common helpers related to easing functions.
  */
+/**
+ * Resolve an easing specifier to a numeric progression.
+ *
+ * @param easing  name of builtin easing or custom function
+ * @param t       progress [0..1]
+ */
+function resolveEasing(easing, t) {
+  if (typeof easing === 'function') {
+    return easing(t);
+  }
+  if (typeof easing === 'string') {
+    const fn = builtinEasings[easing];
+    return typeof fn === 'function' ? fn(t) : t;
+  }
+  // fallback when easing is undefined
+  return t;
+}
+
 function getDuration(distance) {
   let duration = Math.max(1, this.settings.duration);
 
@@ -804,15 +762,6 @@ function getDuration(distance) {
   }
   return duration;
 }
-
-/**
- * Determine if the current scroll position exceeds the document to
- * the top or bottom.
- * 
- * @param {number} pos Current Scroll Position
- * 
- * @access private
- */
 function scrollExceedsDocument(pos, docHeight, winHeight) {
   const min = 0;
   const max = docHeight - winHeight;
@@ -835,11 +784,11 @@ function expandDocument(easing, docHeight, winHeight) {
   const expT = expanders.filter(el => el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue)[0];
   const expB = expanders.filter(el => el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue)[0];
   if (exceeding && expT && exceeding.to === docExpanderAttrTopValue) {
-    expT.style.height = toPxString(exceeding.px);
+    expT.style.height = easing + 'px';
   } else if (exceeding && expB && exceeding.to === docExpanderAttrBottomValue) {
-    expB.style.height = toPxString(exceeding.px);
+    expB.style.height = easing + 'px';
   } else {
-    forEach(expanders, exp => {
+    expanders.forEach(exp => {
       exp.style.removeProperty('height');
     });
   }
@@ -847,28 +796,12 @@ function expandDocument(easing, docHeight, winHeight) {
 function getDocumentExpanders() {
   return Array.prototype.slice.call(this.container.children).filter(el => el.hasAttribute(docExpanderAttr));
 }
-
-/**
- * Animate scrolling 
- * 
- * @param {number} distFromTop Distance to be scrolled from top
- * @param {number} startPos Distance from top when the animation has started
- * @param {number} startTime The time in ms when the animation has started
- * 
- * @returns {void}
- * 
- * @access private
- */
 function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
-  const distToScroll = distFromTop - startPos;
-  const scrollPx = distToScroll < 0 ? distToScroll * -1 : distToScroll;
-  const duration = getDuration.call(this, scrollPx);
-  const elapsed = Math.min(duration, getTime() - startTime);
-  const t = elapsed / duration;
+  const elapsed = getTime() - startTime;
+  const duration = getDuration.call(this, Math.abs(distFromTop - startPos));
+  const t = Math.min(1, elapsed / duration);
   const easingPattern = resolveEasing(this.settings.easing, t);
-  const timeFunction = startPos + distToScroll * easingPattern;
-
-  // Callback onScrollUpdate
+  const timeFunction = startPos + (distFromTop - startPos) * easingPattern;
   if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
     this.settings.onScrollUpdate({
       startPosition: startPos,
@@ -885,21 +818,20 @@ function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
   }
   expandDocument.call(this, timeFunction, docHeight, winHeight);
   if (elapsed >= duration) {
-    // Callback onScrollEnd
     if (this.settings.onScrollEnd && typeof this.settings.onScrollEnd == 'function') {
       this.settings.onScrollEnd({
         startPosition: startPos,
         endPosition: distFromTop
       });
     }
-
-    // Stop when the element is reached
     return;
   }
   scrollAnimationFrame = reqAnimFrame(() => {
     animateScroll.call(this, distFromTop, startPos, startTime, docHeight, winHeight);
   });
 }
+let scrollAnimationFrame;
+
 class ScrollToSmooth {
   constructor(nodes, settings) {
     _defineProperty(this, "elements", void 0);

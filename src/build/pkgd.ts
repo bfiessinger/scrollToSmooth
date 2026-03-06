@@ -35,7 +35,7 @@ import {
 	easeInBounce,
 	easeOutBounce,
 	easeInOutBounce
-} from '../scrolltosmooth';
+} from '../index';
 
 Object.assign(w, {
 	linear,

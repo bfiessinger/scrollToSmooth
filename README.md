@@ -27,6 +27,13 @@ Powered by window.requestAnimationFrame() API and highly customizable.
 
 ## Getting started
 
+### Architecture (for contributors)
+- **src/core**: core class and utilities. Future work will split this into submodules (animation, events, helpers).
+- **src/easings/**: each easing is a standalone module that can be imported individually.
+- **src/core/helpers** and **src/core/interfaces**: internal helpers and type definitions.
+
+
+
 ### Installation
 
 #### NPM
@@ -53,8 +60,25 @@ Include the script in your code:
 
 ## Usage
 
+### Importing from the package root
+The entry point is now `src/index.ts`, so both CommonJS and ES modules consume the same API. You can also reach individual easings via `import { easeOutCubic } from 'scrolltosmooth';`.
+
+#### Importing a single easing module
+To reduce bundle size you may import a single easing directly from its subpath; the build outputs each easing under `dist/easings`, and the package exports field maps them automatically:
+
+```js
+// ES module
+import { easeOutCubic } from 'scrolltosmooth/easings/easeOutCubic';
+
+// CommonJS
+const { easeOutCubic } = require('scrolltosmooth/easings/easeOutCubic');
+```
+
+This ensures only the code for that easing is included in your bundle.
+
+
 > **TypeScript users:** the package ships with built-in declaration files. 
-> You can import the `Options`, `ScrollData` and other types directly:
+> You can import the `Options`, `ScrollData` and other types directly from the package root (which now re‑exports everything):
 >
 > ```ts
 > import ScrollToSmooth, { Options, ScrollData, easeOutCubic } from 'scrolltosmooth';

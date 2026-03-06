@@ -59,6 +59,14 @@ const modulePlugins = [
 	}),
 ];
 
+// prepare an array of easing entry points so we can output them separately
+import fs from 'fs';
+import path from 'path';
+const easingFiles = fs.readdirSync(path.resolve('src/easings'))
+	.filter(f=>f.endsWith('.ts'))
+	.map(f=>path.join('src/easings', f));
+
+
 // Default
 export default [
 	{
@@ -100,6 +108,17 @@ export default [
 		output: {
 			file: pkg.module,
 			format: 'es',
+			banner: banner
+		},
+		plugins: modulePlugins
+	},
+	{
+		input: easingFiles,
+		external: [],
+		output: {
+			dir: 'dist/easings',
+			format: 'es',
+			entryFileNames: '[name].js',
 			banner: banner
 		},
 		plugins: modulePlugins

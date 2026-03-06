@@ -8,6 +8,15 @@
   "module": "dist/scrolltosmooth.esm.js",
   "browser": "dist/scrolltosmooth.pkgd.min.js",
   "types": "@types/scrolltosmooth.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/scrolltosmooth.esm.js",
+      "require": "./dist/scrolltosmooth.cjs.js",
+      "default": "./dist/scrolltosmooth.cjs.js"
+    },
+    "./package.json": "./package.json",
+    "./easings/*": "./dist/easings/*.js"
+  },
   "scripts": {
     "lint": "eslint . --ext .ts",
     "build:types": "tsc -p tsconfig.types.json --emitDeclarationOnly",
