@@ -38,8 +38,15 @@ export function isNodeOrElement(obj: unknown): obj is Node {
 /**
  * Current vertical scroll position.
  */
-export function getScrollPosition(): number {
+export function getScrollPositionY(): number {
 	return window.scrollY ?? document.body.scrollTop ?? document.documentElement.scrollTop;
+}
+
+/**
+ * Current horizontal scroll position.
+ */
+export function getScrollPositionX(): number {
+	return window.scrollX ?? document.body.scrollLeft ?? document.documentElement.scrollLeft;
 }
 
 /**
@@ -71,8 +78,27 @@ export function getDocumentHeight(): number {
 }
 
 /**
+ * Total scrollable document width.
+ */
+export function getDocumentWidth(): number {
+	const body = document.body;
+	const docEl = document.documentElement;
+	return Math.max(
+		body.scrollWidth, body.offsetWidth, body.clientWidth,
+		docEl.scrollWidth, docEl.offsetWidth, docEl.clientWidth
+	);
+}
+
+/**
  * Viewport height.
  */
 export function getWindowHeight(): number {
 	return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+}
+
+/**
+ * Viewport width.
+ */
+export function getWindowWidth(): number {
+	return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 }

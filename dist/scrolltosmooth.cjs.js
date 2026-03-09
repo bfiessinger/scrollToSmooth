@@ -557,8 +557,15 @@ function isNodeOrElement(obj) {
 /**
  * Current vertical scroll position.
  */
-function getScrollPosition() {
+function getScrollPositionY() {
   return window.scrollY ?? document.body.scrollTop ?? document.documentElement.scrollTop;
+}
+
+/**
+ * Current horizontal scroll position.
+ */
+function getScrollPositionX() {
+  return window.scrollX ?? document.body.scrollLeft ?? document.documentElement.scrollLeft;
 }
 
 /**
@@ -587,16 +594,34 @@ function getDocumentHeight() {
 }
 
 /**
+ * Total scrollable document width.
+ */
+function getDocumentWidth() {
+  const body = document.body;
+  const docEl = document.documentElement;
+  return Math.max(body.scrollWidth, body.offsetWidth, body.clientWidth, docEl.scrollWidth, docEl.offsetWidth, docEl.clientWidth);
+}
+
+/**
  * Viewport height.
  */
 function getWindowHeight() {
   return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 }
 
+/**
+ * Viewport width.
+ */
+function getWindowWidth() {
+  return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+}
+
 /** Data-attribute used on invisible document expander divs */
 const EXPANDER_ATTR = 'data-scrolltosmooth-expand';
 const EXPANDER_TOP = 'top';
 const EXPANDER_BOTTOM = 'bottom';
+const EXPANDER_LEFT = 'left';
+const EXPANDER_RIGHT = 'right';
 
 /** Cancel-animation user-interaction events */
 const CANCEL_EVENTS = ['mousewheel', 'wheel', 'touchmove'];
@@ -605,6 +630,7 @@ const defaults = {
   targetAttribute: 'href',
   topOnEmptyHash: true,
   offset: null,
+  axis: 'y',
   duration: 400,
   durationRelative: false,
   durationMin: null,
@@ -656,14 +682,7 @@ class ScrollToSmooth {
   init() {
     // Tear down any previous initialisation first
     this.destroy();
-
-    // Create document expanders for bounce easing support
-    const expTop = document.createElement('div');
-    expTop.setAttribute(EXPANDER_ATTR, EXPANDER_TOP);
-    this.container.insertBefore(expTop, this.container.firstChild);
-    const expBottom = document.createElement('div');
-    expBottom.setAttribute(EXPANDER_ATTR, EXPANDER_BOTTOM);
-    this.container.appendChild(expBottom);
+    this._ensureExpanders(this.settings.axis ?? 'y');
 
     // Bind click events – store references for proper removal
     for (const link of this._collectLinks()) {
@@ -707,65 +726,150 @@ class ScrollToSmooth {
   }
 
   /**
-   * Animate a scroll to the given target (element, selector, or pixel position).
+   * Animate a scroll to the given target.
+   * @param target  Element, CSS selector, pixel offset, or `{x, y}` ScrollPoint.
+   * @param axis    Override the instance-level `axis` setting for this call.
    */
-  scrollTo(target) {
-    const startPos = getScrollPosition();
-    const docHeight = getDocumentHeight();
-    const winHeight = getWindowHeight();
-    let distFromTop = 0;
-    if (!isNaN(target)) {
-      if (typeof target === 'string') {
-        target = parseFloat(target);
+  scrollTo(target, axis) {
+    this.cancelScroll();
+    const resolvedAxis = axis ?? this.settings.axis ?? 'y';
+    const startX = this._getContainerScrollPosition('x');
+    const startY = this._getContainerScrollPosition('y');
+    const docWidth = this._getDocumentSize('x');
+    const docHeight = this._getDocumentSize('y');
+    const viewWidth = this._getViewportSize('x');
+    const viewHeight = this._getViewportSize('y');
+    let targetX = startX;
+    let targetY = startY;
+
+    // ── Resolve target coordinates ────────────────────────────────
+    const isScrollPoint = typeof target === 'object' && target !== null && !('nodeType' in target) && 'x' in target && 'y' in target;
+    if (isScrollPoint) {
+      const sp = target;
+      targetX = Math.max(0, Math.min(sp.x, docWidth - viewWidth));
+      targetY = Math.max(0, Math.min(sp.y, docHeight - viewHeight));
+    } else if (!isNaN(target)) {
+      if (typeof target === 'string') target = parseFloat(target);
+      const n = target;
+      if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+        targetX = docWidth - n < viewWidth ? docWidth - viewWidth : n;
       }
-      target = docHeight - target < winHeight ? docHeight - winHeight : target;
-      distFromTop = target;
+      if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+        targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
+      }
     } else if ((typeof target === 'object' || typeof target === 'string') && validateSelector(target, this.container)) {
       if (typeof target === 'string') {
         target = querySelector(target, this.container);
       }
-      const targetOffset = target.getBoundingClientRect().top + startPos;
-      distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
+      const rect = target.getBoundingClientRect();
+      const cont = this.container;
+      const isDocBody = cont === document.body || cont === document.documentElement;
+      let rawX;
+      let rawY;
+      if (isDocBody) {
+        rawX = rect.left + startX;
+        rawY = rect.top + startY;
+      } else {
+        const cr = cont.getBoundingClientRect();
+        rawX = rect.left - cr.left + startX;
+        rawY = rect.top - cr.top + startY;
+      }
+      if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+        targetX = docWidth - rawX < viewWidth ? docWidth - viewWidth : rawX;
+      }
+      if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+        targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
+      }
     }
 
-    // Apply configured offset
+    // ── Apply offset ──────────────────────────────────────────────
     if (this.settings.offset !== null) {
-      let offset = 0;
+      let offsetX = 0;
+      let offsetY = 0;
       if (validateSelector(this.settings.offset, this.container)) {
-        let offsetElement = this.settings.offset;
-        if (typeof offsetElement === 'string') {
-          offsetElement = querySelector(this.settings.offset);
+        let offsetEl = this.settings.offset;
+        if (typeof offsetEl === 'string') {
+          offsetEl = querySelector(this.settings.offset);
         }
-        if (isNodeOrElement(offsetElement)) {
-          offset = offsetElement.getBoundingClientRect().height;
+        if (isNodeOrElement(offsetEl)) {
+          const offRect = offsetEl.getBoundingClientRect();
+          offsetX = offRect.width;
+          offsetY = offRect.height;
         }
       } else if (!isNaN(this.settings.offset)) {
-        offset = this.settings.offset;
-        if (typeof offset === 'string') {
-          offset = parseFloat(offset);
-        }
+        const o = typeof this.settings.offset === 'string' ? parseFloat(this.settings.offset) : this.settings.offset;
+        offsetX = o;
+        offsetY = o;
       }
-      distFromTop -= offset;
+      if (resolvedAxis === 'x' || resolvedAxis === 'both') targetX -= offsetX;
+      if (resolvedAxis === 'y' || resolvedAxis === 'both') targetY -= offsetY;
     }
-
-    // Distance can't be negative
-    distFromTop = Math.max(0, distFromTop);
-
-    // Callback: onScrollStart
+    targetX = Math.max(0, targetX);
+    targetY = Math.max(0, targetY);
     if (typeof this.settings.onScrollStart === 'function') {
       this.settings.onScrollStart({
-        startPosition: startPos,
-        endPosition: distFromTop
+        startPosition: resolvedAxis === 'x' ? startX : startY,
+        endPosition: resolvedAxis === 'x' ? targetX : targetY
       });
     }
-    this._animateScroll(distFromTop, startPos, getTimestamp(), docHeight, winHeight);
+    this._ensureExpanders(resolvedAxis);
+    this._animateScroll({
+      targetX,
+      startX,
+      targetY,
+      startY,
+      docWidth,
+      viewWidth,
+      docHeight,
+      viewHeight,
+      startTime: getTimestamp(),
+      axis: resolvedAxis
+    });
+  }
+
+  /**
+   * Animate a horizontal scroll to the given target. Shorthand for `scrollTo(target, 'x')`.
+   */
+  scrollToX(target) {
+    this.scrollTo(target, 'x');
+  }
+
+  /**
+   * Animate a simultaneous scroll to the given x/y coordinates.
+   * Shorthand for `scrollTo({ x, y }, 'both')`.
+   */
+  scrollToBoth(x, y) {
+    this.scrollTo({
+      x,
+      y
+    }, 'both');
   }
 
   /**
    * Scroll by a relative number of pixels from the current position.
+   * @param axis Override axis ('x' or 'y'). Defaults to instance axis, or 'y' when axis is 'both'.
    */
-  scrollBy(px) {
-    this.scrollTo(getScrollPosition() + px);
+  scrollBy(px, axis) {
+    const instanceAxis = this.settings.axis ?? 'y';
+    const resolvedAxis = axis ?? (instanceAxis === 'both' ? 'y' : instanceAxis);
+    this.scrollTo(this._getContainerScrollPosition(resolvedAxis) + px, resolvedAxis);
+  }
+
+  /**
+   * Scroll horizontally by a relative number of pixels. Shorthand for `scrollBy(px, 'x')`.
+   */
+  scrollByX(px) {
+    this.scrollBy(px, 'x');
+  }
+
+  /**
+   * Scroll both axes simultaneously by relative pixel amounts.
+   */
+  scrollByBoth(dx, dy) {
+    this.scrollTo({
+      x: this._getContainerScrollPosition('x') + dx,
+      y: this._getContainerScrollPosition('y') + dy
+    }, 'both');
   }
 
   /**
@@ -790,32 +894,67 @@ class ScrollToSmooth {
   // Private – Animation
   // ---------------------------------------------------------------
 
-  _animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
+  _animateScroll(config) {
+    const {
+      targetX,
+      startX,
+      targetY,
+      startY,
+      docWidth,
+      viewWidth,
+      docHeight,
+      viewHeight,
+      startTime,
+      axis
+    } = config;
     const elapsed = getTimestamp() - startTime;
-    const duration = this._getDuration(Math.abs(distFromTop - startPos));
+    const distX = Math.abs(targetX - startX);
+    const distY = Math.abs(targetY - startY);
+    const distance = axis === 'both' ? Math.max(distX, distY) : axis === 'x' ? distX : distY;
+    const duration = this._getDuration(distance);
     const t = Math.min(1, elapsed / duration);
     const easedProgress = this._resolveEasing(this.settings.easing, t);
-    const currentPos = startPos + (distFromTop - startPos) * easedProgress;
+    const currentX = startX + (targetX - startX) * easedProgress;
+    const currentY = startY + (targetY - startY) * easedProgress;
     if (typeof this.settings.onScrollUpdate === 'function') {
       this.settings.onScrollUpdate({
-        startPosition: startPos,
-        currentPosition: currentPos,
-        endPosition: distFromTop
+        startPosition: axis === 'x' ? startX : startY,
+        currentPosition: axis === 'x' ? currentX : currentY,
+        endPosition: axis === 'x' ? targetX : targetY
       });
     }
-    window.scroll(0, currentPos);
-    this._expandDocument(currentPos, docHeight, winHeight);
+
+    // Expand document BEFORE setting scroll so the browser's scroll-area
+    // already includes the overshoot distance when we call window.scroll().
+    // (Left/top overshoot: clamped to 0, content shifted by expander width/height.
+    //  Right/bottom overshoot: doc must be wider/taller first so scroll isn't clamped.)
+    if (axis === 'both') {
+      this._expandDocument(currentX, docWidth, viewWidth, 'x');
+      this._expandDocument(currentY, docHeight, viewHeight, 'y');
+      this._setContainerScrollPositionBoth(currentX, currentY);
+    } else if (axis === 'x') {
+      this._expandDocument(currentX, docWidth, viewWidth, 'x');
+      this._setContainerScrollPosition(currentX, 'x');
+    } else {
+      this._expandDocument(currentY, docHeight, viewHeight, 'y');
+      this._setContainerScrollPosition(currentY, 'y');
+    }
+
+    // Expose current scroll position as CSS custom properties so the
+    // surrounding page (e.g. expander backgrounds) can react to it.
+    this.container.style.setProperty('--sts-scroll-x', String(Math.round(currentX)));
+    this.container.style.setProperty('--sts-scroll-y', String(Math.round(currentY)));
     if (elapsed >= duration) {
       if (typeof this.settings.onScrollEnd === 'function') {
         this.settings.onScrollEnd({
-          startPosition: startPos,
-          endPosition: distFromTop
+          startPosition: axis === 'x' ? startX : startY,
+          endPosition: axis === 'x' ? targetX : targetY
         });
       }
       return;
     }
     this._animationFrame = window.requestAnimationFrame(() => {
-      this._animateScroll(distFromTop, startPos, startTime, docHeight, winHeight);
+      this._animateScroll(config);
     });
   }
   _getDuration(distance) {
@@ -842,32 +981,152 @@ class ScrollToSmooth {
   }
 
   // ---------------------------------------------------------------
-  // Private – Document expansion (lets bounce easings scroll past edges)
+  // Private – Container scroll position helpers
   // ---------------------------------------------------------------
 
-  _expandDocument(scrollPos, docHeight, winHeight) {
-    const exceeding = this._scrollExceedsDocument(scrollPos, docHeight, winHeight);
-    const expanders = this._getDocumentExpanders();
-    const expTop = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_TOP);
-    const expBottom = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_BOTTOM);
-    if (exceeding && expTop && exceeding.direction === EXPANDER_TOP) {
-      expTop.style.height = exceeding.px + 'px';
-    } else if (exceeding && expBottom && exceeding.direction === EXPANDER_BOTTOM) {
-      expBottom.style.height = exceeding.px + 'px';
+  _getContainerScrollPosition(axis) {
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    if (axis === 'x') {
+      return isDocBody ? getScrollPositionX() : container.scrollLeft;
+    }
+    return isDocBody ? getScrollPositionY() : container.scrollTop;
+  }
+  _setContainerScrollPosition(pos, axis) {
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    if (isDocBody) {
+      axis === 'x' ? window.scroll(pos, window.scrollY ?? 0) : window.scroll(window.scrollX ?? 0, pos);
     } else {
-      for (const exp of expanders) {
-        exp.style.removeProperty('height');
+      if (axis === 'x') {
+        container.scrollLeft = pos;
+      } else {
+        container.scrollTop = pos;
       }
     }
   }
-  _scrollExceedsDocument(pos, docHeight, winHeight) {
-    const max = docHeight - winHeight;
+  _setContainerScrollPositionBoth(x, y) {
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    if (isDocBody) {
+      window.scroll(x, y);
+    } else {
+      container.scrollLeft = x;
+      container.scrollTop = y;
+    }
+  }
+  _getDocumentSize(axis) {
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    if (axis === 'x') {
+      return isDocBody ? getDocumentWidth() : container.scrollWidth;
+    }
+    return isDocBody ? getDocumentHeight() : container.scrollHeight;
+  }
+  _getViewportSize(axis) {
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    if (axis === 'x') {
+      return isDocBody ? getWindowWidth() : container.clientWidth;
+    }
+    return isDocBody ? getWindowHeight() : container.clientHeight;
+  }
+
+  // ---------------------------------------------------------------
+  // Private – Document expansion (lets bounce easings scroll past edges)
+  // ---------------------------------------------------------------
+
+  /**
+   * Ensure the required expander divs exist in the container.
+   * Idempotent — skips creation if already present.
+   * Called both from init() and lazily from scrollTo() so that
+   * programmatic-only usage (no init()) gets expanders too.
+   */
+  _ensureExpanders(axis) {
+    // Live lookup so each step sees what was just inserted
+    const getExp = dir => Array.from(this.container.children).find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
+
+    // Required DOM order: [top] [left] …content… [right] [bottom]
+
+    // TOP – always the very first child
+    if ((axis === 'y' || axis === 'both') && !getExp(EXPANDER_TOP)) {
+      const el = document.createElement('div');
+      el.setAttribute(EXPANDER_ATTR, EXPANDER_TOP);
+      this.container.insertBefore(el, this.container.firstChild);
+    }
+
+    // LEFT – right after top (so it is in the same inline line as the board)
+    if ((axis === 'x' || axis === 'both') && !getExp(EXPANDER_LEFT)) {
+      const el = document.createElement('div');
+      el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
+      el.style.display = 'inline-block';
+      el.style.verticalAlign = 'top';
+      const topExp = getExp(EXPANDER_TOP);
+      this.container.insertBefore(el, topExp ? topExp.nextSibling : this.container.firstChild);
+    }
+
+    // RIGHT – before bottom (if it exists) so it stays on the inline line
+    if ((axis === 'x' || axis === 'both') && !getExp(EXPANDER_RIGHT)) {
+      const el = document.createElement('div');
+      el.setAttribute(EXPANDER_ATTR, EXPANDER_RIGHT);
+      el.style.display = 'inline-block';
+      el.style.verticalAlign = 'top';
+      const bottomExp = getExp(EXPANDER_BOTTOM);
+      if (bottomExp) {
+        this.container.insertBefore(el, bottomExp);
+      } else {
+        this.container.appendChild(el);
+      }
+    }
+
+    // BOTTOM – always the very last child
+    if ((axis === 'y' || axis === 'both') && !getExp(EXPANDER_BOTTOM)) {
+      const el = document.createElement('div');
+      el.setAttribute(EXPANDER_ATTR, EXPANDER_BOTTOM);
+      this.container.appendChild(el);
+    }
+  }
+  _expandDocument(scrollPos, docSize, viewSize, axis = 'y') {
+    const exceeding = this._scrollExceedsDocument(scrollPos, docSize, viewSize, axis);
+    const expanders = this._getDocumentExpanders();
+    if (axis === 'x') {
+      const expLeft = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_LEFT);
+      const expRight = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_RIGHT);
+      if (exceeding && expLeft && exceeding.direction === EXPANDER_LEFT) {
+        expLeft.style.width = exceeding.px + 'px';
+        expRight?.style.removeProperty('width');
+      } else if (exceeding && expRight && exceeding.direction === EXPANDER_RIGHT) {
+        expRight.style.width = exceeding.px + 'px';
+        expLeft?.style.removeProperty('width');
+      } else {
+        expLeft?.style.removeProperty('width');
+        expRight?.style.removeProperty('width');
+      }
+    } else {
+      const expTop = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_TOP);
+      const expBottom = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_BOTTOM);
+      if (exceeding && expTop && exceeding.direction === EXPANDER_TOP) {
+        expTop.style.height = exceeding.px + 'px';
+        expBottom?.style.removeProperty('height');
+      } else if (exceeding && expBottom && exceeding.direction === EXPANDER_BOTTOM) {
+        expBottom.style.height = exceeding.px + 'px';
+        expTop?.style.removeProperty('height');
+      } else {
+        expTop?.style.removeProperty('height');
+        expBottom?.style.removeProperty('height');
+      }
+    }
+  }
+  _scrollExceedsDocument(pos, docSize, viewSize, axis = 'y') {
+    const max = docSize - viewSize;
+    const startDir = axis === 'x' ? EXPANDER_LEFT : EXPANDER_TOP;
+    const endDir = axis === 'x' ? EXPANDER_RIGHT : EXPANDER_BOTTOM;
     if (pos < 0) return {
-      direction: EXPANDER_TOP,
+      direction: startDir,
       px: pos * -1
     };
     if (pos > max) return {
-      direction: EXPANDER_BOTTOM,
+      direction: endDir,
       px: (max - pos) * -1
     };
     return false;

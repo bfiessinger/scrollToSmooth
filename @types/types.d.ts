@@ -13,6 +13,13 @@ export interface ScrollUpdateData<T = number> extends ScrollData<T> {
     currentPosition: T;
 }
 /**
+ * An explicit two-axis scroll target.
+ */
+export interface ScrollPoint {
+    x: number;
+    y: number;
+}
+/**
  * A valid easing function accepts a normalized progress value (0–1)
  * and returns the eased progress.
  */
@@ -26,6 +33,7 @@ export interface ScrollToSmoothSettings {
     targetAttribute?: string;
     offset?: Node | Element | string | number | null;
     topOnEmptyHash?: boolean;
+    axis?: 'x' | 'y' | 'both';
     duration?: number;
     durationRelative?: boolean | number;
     durationMin?: number | null;

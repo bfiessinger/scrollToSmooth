@@ -16,7 +16,11 @@ export declare function isNodeOrElement(obj: unknown): obj is Node;
 /**
  * Current vertical scroll position.
  */
-export declare function getScrollPosition(): number;
+export declare function getScrollPositionY(): number;
+/**
+ * Current horizontal scroll position.
+ */
+export declare function getScrollPositionX(): number;
 /**
  * High-resolution timestamp.
  */
@@ -30,6 +34,14 @@ export declare function getBaseURI(el: Element): string;
  */
 export declare function getDocumentHeight(): number;
 /**
+ * Total scrollable document width.
+ */
+export declare function getDocumentWidth(): number;
+/**
  * Viewport height.
  */
 export declare function getWindowHeight(): number;
+/**
+ * Viewport width.
+ */
+export declare function getWindowWidth(): number;

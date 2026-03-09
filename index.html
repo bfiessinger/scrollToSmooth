@@ -5,113 +5,221 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>ScrollToSmooth</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css" rel="stylesheet" />
+  <title>ScrollToSmooth — 2D Board Demo</title>
   <link href="demo/demo.css" rel="stylesheet" />
 </head>
 
-<body id="scroll_container">
+<body>
 
-  <nav>
-    <a class="top" href="#">
-			<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="long-arrow-up" class="svg-inline--fa fa-long-arrow-up fa-w-10" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-				<path fill="#FFF" d="M58.427 225.456L124 159.882V456c0 13.255 10.745 24 24 24h24c13.255 0 24-10.745 24-24V159.882l65.573 65.574c9.373 9.373 24.569 9.373 33.941 0l16.971-16.971c9.373-9.373 9.373-24.569 0-33.941L176.971 39.029c-9.373-9.373-24.568-9.373-33.941 0L7.515 174.544c-9.373 9.373-9.373 24.569 0 33.941l16.971 16.971c9.372 9.373 24.568 9.373 33.941 0z"></path>
-			</svg>
-		</a>
-    <a href="#section-1">Vanilla JS Smooth Scroll</a>
-    <a href="#section-2"></a>
-    <a href="#section-3"></a>
-    <a href="#section-5"></a>
-  </nav>
-  <section id="section-1">
-    <div>
-      <strong>ScrollToSmooth</strong>
-    </div>
-  </section>
-  <section id="section-2">
-    <div>
-      <strong>Section</strong>
-    </div>
-  </section>
-  <section id="section-3">
-    <div>
-      <strong>Section</strong>
-    </div>
-  </section>
-  <section id="section-5">
-    <div>
-      <strong>Section</strong>
-    </div>
-  </section>
+  <!-- 2D board — cells injected by JS -->
+  <div class="board" id="board"></div>
 
-	<a href="https://github.com/bfiessinger/scrollToSmooth" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#70B7FD; color:#fff; position: fixed; top: 0; border: 0; left: 0; transform: scale(-1, 1);" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+  <!-- Fixed header -->
+  <header class="sts-header">
+    <strong>ScrollToSmooth</strong>
+    <span>2D board &mdash; <code>axis: 'both' | 'x' | 'y'</code></span>
+  </header>
 
+  <!-- Directional nav + minimap wrapper -->
+  <div class="controls">
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
+    <div class="nav-cross" aria-label="Scroll navigation">
+      <button class="nav-btn" id="nav-up"    title="Up (↑)">↑</button>
+      <button class="nav-btn" id="nav-left"  title="Left (←)">←</button>
+      <button class="nav-btn nav-btn-home" id="nav-home" title="First cell (Home)">⌂</button>
+      <button class="nav-btn" id="nav-right" title="Right (→)">→</button>
+      <button class="nav-btn" id="nav-down"  title="Down (↓)">↓</button>
+    </div>
+
+    <aside class="minimap" aria-label="Board overview">
+      <p class="minimap-title">Map <span id="cell-indicator"></span></p>
+      <div class="minimap-grid" id="minimap-grid"></div>
+    </aside>
+
+  </div>
+
+  <!-- GitHub corner -->
+  <a href="https://github.com/bfiessinger/scrollToSmooth" class="github-corner" aria-label="View source on GitHub" target="_blank" rel="noopener">
+    <svg width="60" height="60" viewBox="0 0 250 250" style="fill:#70B7FD;color:#fff;position:fixed;top:0;border:0;right:0;" aria-hidden="true">
+      <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+      <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin:130px 106px;" class="octo-arm"></path>
+      <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+    </svg>
+  </a>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
   <script src="dist/scrolltosmooth.pkgd.min.js"></script>
   <script>
+    // ─── Config ──────────────────────────────────────────────────────────────
+    const COLS  = 4;
+    const ROWS  = 4;
+    const TOTAL = COLS * ROWS;
 
-		const scrollToSmoothSettings = {
-			// Selectors
-			container: document,
-			targetAttribute: 'href',
-			topOnEmptyHash: true,
-			offset: null,
-			// Speed and duration
-			duration: 800,
-			durationRelative: true,
-			durationMin: 300,
-			durationMax: 5000,
-			easing: easeInOutBack,
-			// Callbacks
-			onScrollStart: null,
-			onScrollUpdate: null,
-			onScrollEnd: null
+    // Picsum seeds — one per cell (deterministic so images are stable)
+    const SEEDS = [
+      10, 20, 30, 40,
+      50, 60, 70, 80,
+      90,100,110,120,
+     130,140,150,160
+    ];
+
+    // ─── State ───────────────────────────────────────────────────────────────
+    let currentCol = 0;
+    let currentRow = 0;
+    let isAnimating = false;
+
+    // ─── Settings object — controlled by dat.GUI ──────────────────────────────
+    const scrollToSmoothSettings = {
+      duration:         1500,
+      durationRelative: false,
+      durationMin:      0,
+      durationMax:      0,
+      easing:           easeInOutBack
     };
 
-		const smoothScroll = new scrollToSmooth('a', scrollToSmoothSettings);
-    smoothScroll.init();
+    // ─── ScrollToSmooth instance (programmatic — no trigger elements) ────────
+    const board = new scrollToSmooth([], Object.assign({}, scrollToSmoothSettings, {
+      onScrollEnd: function () {
+        isAnimating = false;
+        updateMinimap();
+      }
+    }));
 
-		const gui = new dat.GUI({name: 'ScrollToSmooth Settings'});
-		gui.add(scrollToSmoothSettings, 'duration', 0, 5000);
-		gui.add(scrollToSmoothSettings, 'durationRelative');
-		gui.add(scrollToSmoothSettings, 'durationMin', 0, 5000);
-		gui.add(scrollToSmoothSettings, 'durationMax', 0, 5000);
-		gui.add(scrollToSmoothSettings, 'easing', {
-			linear,
-			easeInQuad,
-			easeOutQuad,
-			easeInOutQuad,
-			easeInCubic,
-			easeOutCubic,
-			easeInOutCubic,
-			easeInQuart,
-			easeOutQuart,
-			easeInOutQuart,
-			easeInQuint,
-			easeOutQuint,
-			easeInOutQuint,
-			easeInSine,
-			easeOutSine,
-			easeInOutSine,
-			easeInExpo,
-			easeOutExpo,
-			easeInOutExpo,
-			easeInCirc,
-			easeOutCirc,
-			easeInOutCirc,
-			easeInElastic,
-			easeOutElastic,
-			easeInOutElastic,
-			easeInBack,
-			easeOutBack,
-			easeInOutBack,
-			easeInBounce,
-			easeOutBounce,
-			easeInOutBounce
-		});
+    // ─── Core navigation ─────────────────────────────────────────────────────
+    function scrollToCell(col, row) {
+      col = Math.max(0, Math.min(COLS - 1, col));
+      row = Math.max(0, Math.min(ROWS - 1, row));
+      currentCol = col;
+      currentRow = row;
+      isAnimating = true;
+      board.scrollTo(
+        { x: col * window.innerWidth, y: row * window.innerHeight },
+        'both'
+      );
+	  
+      updateMinimap();
+    }
+
+    // ─── Snapping after free scroll ──────────────────────────────────────────
+    // When the user free-scrolls with wheel/touch, snap to the nearest cell.
+    let snapTimer = null;
+    function scheduleSnap() {
+      if (isAnimating) return;
+      clearTimeout(snapTimer);
+      snapTimer = setTimeout(function () {
+        var col = Math.max(0, Math.min(COLS - 1, Math.round(window.scrollX / window.innerWidth)));
+        var row = Math.max(0, Math.min(ROWS - 1, Math.round(window.scrollY / window.innerHeight)));
+        scrollToCell(col, row);
+      }, 180);
+    }
+    window.addEventListener('wheel',    scheduleSnap, { passive: true });
+    window.addEventListener('touchend', scheduleSnap, { passive: true });
+
+    // ─── Build board cells ───────────────────────────────────────────────────
+    const boardEl = document.getElementById('board');
+    SEEDS.forEach(function (seed, i) {
+      var col = i % COLS;
+      var row = Math.floor(i / COLS);
+      var cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = 'cell-' + col + '-' + row;
+      cell.style.backgroundImage = "url('demo/images/full/" + seed + ".jpg')";
+      cell.innerHTML =
+        '<div class="cell-overlay"></div>' +
+        '<div class="cell-content">' +
+          '<span class="cell-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+          '<span class="cell-pos">Col&nbsp;' + (col + 1) + '&ensp;&middot;&ensp;Row&nbsp;' + (row + 1) + '</span>' +
+        '</div>';
+      // Clicking the cell label itself scrolls to that cell (axis: 'both' demo)
+      cell.querySelector('.cell-content').addEventListener('click', function () {
+        scrollToCell(col, row);
+      });
+      boardEl.appendChild(cell);
+    });
+
+    // ─── Build minimap dots ───────────────────────────────────────────────────
+    const minimapGrid = document.getElementById('minimap-grid');
+    SEEDS.forEach(function (seed, i) {
+      var col = i % COLS;
+      var row = Math.floor(i / COLS);
+      var btn = document.createElement('button');
+      btn.className = 'minimap-dot';
+      btn.style.backgroundImage = "url('demo/images/thumb/" + seed + ".jpg')";
+      btn.title = 'Col ' + (col + 1) + ' · Row ' + (row + 1);
+      btn.setAttribute('aria-label', 'Go to Col ' + (col + 1) + ', Row ' + (row + 1));
+      btn.addEventListener('click', function () { scrollToCell(col, row); });
+      minimapGrid.appendChild(btn);
+    });
+
+    function updateMinimap() {
+      var dots = minimapGrid.querySelectorAll('.minimap-dot');
+      dots.forEach(function (dot, i) {
+        var c = i % COLS;
+        var r = Math.floor(i / COLS);
+        dot.classList.toggle('active', c === currentCol && r === currentRow);
+      });
+      document.getElementById('cell-indicator').textContent =
+        (currentCol + 1) + ',' + (currentRow + 1);
+    }
+
+    // ─── Arrow nav buttons ────────────────────────────────────────────────────
+    document.getElementById('nav-up').addEventListener('click', function () {
+      scrollToCell(currentCol, currentRow - 1);
+    });
+    document.getElementById('nav-down').addEventListener('click', function () {
+      scrollToCell(currentCol, currentRow + 1);
+    });
+    document.getElementById('nav-left').addEventListener('click', function () {
+      scrollToCell(currentCol - 1, currentRow);
+    });
+    document.getElementById('nav-right').addEventListener('click', function () {
+      scrollToCell(currentCol + 1, currentRow);
+    });
+    document.getElementById('nav-home').addEventListener('click', function () {
+      scrollToCell(0, 0);
+    });
+
+    // ─── Keyboard navigation ──────────────────────────────────────────────────
+    document.addEventListener('keydown', function (e) {
+      var move = {
+        ArrowUp:    [0, -1],
+        ArrowDown:  [0,  1],
+        ArrowLeft:  [-1, 0],
+        ArrowRight: [ 1, 0],
+        Home:       'home'
+      };
+      var action = move[e.key];
+      if (!action) return;
+      e.preventDefault();
+      if (action === 'home') { scrollToCell(0, 0); return; }
+      scrollToCell(currentCol + action[0], currentRow + action[1]);
+    });
+
+    // ─── dat.GUI ──────────────────────────────────────────────────────────────
+    function applySettings() { board.update(scrollToSmoothSettings); }
+
+    var gui = new dat.GUI({ name: 'ScrollToSmooth' });
+    gui.add(scrollToSmoothSettings, 'duration', 0, 5000).step(50).onChange(applySettings);
+    gui.add(scrollToSmoothSettings, 'durationRelative').onChange(applySettings);
+    gui.add(scrollToSmoothSettings, 'durationMin', 0, 5000).step(50).name('durationMin (0=off)').onChange(applySettings);
+    gui.add(scrollToSmoothSettings, 'durationMax', 0, 5000).step(50).name('durationMax (0=off)').onChange(applySettings);
+    gui.add(scrollToSmoothSettings, 'easing', {
+      'linear':         linear,
+      'easeInSine':     easeInSine,     'easeOutSine':     easeOutSine,     'easeInOutSine':     easeInOutSine,
+      'easeInQuad':     easeInQuad,     'easeOutQuad':     easeOutQuad,     'easeInOutQuad':     easeInOutQuad,
+      'easeInCubic':    easeInCubic,    'easeOutCubic':    easeOutCubic,    'easeInOutCubic':    easeInOutCubic,
+      'easeInQuart':    easeInQuart,    'easeOutQuart':    easeOutQuart,    'easeInOutQuart':    easeInOutQuart,
+      'easeInQuint':    easeInQuint,    'easeOutQuint':    easeOutQuint,    'easeInOutQuint':    easeInOutQuint,
+      'easeInExpo':     easeInExpo,     'easeOutExpo':     easeOutExpo,     'easeInOutExpo':     easeInOutExpo,
+      'easeInCirc':     easeInCirc,     'easeOutCirc':     easeOutCirc,     'easeInOutCirc':     easeInOutCirc,
+      'easeInBack':     easeInBack,     'easeOutBack':     easeOutBack,     'easeInOutBack':     easeInOutBack,
+      'easeInElastic':  easeInElastic,  'easeOutElastic':  easeOutElastic,  'easeInOutElastic':  easeInOutElastic,
+      'easeInBounce':   easeInBounce,   'easeOutBounce':   easeOutBounce,   'easeInOutBounce':   easeInOutBounce
+    }).onChange(applySettings);
+
+    // ─── Initialise ───────────────────────────────────────────────────────────
+    updateMinimap();
   </script>
 
 </body>
-
 </html>
