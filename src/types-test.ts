@@ -1,5 +1,6 @@
 // compile-time type checks for ScrollToSmooth typings
-import ScrollToSmooth, { Options, ScrollData, ScrollUpdateData, EasingFunction, linear } from './scrolltosmooth';
+import ScrollToSmooth, { Options, ScrollData, ScrollUpdateData, EasingFunction } from './scrolltosmooth';
+import { linear } from './easings';
 
 // Options should be optional
 const opts: Options = {

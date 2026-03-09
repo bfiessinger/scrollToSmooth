@@ -7,7 +7,7 @@
   "main": "dist/scrolltosmooth.cjs.js",
   "module": "dist/scrolltosmooth.esm.js",
   "browser": "dist/scrolltosmooth.pkgd.min.js",
-  "types": "@types/scrolltosmooth.d.ts",
+  "types": "@types/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/scrolltosmooth.esm.js",

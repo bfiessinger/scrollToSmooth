@@ -92,7 +92,7 @@ export default [
 		plugins: iifePlugins
 	},
 	{
-		input: 'src/scrolltosmooth.ts',
+		input: 'src/index.ts',
 		external: [],
 		output: {
 			file: pkg.main,
@@ -103,7 +103,7 @@ export default [
 		plugins: modulePlugins
 	},
 	{
-		input: 'src/scrolltosmooth.ts',
+		input: 'src/index.ts',
 		external: [],
 		output: {
 			file: pkg.module,

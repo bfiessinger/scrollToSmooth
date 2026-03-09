@@ -518,444 +518,201 @@ var builtinEasings = /*#__PURE__*/Object.freeze({
   linear: linear
 });
 
-const d = document;
-const dEl = d.documentElement;
-const b = d.body;
-const w = window;
-
 /**
- * ScrollToSmooth Helper Utilities
- * 
- * @package scrolltosmooth
+ * Pure DOM utility functions used by ScrollToSmooth.
+ *
+ * These are stateless helpers with no dependency on the ScrollToSmooth class.
  */
 
+function querySelector(selector, container = document) {
+  return container.querySelector(selector);
+}
+function querySelectorAll(selector, container = document) {
+  return container.querySelectorAll(selector);
+}
 
 /**
- * requestAnimationFrame / cancelAnimationFrame wrappers
+ * Check whether a selector is valid within the given container.
  */
-const reqAnimFrame = cb => w.requestAnimationFrame(cb);
-const cancelAnimFrame = id => w.cancelAnimationFrame(id);
-
-/**
- * Shorthand for document.querySelector
- * 
- * @param {string} - a valid querySelector
- * 
- * @returns {Element | null}
- */
-const _$ = (s, container = d) => {
-  return container.querySelector(s);
-};
-
-/**
- * Shorthand for document.querySelectorAll
- * 
- * @param {string} - a valid querySelector
- * 
- * @returns {NodeListOf<Element>}
- */
-const _$$ = (s, container = d) => {
-  return container.querySelectorAll(s);
-};
-
-/**
- * Shorthand for Array.prototype.forEach.call
- * 
- * @param arr 
- * @param callback 
- * 
- * @returns {void}
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const forEach = (arr, callback) => {
-  Array.prototype.forEach.call(arr, callback);
-};
-
-/**
- * Check if a selector exists on the current page
- * 
- * @param {selector} selector 
- * 
- * @returns {boolean} true if the selector exists
- */
-const validateSelector = (selector, container = d) => {
-  let valid = true;
-
-  // Check if the target is a valid selector inside the scrollToSmooth container
+function validateSelector(selector, container = document) {
   try {
     if (typeof selector === 'string') {
-      _$(selector, container);
+      querySelector(selector, container);
     } else if (isNodeOrElement(selector) && container.contains(selector)) {
-      selector;
+      // valid node inside container
     }
-  } catch (e) {
-    valid = false;
+  } catch {
+    return false;
   }
-  return valid;
-};
+  return true;
+}
 
 /**
- * Test if an object is typeof Node
- * 
- * @param obj 
+ * Runtime check for whether a value is a DOM Node or HTMLElement.
  */
-const isNode = obj => {
-  try {
-    // Using W3 DOM (works on modern browsers)
-    return obj instanceof Node;
-  } catch (e) {
-    // Browsers not supporting W3 DOM3 don't have Node and
-    // an exception is thrown and we end up here. Testing some
-    // properties that all elements have
-    return typeof obj === 'object' && typeof obj.nodeType === 'number' && typeof obj.nodeName === 'string' && typeof obj.ownerDocument === 'object';
-  }
-};
+function isNodeOrElement(obj) {
+  return obj instanceof Node;
+}
 
 /**
- * Test if an object is typeof HTMLElement
- * 
- * @param obj 
+ * Current vertical scroll position.
  */
-const isElement = obj => {
-  try {
-    // Using W3 DOM2 (works for FF, Opera and Chrome)
-    return obj instanceof HTMLElement;
-  } catch (e) {
-    // Browsers not supporting W3 DOM2 don't have HTMLElement and
-    // an exception is thrown and we end up here. Testing some
-    // properties that all elements have
-    return typeof obj === 'object' && obj.nodeType === 1 && typeof obj.style === 'object' && typeof obj.ownerDocument === 'object';
-  }
-};
+function getScrollPosition() {
+  return window.scrollY ?? document.body.scrollTop ?? document.documentElement.scrollTop;
+}
 
 /**
- * Test if an object is typeof Node or HTMLElement
- * 
- * @uses isNode
- * @uses isElement
- * 
- * @param obj 
- * 
- * @return {boolean}
+ * High-resolution timestamp.
  */
-const isNodeOrElement = obj => {
-  return isNode(obj) || isElement(obj);
-};
+function getTimestamp() {
+  return window.performance && 'now' in window.performance ? performance.now() : new Date().getTime();
+}
 
 /**
- * Get current Position
+ * Determine the base URI of an element (URL without hash).
  */
-const getPos = () => w.scrollY ?? b.scrollTop ?? dEl.scrollTop;
-
-/**
- * Get the current Timestamp
- */
-const getTime = () => {
-  return w.performance && 'now' in w.performance ? performance.now() : new Date().getTime();
-};
-
-/**
- * Determine element baseURI
- * 
- * @param {HTMLElement} el 
- * 
- * @returns {string}
- */
-const getBaseURI = el => {
+function getBaseURI(el) {
   const sanitizeBaseURIRegex = new RegExp('(' + location.hash + ')?$');
-  const elBaseURI = el.baseURI || d.URL;
+  const elBaseURI = el.baseURI || document.URL;
+  return elBaseURI.replace(sanitizeBaseURIRegex, '');
+}
 
-  // Remove Trailing Slash and Hash Parameters from the baseURI
-  const baseURI = elBaseURI.replace(sanitizeBaseURIRegex, '');
-  return baseURI;
+/**
+ * Total scrollable document height.
+ */
+function getDocumentHeight() {
+  const body = document.body;
+  const docEl = document.documentElement;
+  return Math.max(body.scrollHeight, body.offsetHeight, body.clientHeight, docEl.scrollHeight, docEl.offsetHeight, docEl.clientHeight);
+}
+
+/**
+ * Viewport height.
+ */
+function getWindowHeight() {
+  return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+}
+
+/** Data-attribute used on invisible document expander divs */
+const EXPANDER_ATTR = 'data-scrolltosmooth-expand';
+const EXPANDER_TOP = 'top';
+const EXPANDER_BOTTOM = 'bottom';
+
+/** Cancel-animation user-interaction events */
+const CANCEL_EVENTS = ['mousewheel', 'wheel', 'touchmove'];
+const defaults = {
+  container: document,
+  targetAttribute: 'href',
+  topOnEmptyHash: true,
+  offset: null,
+  duration: 400,
+  durationRelative: false,
+  durationMin: null,
+  durationMax: null,
+  easing: linear,
+  onScrollStart: null,
+  onScrollUpdate: null,
+  onScrollEnd: null
 };
-
-/**
- * Get document's height
- * 
- * @returns {number}
- */
-const getDocHeight = () => {
-  return Math.max(b.scrollHeight, b.offsetHeight, b.clientHeight, dEl.scrollHeight, dEl.offsetHeight, dEl.clientHeight);
-};
-
-/**
- * Get window height
- * 
- * @returns {number}
- */
-const getWinHeight = () => w.innerHeight || dEl.clientHeight || b.clientHeight;
-
-const docExpanderAttr = 'data-scrolltosmooth-expand';
-const docExpanderAttrTopValue = 'top';
-const docExpanderAttrBottomValue = 'bottom';
-function getTargetElement(el) {
-  let targetSelector = '';
-  if (this.settings.targetAttribute === 'href' && el.href) {
-    targetSelector = el.href.replace(getBaseURI(el), '');
-  } else if (el.getAttribute(this.settings.targetAttribute)) {
-    targetSelector = el.getAttribute(this.settings.targetAttribute);
-  }
-
-  // Top on Empty Hash
-  if (this.settings.topOnEmptyHash && targetSelector == '#') {
-    return this.container;
-  }
-  return validateSelector(targetSelector, this.container) ? _$(targetSelector, this.container) : null;
-}
-function linkCollector() {
-  const links = [];
-  forEach(this.elements, el => {
-    if (getTargetElement.call(this, el)) {
-      const anchor = el;
-      if (this.settings.targetAttribute === 'href' && anchor.href.indexOf(getBaseURI(el)) != -1 && anchor.href.indexOf('#') != -1 && (anchor.hash != '' || this.settings.topOnEmptyHash) || this.settings.targetAttribute != 'href') {
-        links.push(el);
-      }
-    }
-  });
-  return links;
-}
-function clickHandler(el, e) {
-  e.stopPropagation();
-  e.preventDefault();
-  const currentTarget = getTargetElement.call(this, el);
-  if (!currentTarget) {
-    return;
-  }
-  this.scrollTo(currentTarget);
-}
-
-/**
- * Easing utility – common helpers related to easing functions.
- */
-/**
- * Resolve an easing specifier to a numeric progression.
- *
- * @param easing  name of builtin easing or custom function
- * @param t       progress [0..1]
- */
-function resolveEasing(easing, t) {
-  if (typeof easing === 'function') {
-    return easing(t);
-  }
-  if (typeof easing === 'string') {
-    const fn = builtinEasings[easing];
-    return typeof fn === 'function' ? fn(t) : t;
-  }
-  // fallback when easing is undefined
-  return t;
-}
-
-function getDuration(distance) {
-  let duration = Math.max(1, this.settings.duration);
-
-  // Calculate duration relative to the distance scrolled
-  if (this.settings.durationRelative) {
-    const durationRelativePx = typeof this.settings.durationRelative == 'number' ? this.settings.durationRelative : 1000;
-    duration = Math.max(this.settings.duration, distance * (duration / durationRelativePx));
-  }
-
-  // Set a minimum duration
-  if (this.settings.durationMin && duration < this.settings.durationMin) {
-    duration = this.settings.durationMin;
-  }
-
-  // Set a maximum duration
-  if (this.settings.durationMax && duration > this.settings.durationMax) {
-    duration = this.settings.durationMax;
-  }
-  return duration;
-}
-function scrollExceedsDocument(pos, docHeight, winHeight) {
-  const min = 0;
-  const max = docHeight - winHeight;
-  if (pos < min) {
-    return {
-      to: docExpanderAttrTopValue,
-      px: pos * -1
-    };
-  } else if (pos > max) {
-    return {
-      to: docExpanderAttrBottomValue,
-      px: (max - pos) * -1
-    };
-  }
-  return false;
-}
-function expandDocument(easing, docHeight, winHeight) {
-  const exceeding = scrollExceedsDocument(easing, docHeight, winHeight);
-  const expanders = getDocumentExpanders.call(this);
-  const expT = expanders.filter(el => el.getAttribute(docExpanderAttr) === docExpanderAttrTopValue)[0];
-  const expB = expanders.filter(el => el.getAttribute(docExpanderAttr) === docExpanderAttrBottomValue)[0];
-  if (exceeding && expT && exceeding.to === docExpanderAttrTopValue) {
-    expT.style.height = easing + 'px';
-  } else if (exceeding && expB && exceeding.to === docExpanderAttrBottomValue) {
-    expB.style.height = easing + 'px';
-  } else {
-    expanders.forEach(exp => {
-      exp.style.removeProperty('height');
-    });
-  }
-}
-function getDocumentExpanders() {
-  return Array.prototype.slice.call(this.container.children).filter(el => el.hasAttribute(docExpanderAttr));
-}
-function animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
-  const elapsed = getTime() - startTime;
-  const duration = getDuration.call(this, Math.abs(distFromTop - startPos));
-  const t = Math.min(1, elapsed / duration);
-  const easingPattern = resolveEasing(this.settings.easing, t);
-  const timeFunction = startPos + (distFromTop - startPos) * easingPattern;
-  if (this.settings.onScrollUpdate && typeof this.settings.onScrollUpdate == 'function') {
-    this.settings.onScrollUpdate({
-      startPosition: startPos,
-      currentPosition: timeFunction,
-      endPosition: distFromTop
-    });
-  }
-  w.scroll(0, timeFunction);
-  if (!docHeight) {
-    docHeight = getDocHeight();
-  }
-  if (!winHeight) {
-    winHeight = getWinHeight();
-  }
-  expandDocument.call(this, timeFunction, docHeight, winHeight);
-  if (elapsed >= duration) {
-    if (this.settings.onScrollEnd && typeof this.settings.onScrollEnd == 'function') {
-      this.settings.onScrollEnd({
-        startPosition: startPos,
-        endPosition: distFromTop
-      });
-    }
-    return;
-  }
-  scrollAnimationFrame = reqAnimFrame(() => {
-    animateScroll.call(this, distFromTop, startPos, startTime, docHeight, winHeight);
-  });
-}
-let scrollAnimationFrame;
-
 class ScrollToSmooth {
   constructor(nodes, settings) {
     _defineProperty(this, "elements", void 0);
     _defineProperty(this, "container", void 0);
     _defineProperty(this, "settings", void 0);
-    /**
-     * Build Default Settings Object
-     */
-    const defaults = {
-      // Selectors
-      container: d,
-      targetAttribute: 'href',
-      topOnEmptyHash: true,
-      offset: null,
-      // Speed and duration
-      duration: 400,
-      durationRelative: false,
-      durationMin: null,
-      durationMax: null,
-      easing: linear,
-      // Callbacks
-      onScrollStart: null,
-      onScrollUpdate: null,
-      onScrollEnd: null
-    };
-
-    /**
-     * Build the final Settings Object
-     */
+    /** Animation frame ID – lives on the instance so multiple instances don't collide. */
+    _defineProperty(this, "_animationFrame", null);
+    /** Stored bound click-handlers so they can be properly removed in destroy(). */
+    _defineProperty(this, "_clickHandlers", new Map());
+    /** Stored bound cancel-scroll handler for proper removal. */
+    _defineProperty(this, "_cancelHandler", null);
     this.settings = _objectSpread2(_objectSpread2({}, defaults), settings);
 
-    /**
-     * Set a container Element
-     */
-    let container = b;
+    // Resolve container
+    let container = document.body;
     const containerSetting = this.settings.container;
     if (typeof containerSetting === 'string' && validateSelector(containerSetting)) {
-      container = _$(containerSetting);
+      container = querySelector(containerSetting);
     } else if (containerSetting && typeof containerSetting !== 'string' && isNodeOrElement(containerSetting) && validateSelector(containerSetting)) {
       container = containerSetting;
     }
-    container = container === d || container === dEl ? b : container;
+    if (container === document || container === document.documentElement) {
+      container = document.body;
+    }
     this.container = container;
 
-    /**
-     * Check this.elements and declare them based on their value
-     */
-    this.elements = typeof nodes == 'string' ? _$$(nodes, this.container) : nodes;
+    // Resolve trigger elements
+    this.elements = typeof nodes === 'string' ? querySelectorAll(nodes, this.container) : nodes;
   }
 
+  // ---------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------
+
   /**
-   * Initialize SmoothScroll
-   * 
-   * @returns {void}
+   * Wire up click-listeners on trigger elements and scroll-cancel
+   * listeners on the window. Creates document-expander divs used by
+   * bounce-type easings.
    */
   init() {
-    // Destroy any existing initialization
+    // Tear down any previous initialisation first
     this.destroy();
 
-    // Setup Container Expansions
-    const expT = d.createElement('div');
-    expT.setAttribute(docExpanderAttr, docExpanderAttrTopValue);
-    this.container.insertBefore(expT, this.container.firstChild);
-    const expB = d.createElement('div');
-    expB.setAttribute(docExpanderAttr, docExpanderAttrBottomValue);
-    this.container.appendChild(expB);
+    // Create document expanders for bounce easing support
+    const expTop = document.createElement('div');
+    expTop.setAttribute(EXPANDER_ATTR, EXPANDER_TOP);
+    this.container.insertBefore(expTop, this.container.firstChild);
+    const expBottom = document.createElement('div');
+    expBottom.setAttribute(EXPANDER_ATTR, EXPANDER_BOTTOM);
+    this.container.appendChild(expBottom);
 
-    // Bind Events
-    forEach(linkCollector.call(this), link => {
-      link.addEventListener('click', clickHandler.bind(this, link), false);
-    });
+    // Bind click events – store references for proper removal
+    for (const link of this._collectLinks()) {
+      const handler = e => this._handleClick(link, e);
+      this._clickHandlers.set(link, handler);
+      link.addEventListener('click', handler, false);
+    }
 
-    // Cancel Animation on User Scroll Interaction
-    const cancelAnimationOnEvents = ['mousewheel', 'wheel', 'touchmove'];
-    forEach(cancelAnimationOnEvents, ev => {
-      w.addEventListener(ev, () => {
-        this.cancelScroll();
-      });
-    });
+    // Cancel animation on user scroll interaction
+    this._cancelHandler = () => this.cancelScroll();
+    for (const ev of CANCEL_EVENTS) {
+      window.addEventListener(ev, this._cancelHandler);
+    }
   }
 
   /**
-   * Destroy the current initialization.
-   * 
-   * @returns {void}
-   * 
-   * @access public
+   * Remove all event listeners and document expanders created by init().
    */
   destroy() {
-    // Do nothing if the plugin is not already initialized
-    if (!this.settings) {
-      return;
-    }
+    if (!this.settings) return;
     this.cancelScroll();
 
-    // Delete Container Expansions
-    forEach(getDocumentExpanders.call(this), expander => {
-      expander.parentNode.removeChild(expander);
-    });
+    // Remove document expanders
+    for (const expander of this._getDocumentExpanders()) {
+      expander.parentNode?.removeChild(expander);
+    }
 
-    // Remove Events
-    forEach(linkCollector.call(this), link => {
-      link.removeEventListener('click', clickHandler.bind(this, link), false);
-    });
+    // Remove click handlers (properly, using stored references)
+    for (const [link, handler] of this._clickHandlers) {
+      link.removeEventListener('click', handler, false);
+    }
+    this._clickHandlers.clear();
+
+    // Remove scroll-cancel listeners
+    if (this._cancelHandler) {
+      for (const ev of CANCEL_EVENTS) {
+        window.removeEventListener(ev, this._cancelHandler);
+      }
+      this._cancelHandler = null;
+    }
   }
 
   /**
-   * Trigger the scrolling animation to a specific Element or 
-   * a fixed position
-   * 
-   * @param {Element|number} target 
-   * 
-   * @returns {void}
-   * 
-   * @access public
+   * Animate a scroll to the given target (element, selector, or pixel position).
    */
   scrollTo(target) {
-    const windowStartPos = getPos();
-    const docHeight = getDocHeight();
-    const winHeight = getWinHeight();
+    const startPos = getScrollPosition();
+    const docHeight = getDocumentHeight();
+    const winHeight = getWindowHeight();
     let distFromTop = 0;
     if (!isNaN(target)) {
       if (typeof target === 'string') {
@@ -964,28 +721,20 @@ class ScrollToSmooth {
       target = docHeight - target < winHeight ? docHeight - winHeight : target;
       distFromTop = target;
     } else if ((typeof target === 'object' || typeof target === 'string') && validateSelector(target, this.container)) {
-      if (typeof target == 'string') {
-        target = _$(target, this.container);
+      if (typeof target === 'string') {
+        target = querySelector(target, this.container);
       }
-
-      /*
-      // a11y bring active element into focus
-      //target.focus();
-      if (d.activeElement !== target) {
-      	target.setAttribute('tabindex', '-1');
-      	//target.focus();
-      }
-      */
-
-      const targetOffset = target.getBoundingClientRect().top + windowStartPos;
+      const targetOffset = target.getBoundingClientRect().top + startPos;
       distFromTop = docHeight - targetOffset < winHeight ? docHeight - winHeight : targetOffset;
     }
+
+    // Apply configured offset
     if (this.settings.offset !== null) {
       let offset = 0;
       if (validateSelector(this.settings.offset, this.container)) {
         let offsetElement = this.settings.offset;
-        if (typeof offsetElement == 'string') {
-          offsetElement = _$(this.settings.offset);
+        if (typeof offsetElement === 'string') {
+          offsetElement = querySelector(this.settings.offset);
         }
         if (isNodeOrElement(offsetElement)) {
           offset = offsetElement.getBoundingClientRect().height;
@@ -1000,62 +749,168 @@ class ScrollToSmooth {
     }
 
     // Distance can't be negative
-    distFromTop = distFromTop < 0 ? 0 : distFromTop;
+    distFromTop = Math.max(0, distFromTop);
 
-    // Callback onScrollStart
-    if (this.settings.onScrollStart && typeof this.settings.onScrollStart == 'function') {
+    // Callback: onScrollStart
+    if (typeof this.settings.onScrollStart === 'function') {
       this.settings.onScrollStart({
-        startPosition: windowStartPos,
+        startPosition: startPos,
         endPosition: distFromTop
       });
     }
-
-    // Start Scroll Animation
-    animateScroll.call(this, distFromTop, windowStartPos, getTime(), docHeight, winHeight);
+    this._animateScroll(distFromTop, startPos, getTimestamp(), docHeight, winHeight);
   }
 
   /**
-   * Scroll by a fixed amount of pixels
-   * 
-   * @param px 
-   * 
-   * @return {void}
+   * Scroll by a relative number of pixels from the current position.
    */
   scrollBy(px) {
-    this.scrollTo(getPos() + px);
+    this.scrollTo(getScrollPosition() + px);
   }
 
   /**
-   * Method: cancelScroll
-   * 
-   * @returns {void}
+   * Cancel any in-progress scroll animation.
    */
   cancelScroll() {
-    // Do nothing if no scroll Event has fired
-    if (!scrollAnimationFrame) {
-      return;
+    if (this._animationFrame !== null) {
+      window.cancelAnimationFrame(this._animationFrame);
+      this._animationFrame = null;
     }
-    cancelAnimFrame(scrollAnimationFrame);
   }
 
   /**
-   * Method: update
-   * 
-   * @param {ScrollToSmoothSettings} obj The settings to be updated from the original instance 
-   * 
-   * @returns {void}
+   * Merge new settings into the current configuration.
    */
   update(obj) {
-    if (typeof obj !== 'object') {
-      return;
-    }
+    if (typeof obj !== 'object') return;
     this.settings = _objectSpread2(_objectSpread2({}, this.settings), obj);
   }
-}
 
-/**
- * ScrollToSmooth Core Library
- */
+  // ---------------------------------------------------------------
+  // Private – Animation
+  // ---------------------------------------------------------------
+
+  _animateScroll(distFromTop, startPos, startTime, docHeight, winHeight) {
+    const elapsed = getTimestamp() - startTime;
+    const duration = this._getDuration(Math.abs(distFromTop - startPos));
+    const t = Math.min(1, elapsed / duration);
+    const easedProgress = this._resolveEasing(this.settings.easing, t);
+    const currentPos = startPos + (distFromTop - startPos) * easedProgress;
+    if (typeof this.settings.onScrollUpdate === 'function') {
+      this.settings.onScrollUpdate({
+        startPosition: startPos,
+        currentPosition: currentPos,
+        endPosition: distFromTop
+      });
+    }
+    window.scroll(0, currentPos);
+    this._expandDocument(currentPos, docHeight, winHeight);
+    if (elapsed >= duration) {
+      if (typeof this.settings.onScrollEnd === 'function') {
+        this.settings.onScrollEnd({
+          startPosition: startPos,
+          endPosition: distFromTop
+        });
+      }
+      return;
+    }
+    this._animationFrame = window.requestAnimationFrame(() => {
+      this._animateScroll(distFromTop, startPos, startTime, docHeight, winHeight);
+    });
+  }
+  _getDuration(distance) {
+    let duration = Math.max(1, this.settings.duration);
+    if (this.settings.durationRelative) {
+      const relativePx = typeof this.settings.durationRelative === 'number' ? this.settings.durationRelative : 1000;
+      duration = Math.max(this.settings.duration, distance * (duration / relativePx));
+    }
+    if (this.settings.durationMin && duration < this.settings.durationMin) {
+      duration = this.settings.durationMin;
+    }
+    if (this.settings.durationMax && duration > this.settings.durationMax) {
+      duration = this.settings.durationMax;
+    }
+    return duration;
+  }
+  _resolveEasing(easing, t) {
+    if (typeof easing === 'function') return easing(t);
+    if (typeof easing === 'string') {
+      const fn = builtinEasings[easing];
+      return typeof fn === 'function' ? fn(t) : t;
+    }
+    return t;
+  }
+
+  // ---------------------------------------------------------------
+  // Private – Document expansion (lets bounce easings scroll past edges)
+  // ---------------------------------------------------------------
+
+  _expandDocument(scrollPos, docHeight, winHeight) {
+    const exceeding = this._scrollExceedsDocument(scrollPos, docHeight, winHeight);
+    const expanders = this._getDocumentExpanders();
+    const expTop = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_TOP);
+    const expBottom = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_BOTTOM);
+    if (exceeding && expTop && exceeding.direction === EXPANDER_TOP) {
+      expTop.style.height = exceeding.px + 'px';
+    } else if (exceeding && expBottom && exceeding.direction === EXPANDER_BOTTOM) {
+      expBottom.style.height = exceeding.px + 'px';
+    } else {
+      for (const exp of expanders) {
+        exp.style.removeProperty('height');
+      }
+    }
+  }
+  _scrollExceedsDocument(pos, docHeight, winHeight) {
+    const max = docHeight - winHeight;
+    if (pos < 0) return {
+      direction: EXPANDER_TOP,
+      px: pos * -1
+    };
+    if (pos > max) return {
+      direction: EXPANDER_BOTTOM,
+      px: (max - pos) * -1
+    };
+    return false;
+  }
+  _getDocumentExpanders() {
+    return Array.from(this.container.children).filter(el => el.hasAttribute(EXPANDER_ATTR));
+  }
+
+  // ---------------------------------------------------------------
+  // Private – Link collection & click handling
+  // ---------------------------------------------------------------
+
+  _getTargetElement(el) {
+    let targetSelector = '';
+    if (this.settings.targetAttribute === 'href' && el.href) {
+      targetSelector = el.href.replace(getBaseURI(el), '');
+    } else if (el.getAttribute(this.settings.targetAttribute)) {
+      targetSelector = el.getAttribute(this.settings.targetAttribute);
+    }
+    if (this.settings.topOnEmptyHash && targetSelector === '#') {
+      return this.container;
+    }
+    return validateSelector(targetSelector, this.container) ? querySelector(targetSelector, this.container) : null;
+  }
+  _collectLinks() {
+    const links = [];
+    for (const el of Array.from(this.elements)) {
+      if (!this._getTargetElement(el)) continue;
+      const anchor = el;
+      if (this.settings.targetAttribute === 'href' && anchor.href.indexOf(getBaseURI(el)) !== -1 && anchor.href.indexOf('#') !== -1 && (anchor.hash !== '' || this.settings.topOnEmptyHash) || this.settings.targetAttribute !== 'href') {
+        links.push(el);
+      }
+    }
+    return links;
+  }
+  _handleClick(el, e) {
+    e.stopPropagation();
+    e.preventDefault();
+    const currentTarget = this._getTargetElement(el);
+    if (!currentTarget) return;
+    this.scrollTo(currentTarget);
+  }
+}
 
 exports.ScrollToSmooth = ScrollToSmooth;
 exports.default = ScrollToSmooth;
