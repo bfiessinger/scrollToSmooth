@@ -29,6 +29,30 @@ export interface ScrollPoint {
 export type EasingFunction = (t: number) => number;
 
 /**
+ * Plugin interface. A plugin's `install` method is called once with the
+ * ScrollToSmooth constructor and is responsible for augmenting the prototype.
+ */
+export interface ScrollToSmoothPlugin {
+	name: string;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	install(ctor: any): void;
+}
+
+/**
+ * Configuration object passed to the internal `_animateScroll` method.
+ * The index signature allows plugins (e.g. HorizontalScrollPlugin) to
+ * pass additional fields (targetX, startX, …) without TypeScript errors.
+ */
+export interface AnimationConfig {
+	targetY: number;
+	startY: number;
+	docHeight: number;
+	viewHeight: number;
+	startTime: number;
+	[key: string]: unknown;
+}
+
+/**
  * Configuration options for a ScrollToSmooth instance.
  * All properties are optional; defaults are applied internally.
  */

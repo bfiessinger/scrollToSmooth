@@ -63,6 +63,60 @@ Include the script in your code:
 ### Importing from the package root
 The entry point is now `src/index.ts`, so both CommonJS and ES modules consume the same API. You can also reach individual easings via `import { easeOutCubic } from 'scrolltosmooth';`.
 
+### Plugin system & writing your own
+ScrollToSmooth supports a lightweight plugin API so additional behaviour can be
+added without inflating the core bundle. A plugin is simply an object with a
+`name` string and an `install(ctor)` method; the `install` callback receives the
+`ScrollToSmooth` constructor and may augment its prototype or add static
+helpers. Plugins are registered once using `ScrollToSmooth.use(plugin)` – the
+call is idempotent and returns the constructor for chaining.
+
+The horizontal scrolling feature in this release is implemented as the
+`HorizontalScrollPlugin` (see below), but you are free to author your own
+extensions. For example you could create a plugin that adds keyboard shortcuts,
+synchronises multiple containers, or integrates with your component framework.
+TypeScript users can import the `ScrollToSmoothPlugin` type from the package
+root to get compile-time safety when building plugins.
+
+**Plugin benefits:**
+
+* feature code only runs if the plugin is imported and registered
+* plugins are tree-shakeable by modern bundlers
+* avoid bloat for projects that only need core behaviour
+* npm packages can ship companion plugins
+
+
+### Horizontal (x-axis) scrolling – opt‑in plugin 📦
+Bundle size is intentionally kept small by shipping only vertical scrolling by default. The horizontal scroll functionality lives in a separate plugin that is
+completely tree‑shakeable – nothing from the plugin will be included unless you import it explicitly.
+
+```js
+import ScrollToSmooth from 'scrolltosmooth';
+import { HorizontalScrollPlugin } from 'scrolltosmooth/plugins/horizontal';
+
+// register once before creating instances
+ScrollToSmooth.use(HorizontalScrollPlugin);
+
+const scroller = new ScrollToSmooth('a');
+// now all axis options are available:
+scroller.scrollTo('#foo', 'x');
+scroller.scrollToBoth(100, 200);
+scroller.scrollBy(50, 'x');
+```
+
+TypeScript users can import the plugin type as well:
+
+```ts
+import ScrollToSmooth, { ScrollToSmoothPlugin } from 'scrolltosmooth';
+import { HorizontalScrollPlugin } from 'scrolltosmooth/plugins/horizontal';
+
+const plugin: ScrollToSmoothPlugin = HorizontalScrollPlugin;
+ScrollToSmooth.use(plugin);
+```
+
+The plugin build outputs appear under `dist/plugins/` and are referenced by the package's `exports` field; both ESM (`.js`) and CJS (`.cjs.js`) flavors are available along with accompanying `.d.ts` files.
+
+
 #### Importing a single easing module
 To reduce bundle size you may import a single easing directly from its subpath; the build outputs each easing under `dist/easings`, and the package exports field maps them automatically:
 
@@ -399,6 +453,15 @@ data contains an object with values for `startPosition` and `endPosition`
 TODO: custom events section
 
 ## Noteworthy features
+
+### Modular plugin architecture (tree‑shakeable)
+
+Horizontal and both‑axis scrolling can be opted into via a plugin so that
+projects which only need vertical movement stay extra small. The plugin
+registers itself with `ScrollToSmooth.use(...)` and extends the API at
+runtime; nothing is executed unless you import the plugin module. When
+bundled with Rollup/Vite/webpack the plugin code is automatically removed
+if unused.
 
 ### Animating from the very top or bottom with special easings
 

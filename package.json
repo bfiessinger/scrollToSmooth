@@ -15,7 +15,12 @@
       "default": "./dist/scrolltosmooth.cjs.js"
     },
     "./package.json": "./package.json",
-    "./easings/*": "./dist/easings/*.js"
+    "./easings/*": "./dist/easings/*.js",
+    "./plugins/horizontal": {
+      "import":  "./dist/plugins/horizontal.js",
+      "require": "./dist/plugins/horizontal.cjs.js",
+      "types":   "./@types/plugins/horizontal.d.ts"
+    }
   },
   "scripts": {
     "lint": "eslint . --ext .ts",

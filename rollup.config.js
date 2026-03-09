@@ -66,6 +66,11 @@ const easingFiles = fs.readdirSync(path.resolve('src/easings'))
 	.filter(f=>f.endsWith('.ts'))
 	.map(f=>path.join('src/easings', f));
 
+// plugin entry points
+const pluginFiles = fs.readdirSync(path.resolve('src/plugins'))
+	.filter(f=>f.endsWith('.ts'))
+	.map(f=>path.join('src/plugins', f));
+
 
 // Default
 export default [
@@ -122,5 +127,38 @@ export default [
 			banner: banner
 		},
 		plugins: modulePlugins
-	}
+	},
+	// Plugins – ESM (tree-shakeable, for bundlers)
+	{
+		input: pluginFiles,
+		external: ['../scrolltosmooth', '../utils/dom', '../easings'],
+		output: {
+			dir: 'dist/plugins',
+			format: 'es',
+			entryFileNames: '[name].js',
+			banner: banner,
+			paths: {
+				'../scrolltosmooth': '../scrolltosmooth.esm.js',
+				'../utils/dom':      '../utils/dom.js',
+			},
+		},
+		plugins: modulePlugins
+	},
+	// Plugins – CJS (for Node / require())
+	{
+		input: pluginFiles,
+		external: ['../scrolltosmooth', '../utils/dom', '../easings'],
+		output: {
+			dir: 'dist/plugins',
+			format: 'cjs',
+			entryFileNames: '[name].cjs.js',
+			banner: banner,
+			exports: 'named',
+			paths: {
+				'../scrolltosmooth': '../scrolltosmooth.cjs.js',
+				'../utils/dom':      '../utils/dom.js',
+			},
+		},
+		plugins: modulePlugins
+	},
 ]
