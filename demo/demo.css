@@ -273,7 +273,21 @@ body {
   transform: scale(1.08);
 }
 
+/* ─── Dat Gui ────────────────────────────────────────────────────────────── */
+#dat-gui {
+  position: fixed;
+  right: 75px;
+  z-index: 1001;
+}
+
 /* ─── GitHub corner ──────────────────────────────────────────────────────── */
+.github-corner {
+  position:fixed;
+  top:0;
+  border:0;
+  right:0;
+  z-index: 1000;
+}
 
 .github-corner:hover .octo-arm {
   animation: octocat-wave 560ms ease-in-out;
