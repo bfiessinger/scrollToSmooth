@@ -47,6 +47,17 @@ export declare class ScrollToSmooth {
      */
     destroy(): void;
     /**
+     * Resolve any accepted target type to a raw Y pixel position.
+     * Overridable by plugins that need to handle additional target types.
+     */
+    protected _resolveTargetY(target: HTMLElement | string | number | ScrollPoint, startY: number, docHeight: number, viewHeight: number): number;
+    /**
+     * Apply the configured offset (element height or fixed px) to a resolved Y position.
+     * Overridable by plugins.
+     */
+    protected _applyOffset(targetY: number): number;
+    private _isScrollPoint;
+    /**
      * Cancel any in-progress scroll animation.
      */
     cancelScroll(): void;

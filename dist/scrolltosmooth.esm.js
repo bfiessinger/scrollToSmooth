@@ -534,8 +534,10 @@ function validateSelector(selector, container = document) {
   try {
     if (typeof selector === 'string') {
       querySelector(selector, container);
-    } else if (isNodeOrElement(selector) && container.contains(selector)) {
-      // valid node inside container
+    } else if (isNodeOrElement(selector)) {
+      return container.contains(selector);
+    } else {
+      return false;
     }
   } catch {
     return false;
@@ -715,7 +717,7 @@ class ScrollToSmooth {
   /**
    * Animate a scroll to the given target (vertical axis only by default).
    * To scroll on the x-axis or both axes, register the HorizontalScrollPlugin.
-   * @param target  Element, CSS selector, or pixel offset.
+   * @param target  Element, CSS selector, pixel offset, or ScrollPoint.
    * @param _axis   Accepted for API compatibility; core only processes 'y'.
    *                Pass 'x' or 'both' after registering HorizontalScrollPlugin.
    */
@@ -724,48 +726,8 @@ class ScrollToSmooth {
     const startY = this._getContainerScrollPosition('y');
     const docHeight = this._getDocumentSize('y');
     const viewHeight = this._getViewportSize('y');
-    let targetY = startY;
-
-    // ── Resolve target coordinate ─────────────────────────────────
-    if (!isNaN(target)) {
-      if (typeof target === 'string') target = parseFloat(target);
-      const n = target;
-      targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
-    } else if ((typeof target === 'object' || typeof target === 'string') && validateSelector(target, this.container)) {
-      if (typeof target === 'string') {
-        target = querySelector(target, this.container);
-      }
-      const rect = target.getBoundingClientRect();
-      const cont = this.container;
-      const isDocBody = cont === document.body || cont === document.documentElement;
-      let rawY;
-      if (isDocBody) {
-        rawY = rect.top + startY;
-      } else {
-        const cr = cont.getBoundingClientRect();
-        rawY = rect.top - cr.top + startY;
-      }
-      targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
-    }
-
-    // ── Apply offset ──────────────────────────────────────────────
-    if (this.settings.offset !== null) {
-      let offsetY = 0;
-      if (validateSelector(this.settings.offset, this.container)) {
-        let offsetEl = this.settings.offset;
-        if (typeof offsetEl === 'string') {
-          offsetEl = querySelector(this.settings.offset);
-        }
-        if (isNodeOrElement(offsetEl)) {
-          const offRect = offsetEl.getBoundingClientRect();
-          offsetY = offRect.height;
-        }
-      } else if (!isNaN(this.settings.offset)) {
-        const o = typeof this.settings.offset === 'string' ? parseFloat(this.settings.offset) : this.settings.offset;
-        offsetY = o;
-      }
-      targetY -= offsetY;
-    }
+    let targetY = this._resolveTargetY(target, startY, docHeight, viewHeight);
+    targetY = this._applyOffset(targetY);
     targetY = Math.max(0, targetY);
     if (typeof this.settings.onScrollStart === 'function') {
       this.settings.onScrollStart({
@@ -781,6 +743,62 @@ class ScrollToSmooth {
       viewHeight,
       startTime: getTimestamp()
     });
+  }
+
+  /**
+   * Resolve any accepted target type to a raw Y pixel position.
+   * Overridable by plugins that need to handle additional target types.
+   */
+  _resolveTargetY(target, startY, docHeight, viewHeight) {
+    const clamp = n => docHeight - n < viewHeight ? docHeight - viewHeight : n;
+
+    // ── ScrollPoint {x, y} ────────────────────────────────────────
+    if (this._isScrollPoint(target)) {
+      return clamp(target.y);
+    }
+
+    // ── Numeric pixel offset ──────────────────────────────────────
+    if (!isNaN(target)) {
+      const n = typeof target === 'string' ? parseFloat(target) : target;
+      return clamp(n);
+    }
+
+    // ── Element or CSS selector ───────────────────────────────────
+    if (validateSelector(target, this.container)) {
+      if (typeof target === 'string') {
+        target = querySelector(target, this.container);
+      }
+      const rect = target.getBoundingClientRect();
+      const cont = this.container;
+      const isDocBody = cont === document.body || cont === document.documentElement;
+      const rawY = isDocBody ? rect.top + startY : rect.top - cont.getBoundingClientRect().top + startY;
+      return clamp(rawY);
+    }
+    return startY;
+  }
+
+  /**
+   * Apply the configured offset (element height or fixed px) to a resolved Y position.
+   * Overridable by plugins.
+   */
+  _applyOffset(targetY) {
+    if (this.settings.offset === null) return targetY;
+    let offsetY = 0;
+    if (validateSelector(this.settings.offset, this.container)) {
+      let offsetEl = this.settings.offset;
+      if (typeof offsetEl === 'string') {
+        offsetEl = querySelector(this.settings.offset);
+      }
+      if (isNodeOrElement(offsetEl)) {
+        offsetY = offsetEl.getBoundingClientRect().height;
+      }
+    } else if (!isNaN(this.settings.offset)) {
+      offsetY = typeof this.settings.offset === 'string' ? parseFloat(this.settings.offset) : this.settings.offset;
+    }
+    return targetY - offsetY;
+  }
+  _isScrollPoint(value) {
+    return typeof value === 'object' && value !== null && 'x' in value && 'y' in value && typeof value.y === 'number';
   }
 
   /**

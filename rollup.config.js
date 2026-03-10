@@ -161,4 +161,17 @@ export default [
 		},
 		plugins: modulePlugins
 	},
+	// Plugins – IIFE (plain <script> tag, auto-registers with window.scrollToSmooth)
+	{
+		input: 'src/build/plugins/horizontal.ts',
+		external: [],
+		output: {
+			file: 'dist/plugins/horizontal.iife.min.js',
+			format: 'iife',
+			name: 'HorizontalScrollPlugin',
+			exports: 'default',
+			banner: banner,
+		},
+		plugins: iifePlugins
+	},
 ]

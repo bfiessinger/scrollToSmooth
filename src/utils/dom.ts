@@ -19,8 +19,10 @@ export function validateSelector(selector: string | Node | HTMLElement, containe
 	try {
 		if (typeof selector === 'string') {
 			querySelector(selector, container as HTMLElement);
-		} else if (isNodeOrElement(selector) && container.contains(selector as Element)) {
-			// valid node inside container
+		} else if (isNodeOrElement(selector)) {
+			return container.contains(selector as Element);
+		} else {
+			return false;
 		}
 	} catch {
 		return false;
