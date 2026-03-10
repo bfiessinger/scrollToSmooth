@@ -1,4 +1,5 @@
-# README.md
+> [!IMPORTANT]
+> The Docs below refer to the version 4 of ScrollToSmooth which is not yet released.\For version.3 docs refer to https://github.com/bfiessinger/scrollToSmooth/tree/v3.0.2
 
 # ScrollToSmooth
 
