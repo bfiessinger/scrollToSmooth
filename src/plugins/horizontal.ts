@@ -314,6 +314,9 @@ export const HorizontalScrollPlugin = {
 				el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
 				el.style.display = 'inline-block';
 				el.style.verticalAlign = 'top';
+                el.style.width = '0px';
+                el.style.height = '100%';
+                el.style.float = 'left';
 				const topExp = getExp(EXPANDER_TOP);
 				this.container.insertBefore(el, topExp ? topExp.nextSibling : this.container.firstChild);
 			}
@@ -324,6 +327,8 @@ export const HorizontalScrollPlugin = {
 				el.setAttribute(EXPANDER_ATTR, EXPANDER_RIGHT);
 				el.style.display = 'inline-block';
 				el.style.verticalAlign = 'top';
+                el.style.width = '0px';
+                el.style.height = '100%';
 				const bottomExp = getExp(EXPANDER_BOTTOM);
 				if (bottomExp) {
 					this.container.insertBefore(el, bottomExp);
