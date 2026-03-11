@@ -308,14 +308,18 @@ export const HorizontalScrollPlugin = {
 				(Array.from(this.container.children) as HTMLElement[])
 					.find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
 
+            const expanderStyles = {
+                display: 'inline-block',
+                verticalAlign: 'top',
+                width: '0px',
+                height: '100%',
+            }
+
 			// LEFT – right after top so it stays on the same inline line
 			if (!getExp(EXPANDER_LEFT)) {
 				const el = document.createElement('div');
 				el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
-				el.style.display = 'inline-block';
-				el.style.verticalAlign = 'top';
-                el.style.width = '0px';
-                el.style.height = '100%';
+				Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
                 el.style.float = 'left';
 				const topExp = getExp(EXPANDER_TOP);
 				this.container.insertBefore(el, topExp ? topExp.nextSibling : this.container.firstChild);
@@ -325,10 +329,7 @@ export const HorizontalScrollPlugin = {
 			if (!getExp(EXPANDER_RIGHT)) {
 				const el = document.createElement('div');
 				el.setAttribute(EXPANDER_ATTR, EXPANDER_RIGHT);
-				el.style.display = 'inline-block';
-				el.style.verticalAlign = 'top';
-                el.style.width = '0px';
-                el.style.height = '100%';
+				Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
 				const bottomExp = getExp(EXPANDER_BOTTOM);
 				if (bottomExp) {
 					this.container.insertBefore(el, bottomExp);
