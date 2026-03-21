@@ -1,11 +1,11 @@
 /*!
 * ScrollToSmooth
 * Author: Bastian Fießinger
-* Version: 3.0.2
+* Version: 4.0.1
 */
 'use strict';
 
-var dom = require('./dom-Dy6hzwz2.js');
+var dom = require('./dom-Ck3NmYb7.js');
 
 /**
  * SnapPlugin – adds snap-to-nearest behaviour to ScrollToSmooth.

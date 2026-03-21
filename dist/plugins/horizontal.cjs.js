@@ -1,11 +1,11 @@
 /*!
 * ScrollToSmooth
 * Author: Bastian Fießinger
-* Version: 3.0.2
+* Version: 4.0.1
 */
 'use strict';
 
-var dom = require('./dom-Dy6hzwz2.js');
+var dom = require('./dom-Ck3NmYb7.js');
 
 /**
  * HorizontalScrollPlugin – adds x-axis and both-axis scrolling to ScrollToSmooth.
@@ -42,6 +42,194 @@ const EXPANDER_BOTTOM = 'bottom';
 const EXPANDER_LEFT = 'left';
 const EXPANDER_RIGHT = 'right';
 // ---------------------------------------------------------------------------
+// Module-level helpers (reduce cyclomatic complexity in plugin methods)
+// ---------------------------------------------------------------------------
+
+/** Type guard: is the target a {x, y} scroll point? */
+function isScrollPointTarget(target) {
+  return typeof target === 'object' && target !== null && !('nodeType' in target) && 'x' in target && 'y' in target;
+}
+function resolveFromScrollPoint(sp, docWidth, docHeight, viewWidth, viewHeight) {
+  return {
+    targetX: Math.max(0, Math.min(sp.x, docWidth - viewWidth)),
+    targetY: Math.max(0, Math.min(sp.y, docHeight - viewHeight))
+  };
+}
+function resolveFromNumber(n, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight) {
+  let targetX = startX;
+  let targetY = startY;
+  if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+    targetX = docWidth - n < viewWidth ? docWidth - viewWidth : n;
+  }
+  if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+    targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
+  }
+  return {
+    targetX,
+    targetY
+  };
+}
+function resolveFromElement(target, container, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight) {
+  const el = typeof target === 'string' ? dom.querySelector(target, container) : target;
+  const rect = el.getBoundingClientRect();
+  const isDocBody = container === document.body || container === document.documentElement;
+  let rawX;
+  let rawY;
+  if (isDocBody) {
+    rawX = rect.left + startX;
+    rawY = rect.top + startY;
+  } else {
+    const cr = container.getBoundingClientRect();
+    rawX = rect.left - cr.left + startX;
+    rawY = rect.top - cr.top + startY;
+  }
+  let targetX = startX;
+  let targetY = startY;
+  if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+    targetX = docWidth - rawX < viewWidth ? docWidth - viewWidth : rawX;
+  }
+  if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+    targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
+  }
+  return {
+    targetX,
+    targetY
+  };
+}
+
+/** Resolve scroll target pixel coordinates from any accepted target type. */
+function resolveTargetCoords(target, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight, container) {
+  if (isScrollPointTarget(target)) {
+    return resolveFromScrollPoint(target, docWidth, docHeight, viewWidth, viewHeight);
+  }
+  if (!isNaN(target)) {
+    const n = typeof target === 'string' ? parseFloat(target) : target;
+    return resolveFromNumber(n, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight);
+  }
+  if ((typeof target === 'object' || typeof target === 'string') && dom.validateSelector(target, container)) {
+    return resolveFromElement(target, container, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight);
+  }
+  return {
+    targetX: startX,
+    targetY: startY
+  };
+}
+
+/** Resolve offset pixels from settings.offset (element, number, or string). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function resolveScrollOffset(settings, container) {
+  let offsetX = 0;
+  let offsetY = 0;
+  if (dom.validateSelector(settings.offset, container)) {
+    let offsetEl = settings.offset;
+    if (typeof offsetEl === 'string') {
+      offsetEl = dom.querySelector(settings.offset);
+    }
+    if (dom.isNodeOrElement(offsetEl)) {
+      const offRect = offsetEl.getBoundingClientRect();
+      offsetX = offRect.width;
+      offsetY = offRect.height;
+    }
+  } else if (!isNaN(settings.offset)) {
+    const o = typeof settings.offset === 'string' ? parseFloat(settings.offset) : settings.offset;
+    offsetX = o;
+    offsetY = o;
+  }
+  return {
+    offsetX,
+    offsetY
+  };
+}
+
+/** Create a horizontal expander element with inline-block sizing. */
+function createXExpanderEl(dir) {
+  const el = document.createElement('div');
+  el.setAttribute(EXPANDER_ATTR, dir);
+  el.style.setProperty('display', 'inline-block');
+  el.style.setProperty('vertical-align', 'top');
+  el.style.setProperty('width', '0px');
+  el.style.setProperty('height', '100%');
+  return el;
+}
+
+/** Insert a left expander into the document. */
+function insertLeftExpander(root, container, isDocBody, getExp) {
+  const el = createXExpanderEl(EXPANDER_LEFT);
+  if (isDocBody) {
+    const firstContent = Array.from(container.children).find(c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed') ?? container.firstChild;
+    container.insertBefore(el, firstContent);
+  } else {
+    const topExp = getExp(EXPANDER_TOP);
+    root.insertBefore(el, topExp ? topExp.nextSibling : container);
+  }
+}
+
+/** Insert a right expander into the document. */
+function insertRightExpander(root, container, isDocBody, getExp) {
+  const el = createXExpanderEl(EXPANDER_RIGHT);
+  if (isDocBody) {
+    const lastContent = Array.from(container.children).reverse().find(c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed');
+    if (lastContent) {
+      container.insertBefore(el, lastContent.nextSibling);
+    } else {
+      container.appendChild(el);
+    }
+  } else {
+    const bottomExp = getExp(EXPANDER_BOTTOM);
+    root.insertBefore(el, bottomExp ?? container.nextSibling);
+  }
+}
+
+/** Apply/clear a size property on a pair of directional expanders. */
+function applyExpanderPair(expStart, expEnd, exceeding, startDir, endDir, prop) {
+  if (exceeding && expStart && exceeding.direction === startDir) {
+    expStart.style.setProperty(prop, exceeding.px + 'px');
+    expEnd?.style.removeProperty(prop);
+  } else if (exceeding && expEnd && exceeding.direction === endDir) {
+    expEnd.style.setProperty(prop, exceeding.px + 'px');
+    expStart?.style.removeProperty(prop);
+  } else {
+    expStart?.style.removeProperty(prop);
+    expEnd?.style.removeProperty(prop);
+  }
+}
+
+/** Dispatch the onScrollUpdate callback if set. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fireOnScrollUpdate(settings, axis, startX, startY, currentX, currentY, targetX, targetY, t) {
+  if (typeof settings.onScrollUpdate !== 'function') return;
+  settings.onScrollUpdate({
+    startPosition: axis === 'x' ? startX : startY,
+    currentPosition: axis === 'x' ? currentX : currentY,
+    endPosition: axis === 'x' ? targetX : targetY,
+    progress: t
+  });
+}
+
+/** Dispatch the onScrollEnd callback if set. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fireOnScrollEnd(settings, axis, startX, startY, targetX, targetY) {
+  if (typeof settings.onScrollEnd !== 'function') return;
+  settings.onScrollEnd({
+    startPosition: axis === 'x' ? startX : startY,
+    endPosition: axis === 'x' ? targetX : targetY
+  });
+}
+
+/** Scroll both axes simultaneously on the given container. */
+function scrollBothAxes(container, currentX, currentY) {
+  const isDocBody = container === document.body || container === document.documentElement;
+  if (isDocBody) {
+    const scrollEl = document.scrollingElement || document.documentElement || document.body;
+    scrollEl.scrollLeft = currentX;
+    scrollEl.scrollTop = currentY;
+  } else {
+    container.scrollLeft = currentX;
+    container.scrollTop = currentY;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Plugin definition
 // ---------------------------------------------------------------------------
 const HorizontalScrollPlugin = {
@@ -60,74 +248,22 @@ const HorizontalScrollPlugin = {
     proto.scrollTo = function (target, axis) {
       this.cancelScroll();
       const resolvedAxis = axis ?? this.settings.axis ?? 'y';
+      const container = this.container;
       const startX = this._getContainerScrollPosition('x');
       const startY = this._getContainerScrollPosition('y');
       const docWidth = this._getDocumentSize('x');
       const docHeight = this._getDocumentSize('y');
       const viewWidth = this._getViewportSize('x');
       const viewHeight = this._getViewportSize('y');
-      let targetX = startX;
-      let targetY = startY;
-
-      // ── Resolve target coordinates ──────────────────────────────
-      const isScrollPoint = typeof target === 'object' && target !== null && !('nodeType' in target) && 'x' in target && 'y' in target;
-      if (isScrollPoint) {
-        const sp = target;
-        targetX = Math.max(0, Math.min(sp.x, docWidth - viewWidth));
-        targetY = Math.max(0, Math.min(sp.y, docHeight - viewHeight));
-      } else if (!isNaN(target)) {
-        if (typeof target === 'string') target = parseFloat(target);
-        const n = target;
-        if (resolvedAxis === 'x' || resolvedAxis === 'both') {
-          targetX = docWidth - n < viewWidth ? docWidth - viewWidth : n;
-        }
-        if (resolvedAxis === 'y' || resolvedAxis === 'both') {
-          targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
-        }
-      } else if ((typeof target === 'object' || typeof target === 'string') && dom.validateSelector(target, this.container)) {
-        if (typeof target === 'string') {
-          target = dom.querySelector(target, this.container);
-        }
-        const rect = target.getBoundingClientRect();
-        const cont = this.container;
-        const isDocBody = cont === document.body || cont === document.documentElement;
-        let rawX;
-        let rawY;
-        if (isDocBody) {
-          rawX = rect.left + startX;
-          rawY = rect.top + startY;
-        } else {
-          const cr = cont.getBoundingClientRect();
-          rawX = rect.left - cr.left + startX;
-          rawY = rect.top - cr.top + startY;
-        }
-        if (resolvedAxis === 'x' || resolvedAxis === 'both') {
-          targetX = docWidth - rawX < viewWidth ? docWidth - viewWidth : rawX;
-        }
-        if (resolvedAxis === 'y' || resolvedAxis === 'both') {
-          targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
-        }
-      }
-
-      // ── Apply offset ─────────────────────────────────────────────
+      let {
+        targetX,
+        targetY
+      } = resolveTargetCoords(target, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight, container);
       if (this.settings.offset !== null) {
-        let offsetX = 0;
-        let offsetY = 0;
-        if (dom.validateSelector(this.settings.offset, this.container)) {
-          let offsetEl = this.settings.offset;
-          if (typeof offsetEl === 'string') {
-            offsetEl = dom.querySelector(this.settings.offset);
-          }
-          if (dom.isNodeOrElement(offsetEl)) {
-            const offRect = offsetEl.getBoundingClientRect();
-            offsetX = offRect.width;
-            offsetY = offRect.height;
-          }
-        } else if (!isNaN(this.settings.offset)) {
-          const o = typeof this.settings.offset === 'string' ? parseFloat(this.settings.offset) : this.settings.offset;
-          offsetX = o;
-          offsetY = o;
-        }
+        const {
+          offsetX,
+          offsetY
+        } = resolveScrollOffset(this.settings, container);
         if (resolvedAxis === 'x' || resolvedAxis === 'both') targetX -= offsetX;
         if (resolvedAxis === 'y' || resolvedAxis === 'both') targetY -= offsetY;
       }
@@ -259,50 +395,10 @@ const HorizontalScrollPlugin = {
       if (axis !== 'x' && axis !== 'both') return;
       const root = this._getExpanderRoot();
       const getExp = dir => Array.from(root.children).find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
-      const expanderStyles = {
-        display: 'inline-block',
-        verticalAlign: 'top',
-        width: '0px',
-        height: '100%'
-      };
       const container = this.container;
       const isDocBody = container === document.body || container === document.documentElement;
-
-      // LEFT – immediately before the first non-fixed content element
-      if (!getExp(EXPANDER_LEFT)) {
-        const el = document.createElement('div');
-        el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
-        Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-        if (isDocBody) {
-          const firstContent = Array.from(container.children).find(c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed') ?? container.firstChild;
-          container.insertBefore(el, firstContent);
-        } else {
-          const topExp = getExp(EXPANDER_TOP);
-          root.insertBefore(el, topExp ? topExp.nextSibling : container);
-        }
-      }
-
-      // RIGHT – immediately after the last non-fixed content element
-      if (!getExp(EXPANDER_RIGHT)) {
-        const el = document.createElement('div');
-        el.setAttribute(EXPANDER_ATTR, EXPANDER_RIGHT);
-        Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-        if (isDocBody) {
-          const lastContent = Array.from(container.children).reverse().find(c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed');
-          if (lastContent) {
-            container.insertBefore(el, lastContent.nextSibling);
-          } else {
-            container.appendChild(el);
-          }
-        } else {
-          const bottomExp = getExp(EXPANDER_BOTTOM);
-          if (bottomExp) {
-            root.insertBefore(el, bottomExp);
-          } else {
-            root.insertBefore(el, container.nextSibling);
-          }
-        }
-      }
+      if (!getExp(EXPANDER_LEFT)) insertLeftExpander(root, container, isDocBody, getExp);
+      if (!getExp(EXPANDER_RIGHT)) insertRightExpander(root, container, isDocBody, getExp);
       this._normalizeExpanders && this._normalizeExpanders();
     };
 
@@ -326,29 +422,11 @@ const HorizontalScrollPlugin = {
       if (axis === 'x') {
         const expLeft = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_LEFT);
         const expRight = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_RIGHT);
-        if (exceeding && expLeft && exceeding.direction === EXPANDER_LEFT) {
-          expLeft.style.width = exceeding.px + 'px';
-          expRight?.style.removeProperty('width');
-        } else if (exceeding && expRight && exceeding.direction === EXPANDER_RIGHT) {
-          expRight.style.width = exceeding.px + 'px';
-          expLeft?.style.removeProperty('width');
-        } else {
-          expLeft?.style.removeProperty('width');
-          expRight?.style.removeProperty('width');
-        }
+        applyExpanderPair(expLeft, expRight, exceeding, EXPANDER_LEFT, EXPANDER_RIGHT, 'width');
       } else {
         const expTop = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_TOP);
         const expBottom = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_BOTTOM);
-        if (exceeding && expTop && exceeding.direction === EXPANDER_TOP) {
-          expTop.style.height = exceeding.px + 'px';
-          expBottom?.style.removeProperty('height');
-        } else if (exceeding && expBottom && exceeding.direction === EXPANDER_BOTTOM) {
-          expBottom.style.height = exceeding.px + 'px';
-          expTop?.style.removeProperty('height');
-        } else {
-          expTop?.style.removeProperty('height');
-          expBottom?.style.removeProperty('height');
-        }
+        applyExpanderPair(expTop, expBottom, exceeding, EXPANDER_TOP, EXPANDER_BOTTOM, 'height');
       }
     };
 
@@ -377,31 +455,14 @@ const HorizontalScrollPlugin = {
       const easedProgress = this._resolveEasing(this.settings.easing, t);
       const currentX = startX + (targetX - startX) * easedProgress;
       const currentY = startY + (targetY - startY) * easedProgress;
-      if (typeof this.settings.onScrollUpdate === 'function') {
-        this.settings.onScrollUpdate({
-          startPosition: axis === 'x' ? startX : startY,
-          currentPosition: axis === 'x' ? currentX : currentY,
-          endPosition: axis === 'x' ? targetX : targetY,
-          progress: t
-        });
-      }
+      fireOnScrollUpdate(this.settings, axis, startX, startY, currentX, currentY, targetX, targetY, t);
 
       // Expand document BEFORE setting scroll so the browser's scroll-area
       // already includes the overshoot distance when we call window.scroll().
       if (axis === 'both') {
         this._expandDocument(currentX, docWidth, viewWidth, 'x');
         this._expandDocument(currentY, docHeight, viewHeight, 'y');
-        // Inline simultaneous scroll for both axes
-        const cont = this.container;
-        const isDocBody = cont === document.body || cont === document.documentElement;
-        if (isDocBody) {
-          const scrollEl = document.scrollingElement || document.documentElement || document.body;
-          scrollEl.scrollLeft = currentX;
-          scrollEl.scrollTop = currentY;
-        } else {
-          cont.scrollLeft = currentX;
-          cont.scrollTop = currentY;
-        }
+        scrollBothAxes(this.container, currentX, currentY);
       } else if (axis === 'x') {
         this._expandDocument(currentX, docWidth, viewWidth, 'x');
         this._setContainerScrollPosition(currentX, 'x');
@@ -412,12 +473,7 @@ const HorizontalScrollPlugin = {
       this.container.style.setProperty('--sts-scroll-x', String(Math.round(currentX)));
       this.container.style.setProperty('--sts-scroll-y', String(Math.round(currentY)));
       if (elapsed >= duration) {
-        if (typeof this.settings.onScrollEnd === 'function') {
-          this.settings.onScrollEnd({
-            startPosition: axis === 'x' ? startX : startY,
-            endPosition: axis === 'x' ? targetX : targetY
-          });
-        }
+        fireOnScrollEnd(this.settings, axis, startX, startY, targetX, targetY);
         this._isScrolling = false;
         this._processQueue();
         return;
