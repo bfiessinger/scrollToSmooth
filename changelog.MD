@@ -1,20 +1,57 @@
 # Changelog
 
-### 4.0.0
+### [Unreleased] - 4.0.0
 
 #### Features
 - [NEW] Core build now tree‑shakeable: only `linear` easing is included by
-  default.  additional easing functions must be imported individually from
+  default. Additional easing functions must be imported individually from
   `scrolltosmooth/easings/...` or resolved with `getEasing()`.
-- [NEW] Plugin architecture and horizontal scrolling (see `HorizontalScrollPlugin`)
+- [NEW] Plugin architecture — `ScrollToSmooth` now supports registering plugins
+  that hook into the scroll lifecycle for extensibility.
+- [NEW] `HorizontalScrollPlugin` — enables horizontal scrolling with draggable
+  expander elements.
+- [NEW] `SnapPlugin` — snap-to-nearest scrolling with configurable debounce
+  delay and target element selector.
+- [NEW] `TouchMomentumPlugin` — momentum-based touch scrolling for enhanced
+  mobile experience.
+- [NEW] Multi-axis scrolling — `scrollTo` now accepts a `ScrollPoint` object to
+  target both x and y axes simultaneously.
+- [NEW] Scroll queue — `queueScroll()` and `clearQueue()` methods allow
+  sequential scroll animations to be scheduled and cancelled.
+- [NEW] Progress tracking — scroll update callbacks now receive a `progress`
+  value (0–1) representing animation completion.
+- [NEW] Native smooth scrolling fallback — optional `nativeFallback` setting
+  delegates to the browser's native `scroll-behavior: smooth`, with a
+  configurable `dispatchEvents` option.
+- [NEW] Percentage and viewport-height offsets — scroll target offsets can now
+  be expressed as CSS-style strings such as `"10%"` or `"50vh"` in addition to
+  plain pixel numbers.
+- [NEW] `getEasing(name)` helper — resolves an easing function by name at
+  runtime, with a fallback to `linear`.
+- [NEW] Packaged (IIFE) plugin builds — self-contained bundles for plugins,
+  including auto-registration of `HorizontalScrollPlugin` in the `pkgd` build.
 
 #### Enhancements
-- considerable rewrite and TypeScript conversion to support modular builds
-- documentation updated for new import patterns
+- Snapping and touch momentum removed from core — use `SnapPlugin` and
+  `TouchMomentumPlugin` instead.
+- Easings no longer re-exported from the main package entry point to keep the
+  core bundle small and tree-shakeable.
+- Improved TypeScript type definitions and declaration output.
+- `validateSelector` in `dom.ts` made stricter and more reliable.
+- `HorizontalScrollPlugin` expander element styles consolidated into a single
+  style object for consistency.
+- Considerable rewrite and TypeScript conversion to support modular builds.
+- Documentation updated for new import patterns, API, architecture, easings,
+  and plugins.
+
+#### Bug Fixes
+- Demo header title and `dat.GUI` version corrected.
 
 #### Code Quality
-- complete structural overhaul
-- extensive type upgrade
+- Complete structural overhaul and separation of concerns.
+- Easing function handling moved out of a central lookup object, reducing bundle
+  size.
+- Extensive type upgrades throughout the codebase.
 
 ### 3.0.2
 - remove forgotten console.log (#10)
