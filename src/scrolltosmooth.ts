@@ -710,6 +710,7 @@ export class ScrollToSmooth {
 	}
 
 	protected _expandDocument(scrollPos: number, docSize: number, viewSize: number, _axis: 'x' | 'y' = 'y'): void {
+		this._normalizeExpanders();
 		const exceeding = this._scrollExceedsDocument(scrollPos, docSize, viewSize);
 		const expanders = this._getDocumentExpanders();
 

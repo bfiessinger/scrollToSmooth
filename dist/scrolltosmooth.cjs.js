@@ -759,6 +759,7 @@ class ScrollToSmooth {
     }
   }
   _expandDocument(scrollPos, docSize, viewSize, _axis = 'y') {
+    this._normalizeExpanders();
     const exceeding = this._scrollExceedsDocument(scrollPos, docSize, viewSize);
     const expanders = this._getDocumentExpanders();
     const expTop = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_TOP);

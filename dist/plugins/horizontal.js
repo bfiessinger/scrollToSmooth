@@ -306,6 +306,7 @@ const HorizontalScrollPlugin = {
     // _expandDocument – full x / y support (inlines exceed logic)
     // ----------------------------------------------------------------
     proto._expandDocument = function (scrollPos, docSize, viewSize, axis = 'y') {
+      this._normalizeExpanders && this._normalizeExpanders();
       const max = docSize - viewSize;
       const startDir = axis === 'x' ? EXPANDER_LEFT : EXPANDER_TOP;
       const endDir = axis === 'x' ? EXPANDER_RIGHT : EXPANDER_BOTTOM;

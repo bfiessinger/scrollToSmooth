@@ -366,6 +366,7 @@ export const HorizontalScrollPlugin = {
 			viewSize: number,
 			axis: 'x' | 'y' = 'y',
 		): void {
+			this._normalizeExpanders && this._normalizeExpanders();
 			const max = docSize - viewSize;
 			const startDir = axis === 'x' ? EXPANDER_LEFT  : EXPANDER_TOP;
 			const endDir   = axis === 'x' ? EXPANDER_RIGHT : EXPANDER_BOTTOM;
