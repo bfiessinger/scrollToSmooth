@@ -670,36 +670,42 @@ export class ScrollToSmooth {
 		const container = this.container as HTMLElement;
 		const isDocBody = container === document.body || container === document.documentElement;
 
-		const expTop    = root.querySelector('[data-scrolltosmooth-expand="top"]') as HTMLElement | null;
-		const expBottom = root.querySelector('[data-scrolltosmooth-expand="bottom"]') as HTMLElement | null;
-		const expLeft   = root.querySelector('[data-scrolltosmooth-expand="left"]') as HTMLElement | null;
-		const expRight  = root.querySelector('[data-scrolltosmooth-expand="right"]') as HTMLElement | null;
+		const getExp = (dir: string): HTMLElement | null =>
+			(Array.from(root.children) as HTMLElement[])
+				.find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
+
+		const expTop = getExp(EXPANDER_TOP);
+		const expBottom = getExp(EXPANDER_BOTTOM);
+		const expLeft = getExp('left');
+		const expRight = getExp('right');
+
+		if (isDocBody) {
+			if (expTop) {
+				root.insertBefore(expTop, root.firstChild);
+			}
+			if (expLeft) {
+				root.insertBefore(expLeft, expTop ? expTop.nextSibling : root.firstChild);
+			}
+			if (expBottom) {
+				root.appendChild(expBottom);
+			}
+			if (expRight) {
+				root.insertBefore(expRight, expBottom ?? null);
+			}
+			return;
+		}
 
 		if (expTop) {
-			root.insertBefore(expTop, root.firstChild);
+			root.insertBefore(expTop, container);
+		}
+		if (expLeft) {
+			root.insertBefore(expLeft, container);
+		}
+		if (expRight) {
+			root.insertBefore(expRight, container.nextSibling);
 		}
 		if (expBottom) {
-			root.appendChild(expBottom);
-		}
-
-		if (expLeft) {
-			if (expTop) {
-				root.insertBefore(expLeft, expTop.nextSibling);
-			} else if (isDocBody) {
-				root.insertBefore(expLeft, root.firstChild);
-			} else {
-				root.insertBefore(expLeft, container);
-			}
-		}
-
-		if (expRight) {
-			if (expBottom) {
-				root.insertBefore(expRight, expBottom);
-			} else if (isDocBody) {
-				root.appendChild(expRight);
-			} else {
-				root.insertBefore(expRight, container.nextSibling);
-			}
+			root.insertBefore(expBottom, expRight ? expRight.nextSibling : container.nextSibling);
 		}
 	}
 

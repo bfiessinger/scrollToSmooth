@@ -725,33 +725,37 @@ class ScrollToSmooth {
     const root = this._getExpanderRoot();
     const container = this.container;
     const isDocBody = container === document.body || container === document.documentElement;
-    const expTop = root.querySelector('[data-scrolltosmooth-expand="top"]');
-    const expBottom = root.querySelector('[data-scrolltosmooth-expand="bottom"]');
-    const expLeft = root.querySelector('[data-scrolltosmooth-expand="left"]');
-    const expRight = root.querySelector('[data-scrolltosmooth-expand="right"]');
-    if (expTop) {
-      root.insertBefore(expTop, root.firstChild);
+    const getExp = dir => Array.from(root.children).find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
+    const expTop = getExp(EXPANDER_TOP);
+    const expBottom = getExp(EXPANDER_BOTTOM);
+    const expLeft = getExp('left');
+    const expRight = getExp('right');
+    if (isDocBody) {
+      if (expTop) {
+        root.insertBefore(expTop, root.firstChild);
+      }
+      if (expLeft) {
+        root.insertBefore(expLeft, expTop ? expTop.nextSibling : root.firstChild);
+      }
+      if (expBottom) {
+        root.appendChild(expBottom);
+      }
+      if (expRight) {
+        root.insertBefore(expRight, expBottom ?? null);
+      }
+      return;
     }
-    if (expBottom) {
-      root.appendChild(expBottom);
+    if (expTop) {
+      root.insertBefore(expTop, container);
     }
     if (expLeft) {
-      if (expTop) {
-        root.insertBefore(expLeft, expTop.nextSibling);
-      } else if (isDocBody) {
-        root.insertBefore(expLeft, root.firstChild);
-      } else {
-        root.insertBefore(expLeft, container);
-      }
+      root.insertBefore(expLeft, container);
     }
     if (expRight) {
-      if (expBottom) {
-        root.insertBefore(expRight, expBottom);
-      } else if (isDocBody) {
-        root.appendChild(expRight);
-      } else {
-        root.insertBefore(expRight, container.nextSibling);
-      }
+      root.insertBefore(expRight, container.nextSibling);
+    }
+    if (expBottom) {
+      root.insertBefore(expBottom, expRight ? expRight.nextSibling : container.nextSibling);
     }
   }
   _expandDocument(scrollPos, docSize, viewSize, _axis = 'y') {
