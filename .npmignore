@@ -1,0 +1,20 @@
+# Dev tooling
+.babelrc
+.eslintrc
+.eslintignore
+.github/
+tsconfig.json
+tsconfig.types.json
+rollup.config.js
+
+# Source (consumers use dist/ + @types/)
+src/
+
+# Demo pages & assets
+index.html
+demos/
+demo/
+
+# Editor
+.vscode/
+node_modules/
