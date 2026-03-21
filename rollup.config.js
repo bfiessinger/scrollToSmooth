@@ -174,4 +174,28 @@ export default [
 		},
 		plugins: iifePlugins
 	},
+	{
+		input: 'src/build/plugins/snap.ts',
+		external: [],
+		output: {
+			file: 'dist/plugins/snap.iife.min.js',
+			format: 'iife',
+			name: 'SnapPlugin',
+			exports: 'default',
+			banner: banner,
+		},
+		plugins: iifePlugins
+	},
+	{
+		input: 'src/build/plugins/touch-momentum.ts',
+		external: [],
+		output: {
+			file: 'dist/plugins/touch-momentum.iife.min.js',
+			format: 'iife',
+			name: 'TouchMomentumPlugin',
+			exports: 'default',
+			banner: banner,
+		},
+		plugins: iifePlugins
+	},
 ]

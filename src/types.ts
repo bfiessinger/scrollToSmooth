@@ -108,42 +108,6 @@ export interface ScrollToSmoothSettings {
 	 * Defaults to `true`.
 	 */
 	dispatchEvents?: boolean;
-	// Scroll snapping
-	/**
-	 * When `true` or `'nearest'`, automatically snap to the nearest anchor
-	 * after the user stops scrolling.
-	 * Defaults to `false` (no snapping).
-	 */
-	snap?: boolean | 'nearest';
-	/**
-	 * CSS selector that identifies snap target elements.
-	 * When omitted, the linked elements' targets (resolved via `targetAttribute`) are used.
-	 */
-	snapSelector?: string;
-	/**
-	 * Milliseconds of scroll inactivity to wait before triggering a snap.
-	 * Defaults to `150`.
-	 */
-	snapDebounce?: number;
-	// Touch momentum
-	/**
-	 * When `true`, a fast swipe gesture triggers a momentum scroll animation
-	 * after the finger is lifted, giving the page an inertia feel.
-	 * Disabled by default to avoid interfering with native scroll behaviour.
-	 */
-	touchMomentum?: boolean;
-	/**
-	 * Multiplier (in milliseconds) applied to the swipe velocity to compute
-	 * the extra momentum distance.  Higher values = more "throw".
-	 * Defaults to `300`.
-	 */
-	touchMomentumFactor?: number;
-	/**
-	 * Minimum swipe velocity in px/ms required to trigger a momentum scroll.
-	 * Swipes slower than this are ignored.
-	 * Defaults to `0.3`.
-	 */
-	touchMomentumMinVelocity?: number;
 	// Callbacks
 	onScrollStart?: ((data: ScrollData) => void) | null;
 	onScrollUpdate?: ((data: ScrollUpdateData) => void) | null;

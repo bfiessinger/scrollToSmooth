@@ -115,25 +115,11 @@ export class ScrollToSmooth {
 	/** Timer used to detect scroll-end in native mode. */
 	private _nativeEndTimer: ReturnType<typeof setTimeout> | null = null;
 
-	/** Bound scroll handler used for snap-to-nearest detection. */
-	private _snapScrollHandler: (() => void) | null = null;
-
-	/** Debounce timer for snap-to-nearest. */
-	private _snapDebounceTimer: ReturnType<typeof setTimeout> | null = null;
-
 	/** Pending scroll queue populated by `queueScroll()`. */
 	private _queue: ScrollQueueItem[] = [];
 
-	/** Touch-momentum tracking state. */
-	private _touchSamples: Array<{ y: number; t: number }> = [];
-	private _touchMomentumHandlers: {
-		start: EventListener;
-		move: EventListener;
-		end: EventListener;
-	} | null = null;
-
 	/** True while an animation (JS or native) is running. */
-	private _isScrolling = false;
+	protected _isScrolling = false;
 
 	/** Registered plugins (keyed by name). */
 	private static _plugins: Map<string, ScrollToSmoothPlugin> = new Map();
@@ -215,13 +201,6 @@ export class ScrollToSmooth {
 			window.addEventListener(ev, this._cancelHandler);
 		}
 
-		if (this.settings.snap) {
-			this._setupSnapping();
-		}
-
-		if (this.settings.touchMomentum) {
-			this._setupTouchMomentum();
-		}
 	}
 
 	/**
@@ -251,8 +230,6 @@ export class ScrollToSmooth {
 			this._cancelHandler = null;
 		}
 
-		this._teardownSnapping();
-		this._teardownTouchMomentum();
 	}
 
 	/**
@@ -682,149 +659,20 @@ export class ScrollToSmooth {
 	}
 
 	// ---------------------------------------------------------------
-	// Private – Snap-to-nearest
+	// Protected – Scroll event target helper (used by plugins)
 	// ---------------------------------------------------------------
 
-	private _getScrollEventTarget(): Window | HTMLElement {
+	protected _getScrollEventTarget(): Window | HTMLElement {
 		const container = this.container as HTMLElement;
 		const isDocBody = container === document.body || container === document.documentElement;
 		return isDocBody ? window : container;
-	}
-
-	private _setupSnapping(): void {
-		const debounce = this.settings.snapDebounce ?? 150;
-		this._snapScrollHandler = () => {
-			if (this._isScrolling) return;
-			if (this._snapDebounceTimer !== null) clearTimeout(this._snapDebounceTimer);
-			this._snapDebounceTimer = setTimeout(() => {
-				this._snapDebounceTimer = null;
-				this._snapToNearest();
-			}, debounce);
-		};
-		this._getScrollEventTarget().addEventListener('scroll', this._snapScrollHandler, { passive: true });
-	}
-
-	private _teardownSnapping(): void {
-		if (this._snapScrollHandler) {
-			this._getScrollEventTarget().removeEventListener('scroll', this._snapScrollHandler);
-			this._snapScrollHandler = null;
-		}
-		if (this._snapDebounceTimer !== null) {
-			clearTimeout(this._snapDebounceTimer);
-			this._snapDebounceTimer = null;
-		}
-	}
-
-	private _getSnapTargets(): HTMLElement[] {
-		if (this.settings.snapSelector) {
-			return Array.from(querySelectorAll(this.settings.snapSelector, this.container as HTMLElement)) as HTMLElement[];
-		}
-		const targets: HTMLElement[] = [];
-		for (const el of Array.from(this.elements)) {
-			const target = this._getTargetElement(el);
-			if (target && !targets.includes(target as HTMLElement)) {
-				targets.push(target as HTMLElement);
-			}
-		}
-		return targets;
-	}
-
-	private _snapToNearest(): void {
-		const targets = this._getSnapTargets();
-		if (targets.length === 0) return;
-
-		const currentY = this._getContainerScrollPosition('y');
-		const container = this.container as HTMLElement;
-		const isDocBody = container === document.body || container === document.documentElement;
-		const contRect = isDocBody ? null : container.getBoundingClientRect();
-
-		let nearest: HTMLElement | null = null;
-		let minDist = Infinity;
-
-		for (const el of targets) {
-			const rect = el.getBoundingClientRect();
-			const elY = isDocBody
-				? rect.top + currentY
-				: rect.top - contRect!.top + currentY;
-			const applyOff = this._applyOffset(elY);
-			const dist = Math.abs(applyOff - currentY);
-			if (dist < minDist) {
-				minDist = dist;
-				nearest = el;
-			}
-		}
-
-		if (nearest !== null && minDist > 1) {
-			this.scrollTo(nearest);
-		}
-	}
-
-	// ---------------------------------------------------------------
-	// Private – Touch momentum
-	// ---------------------------------------------------------------
-
-	private _setupTouchMomentum(): void {
-		const target = this._getScrollEventTarget();
-
-		const onStart = (e: Event) => {
-			const touch = (e as TouchEvent).touches[0];
-			this._touchSamples = [{ y: touch.clientY, t: performance.now() }];
-		};
-
-		const onMove = (e: Event) => {
-			const touch = (e as TouchEvent).touches[0];
-			const now = performance.now();
-			this._touchSamples.push({ y: touch.clientY, t: now });
-			// Keep only the last 100 ms of samples for accurate end-velocity
-			const cutoff = now - 100;
-			while (this._touchSamples.length > 1 && this._touchSamples[0].t < cutoff) {
-				this._touchSamples.shift();
-			}
-		};
-
-		const onEnd = () => {
-			if (this._touchSamples.length < 2) return;
-
-			const first = this._touchSamples[0];
-			const last  = this._touchSamples[this._touchSamples.length - 1];
-			const dt = last.t - first.t;
-			if (dt === 0) return;
-
-			// Velocity in px/ms — positive means finger moved down (scroll up)
-			const velocity = (first.y - last.y) / dt;
-			const minVelocity = this.settings.touchMomentumMinVelocity ?? 0.3;
-
-			if (Math.abs(velocity) < minVelocity) return;
-
-			const factor   = this.settings.touchMomentumFactor ?? 300;
-			const distance = velocity * factor;
-			const currentY = this._getContainerScrollPosition('y');
-
-			this.scrollTo(currentY + distance);
-		};
-
-		this._touchMomentumHandlers = { start: onStart as EventListener, move: onMove as EventListener, end: onEnd as EventListener };
-
-		target.addEventListener('touchstart', this._touchMomentumHandlers.start, { passive: true });
-		target.addEventListener('touchmove',  this._touchMomentumHandlers.move,  { passive: true });
-		target.addEventListener('touchend',   this._touchMomentumHandlers.end,   { passive: true });
-	}
-
-	private _teardownTouchMomentum(): void {
-		if (!this._touchMomentumHandlers) return;
-		const target = this._getScrollEventTarget();
-		target.removeEventListener('touchstart', this._touchMomentumHandlers.start);
-		target.removeEventListener('touchmove',  this._touchMomentumHandlers.move);
-		target.removeEventListener('touchend',   this._touchMomentumHandlers.end);
-		this._touchMomentumHandlers = null;
-		this._touchSamples = [];
 	}
 
 	// ---------------------------------------------------------------
 	// Private – Link collection & click handling
 	// ---------------------------------------------------------------
 
-	private _getTargetElement(el: Element): Element | null {
+	protected _getTargetElement(el: Element): Element | null {
 		let targetSelector = '';
 
 		if (this.settings.targetAttribute === 'href' && (el as HTMLAnchorElement).href) {
