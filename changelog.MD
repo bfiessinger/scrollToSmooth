@@ -1,6 +1,6 @@
 # Changelog
 
-### [Unreleased] - 4.0.0
+### 4.0.0
 
 #### Features
 - [NEW] Core build now tree‑shakeable: only `linear` easing is included by

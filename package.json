@@ -2,7 +2,7 @@
   "name": "scrolltosmooth",
   "type": "module",
   "sideEffects": false,
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "Lightweight Vanilla JS Smooth Scroll animation library.",
   "main": "dist/scrolltosmooth.cjs.js",
   "module": "dist/scrolltosmooth.esm.js",
