@@ -320,7 +320,6 @@ export const HorizontalScrollPlugin = {
 				const el = document.createElement('div');
 				el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
 				Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-                el.style.float = 'left';
 				const topExp = getExp(EXPANDER_TOP);
 				this.container.insertBefore(el, topExp ? topExp.nextSibling : this.container.firstChild);
 			}

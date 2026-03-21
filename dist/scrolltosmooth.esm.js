@@ -137,6 +137,42 @@ function getWindowHeight() {
   return window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 }
 
+/**
+ * Returns true when the browser supports CSS `scroll-behavior: smooth`
+ * (i.e. native smooth scrolling via `element.scrollTo({ behavior: 'smooth' })`).
+ */
+function supportsNativeSmoothScroll() {
+  return 'scrollBehavior' in document.documentElement.style;
+}
+
+/**
+ * Parse a `%` or `vh` string into an absolute pixel value.
+ * - `%`  → fraction of `docSize`   (for scroll targets)
+ * - `vh` → fraction of `viewSize`  (for scroll targets and offsets alike)
+ * Returns `null` for any other string.
+ */
+function parsePercentTarget(str, docSize, viewSize) {
+  const vhMatch = str.match(/^(-?[\d.]+)vh$/i);
+  if (vhMatch) return parseFloat(vhMatch[1]) / 100 * viewSize;
+  const pctMatch = str.match(/^(-?[\d.]+)%$/);
+  if (pctMatch) return parseFloat(pctMatch[1]) / 100 * docSize;
+  return null;
+}
+
+/**
+ * Parse a `%` or `vh` offset string into an absolute pixel value.
+ * Both units resolve against the viewport size, which is re-evaluated
+ * on every scroll so resizing is handled automatically.
+ * Returns `null` for any other string.
+ */
+function parsePercentOffset(str, viewSize) {
+  const vhMatch = str.match(/^(-?[\d.]+)vh$/i);
+  if (vhMatch) return parseFloat(vhMatch[1]) / 100 * viewSize;
+  const pctMatch = str.match(/^(-?[\d.]+)%$/);
+  if (pctMatch) return parseFloat(pctMatch[1]) / 100 * viewSize;
+  return null;
+}
+
 /** Data-attribute used on invisible document expander divs */
 const EXPANDER_ATTR = 'data-scrolltosmooth-expand';
 const EXPANDER_TOP = 'top';
@@ -157,6 +193,7 @@ const defaults = {
   // to keep the core bundle tiny we only import `linear` here; other
   // easings are pulled in by callers and can be tree‑shaken.
   easing: linear,
+  dispatchEvents: true,
   onScrollStart: null,
   onScrollUpdate: null,
   onScrollEnd: null
@@ -188,6 +225,12 @@ class ScrollToSmooth {
     _defineProperty(this, "_clickHandlers", new Map());
     /** Stored bound cancel-scroll handler for proper removal. */
     _defineProperty(this, "_cancelHandler", null);
+    /** Timer used to detect scroll-end in native mode. */
+    _defineProperty(this, "_nativeEndTimer", null);
+    /** Pending scroll queue populated by `queueScroll()`. */
+    _defineProperty(this, "_queue", []);
+    /** True while an animation (JS or native) is running. */
+    _defineProperty(this, "_isScrolling", false);
     this.settings = _objectSpread2(_objectSpread2({}, defaults), settings);
 
     // Resolve container
@@ -263,25 +306,81 @@ class ScrollToSmooth {
   }
 
   /**
-   * Animate a scroll to the given target (vertical axis only by default).
-   * To scroll on the x-axis or both axes, register the HorizontalScrollPlugin.
+   * Animate a scroll to the given target immediately, cancelling any
+   * in-progress animation and clearing the queue.
    * @param target  Element, CSS selector, pixel offset, or ScrollPoint.
    * @param _axis   Accepted for API compatibility; core only processes 'y'.
    *                Pass 'x' or 'both' after registering HorizontalScrollPlugin.
    */
   scrollTo(target, _axis) {
-    this.cancelScroll();
+    this.cancelScroll(true);
+    this._executeScroll(target);
+  }
+
+  /**
+   * Add a scroll target to the queue. Scrolls execute one after another;
+   * the next starts automatically when the previous finishes.
+   *
+   * @param target  Same target types accepted by `scrollTo`.
+   * @param id      Optional identifier — pass to `clearQueue(id)` to remove
+   *                only this item without touching the rest.
+   *
+   * @example
+   * scroller.queueScroll('#section-1');
+   * scroller.queueScroll('#section-2');
+   * scroller.queueScroll('#section-3');
+   */
+  queueScroll(target, id) {
+    this._queue.push({
+      target,
+      id
+    });
+    this._processQueue();
+  }
+
+  /**
+   * Remove items from the pending queue without affecting the active animation.
+   * @param id  When supplied, only items with a matching id are removed.
+   *            When omitted, the entire queue is cleared.
+   */
+  clearQueue(id) {
+    if (id !== undefined) {
+      this._queue = this._queue.filter(item => item.id !== id);
+    } else {
+      this._queue = [];
+    }
+  }
+
+  /** Internal – run the next queued item if nothing is currently scrolling. */
+  _processQueue() {
+    if (this._isScrolling || this._queue.length === 0) return;
+    const item = this._queue.shift();
+    this._executeScroll(item.target);
+  }
+
+  /**
+   * Core scroll execution shared by `scrollTo` and the queue processor.
+   * Does NOT cancel any in-progress animation — callers must do that first.
+   */
+  _executeScroll(target, _axis) {
+    this._isScrolling = true;
     const startY = this._getContainerScrollPosition('y');
     const docHeight = this._getDocumentSize('y');
     const viewHeight = this._getViewportSize('y');
     let targetY = this._resolveTargetY(target, startY, docHeight, viewHeight);
     targetY = this._applyOffset(targetY);
     targetY = Math.max(0, targetY);
+    const startData = {
+      startPosition: startY,
+      endPosition: targetY
+    };
     if (typeof this.settings.onScrollStart === 'function') {
-      this.settings.onScrollStart({
-        startPosition: startY,
-        endPosition: targetY
-      });
+      this.settings.onScrollStart(startData);
+    }
+    this._dispatchScrollEvent('scrolltosmooth:start', startData);
+    if (this._shouldUseNative()) {
+      this._nativeScrollTo(targetY, startY);
+      return;
     }
     this._ensureExpanders('y');
     this._animateScroll({
@@ -311,6 +410,12 @@ class ScrollToSmooth {
       return clamp(n);
     }
 
+    // ── Percent / viewport-height string (e.g. '50%', '25vh') ────
+    if (typeof target === 'string') {
+      const px = parsePercentTarget(target, docHeight, viewHeight);
+      if (px !== null) return clamp(px);
+    }
+
     // ── Element or CSS selector ───────────────────────────────────
     if (validateSelector(target, this.container)) {
       if (typeof target === 'string') {
@@ -332,6 +437,13 @@ class ScrollToSmooth {
   _applyOffset(targetY) {
     if (this.settings.offset === null) return targetY;
     let offsetY = 0;
+    if (typeof this.settings.offset === 'string') {
+      const viewSize = this._getViewportSize('y');
+      const pxOffset = parsePercentOffset(this.settings.offset, viewSize);
+      if (pxOffset !== null) {
+        return targetY - pxOffset;
+      }
+    }
     if (validateSelector(this.settings.offset, this.container)) {
       let offsetEl = this.settings.offset;
       if (typeof offsetEl === 'string') {
@@ -359,12 +471,15 @@ class ScrollToSmooth {
 
   /**
    * Cancel any in-progress scroll animation.
+   * @param clearQueue  When `true`, also discard all pending queued scrolls.
    */
-  cancelScroll() {
+  cancelScroll(clearQueue = false) {
     if (this._animationFrame !== null) {
       window.cancelAnimationFrame(this._animationFrame);
       this._animationFrame = null;
     }
+    if (clearQueue) this._queue = [];
+    this._isScrolling = false;
   }
 
   /**
@@ -379,6 +494,53 @@ class ScrollToSmooth {
   // Private – Animation
   // ---------------------------------------------------------------
 
+  _dispatchScrollEvent(name, detail) {
+    if (this.settings.dispatchEvents === false) return;
+    this.container.dispatchEvent(new CustomEvent(name, {
+      bubbles: true,
+      cancelable: false,
+      detail
+    }));
+  }
+  _shouldUseNative() {
+    const {
+      useNative
+    } = this.settings;
+    if (useNative === true) return true;
+    if (useNative === 'auto') return supportsNativeSmoothScroll();
+    return false;
+  }
+  _nativeScrollTo(targetY, startY) {
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    const scrollTarget = isDocBody ? window : container;
+    scrollTarget.scrollTo({
+      top: targetY,
+      behavior: 'smooth'
+    });
+
+    // Detect scroll-end via scroll event + idle debounce (100 ms quiet period)
+    const onScrollEnd = () => {
+      if (this._nativeEndTimer !== null) clearTimeout(this._nativeEndTimer);
+      this._nativeEndTimer = setTimeout(() => {
+        scrollTarget.removeEventListener('scroll', onScrollEnd);
+        this._nativeEndTimer = null;
+        const endData = {
+          startPosition: startY,
+          endPosition: targetY
+        };
+        if (typeof this.settings.onScrollEnd === 'function') {
+          this.settings.onScrollEnd(endData);
+        }
+        this._dispatchScrollEvent('scrolltosmooth:end', endData);
+        this._isScrolling = false;
+        this._processQueue();
+      }, 100);
+    };
+    scrollTarget.addEventListener('scroll', onScrollEnd, {
+      passive: true
+    });
+  }
   _animateScroll(config) {
     const {
       targetY,
@@ -393,13 +555,16 @@ class ScrollToSmooth {
     const t = Math.min(1, elapsed / duration);
     const easedProgress = this._resolveEasing(this.settings.easing, t);
     const currentY = startY + (targetY - startY) * easedProgress;
+    const updateData = {
+      startPosition: startY,
+      currentPosition: currentY,
+      endPosition: targetY,
+      progress: t
+    };
     if (typeof this.settings.onScrollUpdate === 'function') {
-      this.settings.onScrollUpdate({
-        startPosition: startY,
-        currentPosition: currentY,
-        endPosition: targetY
-      });
+      this.settings.onScrollUpdate(updateData);
     }
+    this._dispatchScrollEvent('scrolltosmooth:update', updateData);
     this._expandDocument(currentY, docHeight, viewHeight, 'y');
     this._setContainerScrollPosition(currentY, 'y');
 
@@ -407,12 +572,16 @@ class ScrollToSmooth {
     // surrounding page can react to it.
     this.container.style.setProperty('--sts-scroll-y', String(Math.round(currentY)));
     if (elapsed >= duration) {
+      const endData = {
+        startPosition: startY,
+        endPosition: targetY
+      };
       if (typeof this.settings.onScrollEnd === 'function') {
-        this.settings.onScrollEnd({
-          startPosition: startY,
-          endPosition: targetY
-        });
+        this.settings.onScrollEnd(endData);
       }
+      this._dispatchScrollEvent('scrolltosmooth:end', endData);
+      this._isScrolling = false;
+      this._processQueue();
       return;
     }
     this._animationFrame = window.requestAnimationFrame(() => {
@@ -535,6 +704,16 @@ class ScrollToSmooth {
   }
   _getDocumentExpanders() {
     return Array.from(this.container.children).filter(el => el.hasAttribute(EXPANDER_ATTR));
+  }
+
+  // ---------------------------------------------------------------
+  // Protected – Scroll event target helper (used by plugins)
+  // ---------------------------------------------------------------
+
+  _getScrollEventTarget() {
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    return isDocBody ? window : container;
   }
 
   // ---------------------------------------------------------------

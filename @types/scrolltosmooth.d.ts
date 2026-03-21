@@ -11,8 +11,8 @@
  *   import { HorizontalScrollPlugin } from 'scrolltosmooth/plugins/horizontal';
  *   ScrollToSmooth.use(HorizontalScrollPlugin);
  */
-import { ScrollToSmoothSettings, ScrollPoint, ScrollData, ScrollUpdateData, EasingFunction, AnimationConfig, ScrollToSmoothPlugin } from './types';
-export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollPoint, ScrollToSmoothPlugin };
+import { ScrollToSmoothSettings, ScrollPoint, ScrollData, ScrollUpdateData, EasingFunction, AnimationConfig, ScrollToSmoothPlugin, ScrollQueueItem } from './types';
+export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollPoint, ScrollToSmoothPlugin, ScrollQueueItem };
 export declare class ScrollToSmooth {
     elements: NodeListOf<Element>;
     container: Document | HTMLElement | Element;
@@ -25,6 +25,10 @@ export declare class ScrollToSmooth {
     private _cancelHandler;
     /** Timer used to detect scroll-end in native mode. */
     private _nativeEndTimer;
+    /** Pending scroll queue populated by `queueScroll()`. */
+    private _queue;
+    /** True while an animation (JS or native) is running. */
+    protected _isScrolling: boolean;
     /** Registered plugins (keyed by name). */
     private static _plugins;
     /**
@@ -49,6 +53,33 @@ export declare class ScrollToSmooth {
      */
     destroy(): void;
     /**
+     * Add a scroll target to the queue. Scrolls execute one after another;
+     * the next starts automatically when the previous finishes.
+     *
+     * @param target  Same target types accepted by `scrollTo`.
+     * @param id      Optional identifier — pass to `clearQueue(id)` to remove
+     *                only this item without touching the rest.
+     *
+     * @example
+     * scroller.queueScroll('#section-1');
+     * scroller.queueScroll('#section-2');
+     * scroller.queueScroll('#section-3');
+     */
+    queueScroll(target: HTMLElement | string | number | ScrollPoint, id?: string): void;
+    /**
+     * Remove items from the pending queue without affecting the active animation.
+     * @param id  When supplied, only items with a matching id are removed.
+     *            When omitted, the entire queue is cleared.
+     */
+    clearQueue(id?: string): void;
+    /** Internal – run the next queued item if nothing is currently scrolling. */
+    private _processQueue;
+    /**
+     * Core scroll execution shared by `scrollTo` and the queue processor.
+     * Does NOT cancel any in-progress animation — callers must do that first.
+     */
+    protected _executeScroll(target: HTMLElement | string | number | ScrollPoint, _axis?: 'x' | 'y' | 'both'): void;
+    /**
      * Resolve any accepted target type to a raw Y pixel position.
      * Overridable by plugins that need to handle additional target types.
      */
@@ -61,8 +92,9 @@ export declare class ScrollToSmooth {
     private _isScrollPoint;
     /**
      * Cancel any in-progress scroll animation.
+     * @param clearQueue  When `true`, also discard all pending queued scrolls.
      */
-    cancelScroll(): void;
+    cancelScroll(clearQueue?: boolean): void;
     /**
      * Merge new settings into the current configuration.
      */
@@ -90,7 +122,8 @@ export declare class ScrollToSmooth {
         px: number;
     } | false;
     protected _getDocumentExpanders(): HTMLDivElement[];
-    private _getTargetElement;
+    protected _getScrollEventTarget(): Window | HTMLElement;
+    protected _getTargetElement(el: Element): Element | null;
     private _collectLinks;
     private _handleClick;
 }

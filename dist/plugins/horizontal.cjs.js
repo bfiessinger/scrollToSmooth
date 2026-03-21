@@ -5,7 +5,7 @@
 */
 'use strict';
 
-var dom = require('../utils/dom');
+var dom = require('./dom-BHQGRYOh.js');
 
 /**
  * HorizontalScrollPlugin – adds x-axis and both-axis scrolling to ScrollToSmooth.
@@ -270,7 +270,6 @@ const HorizontalScrollPlugin = {
         const el = document.createElement('div');
         el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
         Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-        el.style.float = 'left';
         const topExp = getExp(EXPANDER_TOP);
         this.container.insertBefore(el, topExp ? topExp.nextSibling : this.container.firstChild);
       }
@@ -363,7 +362,8 @@ const HorizontalScrollPlugin = {
         this.settings.onScrollUpdate({
           startPosition: axis === 'x' ? startX : startY,
           currentPosition: axis === 'x' ? currentX : currentY,
-          endPosition: axis === 'x' ? targetX : targetY
+          endPosition: axis === 'x' ? targetX : targetY,
+          progress: t
         });
       }
 

@@ -11,6 +11,8 @@ export interface ScrollData<T = number> {
  */
 export interface ScrollUpdateData<T = number> extends ScrollData<T> {
     currentPosition: T;
+    /** Normalized animation progress in the range [0, 1]. */
+    progress: number;
 }
 /**
  * An explicit two-axis scroll target.
@@ -46,12 +48,33 @@ export interface AnimationConfig {
     [key: string]: unknown;
 }
 /**
+ * A single item in the scroll queue, created by `queueScroll()`.
+ */
+export interface ScrollQueueItem {
+    /** The scroll target (same types accepted by `scrollTo`). */
+    target: HTMLElement | string | number | ScrollPoint;
+    /**
+     * Optional identifier. Pass to `clearQueue(id)` or `cancelScroll()` to
+     * remove only this item from the queue.
+     */
+    id?: string;
+}
+/**
  * Configuration options for a ScrollToSmooth instance.
  * All properties are optional; defaults are applied internally.
  */
 export interface ScrollToSmoothSettings {
     container?: string | Document | Element;
     targetAttribute?: string;
+    /**
+     * Pixel amount, element (whose height is used), CSS selector, or a
+     * percent / viewport-height string to subtract from the target position.
+     * Percent strings (`'10%'`) and `vh` strings (`'5vh'`) are re-evaluated
+     * against the viewport height on every scroll, so they adapt to resizing.
+     * @example offset: '10%'   // 10 % of the viewport height
+     * @example offset: '64px'  // fixed 64 px (same as the number 64)
+     * @example offset: '#nav'  // height of the #nav element
+     */
     offset?: Node | Element | string | number | null;
     topOnEmptyHash?: boolean;
     axis?: 'x' | 'y' | 'both';
