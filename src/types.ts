@@ -78,6 +78,12 @@ export interface ScrollToSmoothSettings {
 	 * Defaults to `false` (always use JS animation).
 	 */
 	useNative?: boolean | 'auto';
+	/**
+	 * When `false`, skip dispatching `scrolltosmooth:start`, `scrolltosmooth:update`,
+	 * and `scrolltosmooth:end` CustomEvents on the scroll container.
+	 * Defaults to `true`.
+	 */
+	dispatchEvents?: boolean;
 	// Callbacks
 	onScrollStart?: ((data: ScrollData) => void) | null;
 	onScrollUpdate?: ((data: ScrollUpdateData) => void) | null;

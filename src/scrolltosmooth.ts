@@ -62,6 +62,7 @@ const defaults: ScrollToSmoothSettings = {
 	// to keep the core bundle tiny we only import `linear` here; other
 	// easings are pulled in by callers and can be tree‑shaken.
 	easing: linear,
+	dispatchEvents: true,
 	onScrollStart: null,
 	onScrollUpdate: null,
 	onScrollEnd: null
@@ -212,9 +213,12 @@ export class ScrollToSmooth {
 		targetY = this._applyOffset(targetY);
 		targetY = Math.max(0, targetY);
 
+		const startData: ScrollData = { startPosition: startY, endPosition: targetY };
+
 		if (typeof this.settings.onScrollStart === 'function') {
-			this.settings.onScrollStart({ startPosition: startY, endPosition: targetY });
+			this.settings.onScrollStart(startData);
 		}
+		this._dispatchScrollEvent('scrolltosmooth:start', startData);
 
 		if (this._shouldUseNative()) {
 			this._nativeScrollTo(targetY, startY);
@@ -328,6 +332,13 @@ export class ScrollToSmooth {
 	// Private – Animation
 	// ---------------------------------------------------------------
 
+	protected _dispatchScrollEvent(name: string, detail: ScrollData | ScrollUpdateData): void {
+		if (this.settings.dispatchEvents === false) return;
+		(this.container as HTMLElement).dispatchEvent(
+			new CustomEvent(name, { bubbles: true, cancelable: false, detail })
+		);
+	}
+
 	protected _shouldUseNative(): boolean {
 		const { useNative } = this.settings;
 		if (useNative === true) return true;
@@ -348,9 +359,11 @@ export class ScrollToSmooth {
 			this._nativeEndTimer = setTimeout(() => {
 				scrollTarget.removeEventListener('scroll', onScrollEnd);
 				this._nativeEndTimer = null;
+				const endData: ScrollData = { startPosition: startY, endPosition: targetY };
 				if (typeof this.settings.onScrollEnd === 'function') {
-					this.settings.onScrollEnd({ startPosition: startY, endPosition: targetY });
+					this.settings.onScrollEnd(endData);
 				}
+				this._dispatchScrollEvent('scrolltosmooth:end', endData);
 			}, 100);
 		};
 
@@ -368,13 +381,16 @@ export class ScrollToSmooth {
 
 		const currentY = startY + (targetY - startY) * easedProgress;
 
+		const updateData: ScrollUpdateData = {
+			startPosition:   startY,
+			currentPosition: currentY,
+			endPosition:     targetY,
+		};
+
 		if (typeof this.settings.onScrollUpdate === 'function') {
-			this.settings.onScrollUpdate({
-				startPosition:   startY,
-				currentPosition: currentY,
-				endPosition:     targetY,
-			});
+			this.settings.onScrollUpdate(updateData);
 		}
+		this._dispatchScrollEvent('scrolltosmooth:update', updateData);
 
 		this._expandDocument(currentY, docHeight, viewHeight, 'y');
 		this._setContainerScrollPosition(currentY, 'y');
@@ -384,12 +400,11 @@ export class ScrollToSmooth {
 		(this.container as HTMLElement).style.setProperty('--sts-scroll-y', String(Math.round(currentY)));
 
 		if (elapsed >= duration) {
+			const endData: ScrollData = { startPosition: startY, endPosition: targetY };
 			if (typeof this.settings.onScrollEnd === 'function') {
-				this.settings.onScrollEnd({
-					startPosition: startY,
-					endPosition:   targetY,
-				});
+				this.settings.onScrollEnd(endData);
 			}
+			this._dispatchScrollEvent('scrolltosmooth:end', endData);
 			return;
 		}
 

@@ -145,6 +145,16 @@ Animation easing function.
 
 ---
 
+### dispatchEvents
+
+`boolean`
+
+When `false`, suppresses all `scrolltosmooth:*` CustomEvent dispatching. Useful for high-frequency scenarios where event overhead matters.
+
+Default: `true`
+
+---
+
 ### onScrollStart
 
 Callback executed when animation starts.
@@ -160,3 +170,35 @@ Callback executed during animation.
 ### onScrollEnd
 
 Callback executed when animation finishes.
+
+---
+
+## Custom Events
+
+ScrollToSmooth dispatches CustomEvents on the scroll container element at each lifecycle point. All events bubble and carry a `detail` object.
+
+| Event | When | `detail` shape |
+|---|---|---|
+| `scrolltosmooth:start` | Once, before animation begins | `{ startPosition, endPosition }` |
+| `scrolltosmooth:update` | Every animation frame | `{ startPosition, currentPosition, endPosition }` |
+| `scrolltosmooth:end` | Once, when animation completes | `{ startPosition, endPosition }` |
+
+All position values are in pixels.
+
+### Example
+
+```javascript
+document.addEventListener('scrolltosmooth:start', (e) => {
+  console.log('Scrolling from', e.detail.startPosition, 'to', e.detail.endPosition);
+});
+
+document.addEventListener('scrolltosmooth:update', (e) => {
+  console.log('Current position:', e.detail.currentPosition);
+});
+
+document.addEventListener('scrolltosmooth:end', (e) => {
+  console.log('Scroll complete at', e.detail.endPosition);
+});
+```
+
+Since events bubble, you can listen on `document` (or any ancestor) regardless of which container is scrolling. To opt out of event dispatching for performance reasons, pass `dispatchEvents: false` to the constructor.

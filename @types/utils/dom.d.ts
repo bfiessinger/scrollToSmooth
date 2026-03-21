@@ -45,3 +45,8 @@ export declare function getWindowHeight(): number;
  * Viewport width.
  */
 export declare function getWindowWidth(): number;
+/**
+ * Returns true when the browser supports CSS `scroll-behavior: smooth`
+ * (i.e. native smooth scrolling via `element.scrollTo({ behavior: 'smooth' })`).
+ */
+export declare function supportsNativeSmoothScroll(): boolean;

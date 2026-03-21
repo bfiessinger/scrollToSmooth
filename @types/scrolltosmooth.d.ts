@@ -23,6 +23,8 @@ export declare class ScrollToSmooth {
     private _clickHandlers;
     /** Stored bound cancel-scroll handler for proper removal. */
     private _cancelHandler;
+    /** Timer used to detect scroll-end in native mode. */
+    private _nativeEndTimer;
     /** Registered plugins (keyed by name). */
     private static _plugins;
     /**
@@ -65,6 +67,9 @@ export declare class ScrollToSmooth {
      * Merge new settings into the current configuration.
      */
     update(obj: ScrollToSmoothSettings): void;
+    protected _dispatchScrollEvent(name: string, detail: ScrollData | ScrollUpdateData): void;
+    protected _shouldUseNative(): boolean;
+    protected _nativeScrollTo(targetY: number, startY: number): void;
     protected _animateScroll(config: AnimationConfig): void;
     protected _getDuration(distance: number): number;
     protected _resolveEasing(easing: string | EasingFunction | undefined, t: number): number;
