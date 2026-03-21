@@ -119,6 +119,12 @@ export declare class ScrollToSmooth {
      * programmatic-only usage (no init()) gets expanders too.
      */
     protected _ensureExpanders(_axis: 'x' | 'y' | 'both'): void;
+    /** Find (and cache) the first non-expander, non-fixed child to use as anchor. */
+    private _findExpanderAnchor;
+    /** Position expanders at the very beginning/end of root when no anchor exists. */
+    private _positionExpandersAtHead;
+    /** Position expanders immediately before/after an anchor element. */
+    private _positionExpandersAtAnchor;
     /**
      * Normalize existing expander positions so they stay adjacent to the
      * scroll container, even when other scripts add DOM nodes later.

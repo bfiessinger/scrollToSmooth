@@ -1,7 +1,7 @@
 /*!
 * ScrollToSmooth
 * Author: Bastian Fießinger
-* Version: 3.0.2
+* Version: 4.0.1
 */
 /**
  * easeInOutQuart

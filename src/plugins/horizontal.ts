@@ -70,8 +70,76 @@ interface HorizontalAnimationConfig extends AnimationConfig {
 // Module-level helpers (reduce cyclomatic complexity in plugin methods)
 // ---------------------------------------------------------------------------
 
+/** Type guard: is the target a {x, y} scroll point? */
+function isScrollPointTarget(target: unknown): target is ScrollPoint {
+	return (
+		typeof target === 'object'
+		&& target !== null
+		&& !('nodeType' in (target as object))
+		&& 'x' in (target as object)
+		&& 'y' in (target as object)
+	);
+}
+
+function resolveFromScrollPoint(
+	sp: ScrollPoint,
+	docWidth: number, docHeight: number, viewWidth: number, viewHeight: number,
+): { targetX: number; targetY: number } {
+	return {
+		targetX: Math.max(0, Math.min(sp.x, docWidth  - viewWidth)),
+		targetY: Math.max(0, Math.min(sp.y, docHeight - viewHeight)),
+	};
+}
+
+function resolveFromNumber(
+	n: number,
+	resolvedAxis: 'x' | 'y' | 'both',
+	startX: number, startY: number,
+	docWidth: number, docHeight: number, viewWidth: number, viewHeight: number,
+): { targetX: number; targetY: number } {
+	let targetX = startX;
+	let targetY = startY;
+	if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+		targetX = docWidth - n < viewWidth ? docWidth - viewWidth : n;
+	}
+	if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+		targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
+	}
+	return { targetX, targetY };
+}
+
+function resolveFromElement(
+	target: HTMLElement | string,
+	container: HTMLElement,
+	resolvedAxis: 'x' | 'y' | 'both',
+	startX: number, startY: number,
+	docWidth: number, docHeight: number, viewWidth: number, viewHeight: number,
+): { targetX: number; targetY: number } {
+	const el = typeof target === 'string' ? querySelector(target, container) as HTMLElement : target;
+	const rect = el.getBoundingClientRect();
+	const isDocBody = container === document.body || container === document.documentElement;
+	let rawX: number;
+	let rawY: number;
+	if (isDocBody) {
+		rawX = rect.left + startX;
+		rawY = rect.top  + startY;
+	} else {
+		const cr = container.getBoundingClientRect();
+		rawX = rect.left - cr.left + startX;
+		rawY = rect.top  - cr.top  + startY;
+	}
+	let targetX = startX;
+	let targetY = startY;
+	if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+		targetX = docWidth  - rawX < viewWidth  ? docWidth  - viewWidth  : rawX;
+	}
+	if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+		targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
+	}
+	return { targetX, targetY };
+}
+
 /** Resolve scroll target pixel coordinates from any accepted target type. */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function resolveTargetCoords(
 	target: HTMLElement | string | number | ScrollPoint,
 	resolvedAxis: 'x' | 'y' | 'both',
@@ -80,58 +148,20 @@ function resolveTargetCoords(
 	viewWidth: number, viewHeight: number,
 	container: HTMLElement,
 ): { targetX: number; targetY: number } {
-	let targetX = startX;
-	let targetY = startY;
-
-	const isScrollPoint = (
-		typeof target === 'object'
-		&& target !== null
-		&& !('nodeType' in (target as object))
-		&& 'x' in (target as object)
-		&& 'y' in (target as object)
-	);
-
-	if (isScrollPoint) {
-		const sp = target as ScrollPoint;
-		targetX = Math.max(0, Math.min(sp.x, docWidth  - viewWidth));
-		targetY = Math.max(0, Math.min(sp.y, docHeight - viewHeight));
-	} else if (!isNaN(target as number)) {
-		if (typeof target === 'string') target = parseFloat(target);
-		const n = target as number;
-		if (resolvedAxis === 'x' || resolvedAxis === 'both') {
-			targetX = docWidth - n < viewWidth ? docWidth - viewWidth : n;
-		}
-		if (resolvedAxis === 'y' || resolvedAxis === 'both') {
-			targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
-		}
-	} else if (
+	if (isScrollPointTarget(target)) {
+		return resolveFromScrollPoint(target, docWidth, docHeight, viewWidth, viewHeight);
+	}
+	if (!isNaN(target as number)) {
+		const n = typeof target === 'string' ? parseFloat(target) : target as number;
+		return resolveFromNumber(n, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight);
+	}
+	if (
 		(typeof target === 'object' || typeof target === 'string')
 		&& validateSelector(target as string | HTMLElement, container)
 	) {
-		if (typeof target === 'string') {
-			target = querySelector(target, container) as HTMLElement;
-		}
-		const rect = (target as HTMLElement).getBoundingClientRect();
-		const isDocBody = container === document.body || container === document.documentElement;
-		let rawX: number;
-		let rawY: number;
-		if (isDocBody) {
-			rawX = rect.left + startX;
-			rawY = rect.top  + startY;
-		} else {
-			const cr = container.getBoundingClientRect();
-			rawX = rect.left - cr.left + startX;
-			rawY = rect.top  - cr.top  + startY;
-		}
-		if (resolvedAxis === 'x' || resolvedAxis === 'both') {
-			targetX = docWidth  - rawX < viewWidth  ? docWidth  - viewWidth  : rawX;
-		}
-		if (resolvedAxis === 'y' || resolvedAxis === 'both') {
-			targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
-		}
+		return resolveFromElement(target as HTMLElement | string, container, resolvedAxis, startX, startY, docWidth, docHeight, viewWidth, viewHeight);
 	}
-
-	return { targetX, targetY };
+	return { targetX: startX, targetY: startY };
 }
 
 /** Resolve offset pixels from settings.offset (element, number, or string). */

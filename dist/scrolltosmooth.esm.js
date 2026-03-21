@@ -1,7 +1,7 @@
 /*!
 * ScrollToSmooth
 * Author: Bastian Fießinger
-* Version: 3.0.2
+* Version: 4.0.1
 */
 function _defineProperty(e, r, t) {
   return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
@@ -717,6 +717,33 @@ class ScrollToSmooth {
     this._normalizeExpanders();
   }
 
+  /** Find (and cache) the first non-expander, non-fixed child to use as anchor. */
+  _findExpanderAnchor(root) {
+    const isExpander = el => el.hasAttribute(EXPANDER_ATTR);
+    let anchor = this._expanderAnchor;
+    if (!anchor || anchor.parentElement !== root || isExpander(anchor) || getComputedStyle(anchor).position === 'fixed') {
+      anchor = Array.from(root.children).find(el => !isExpander(el) && getComputedStyle(el).position !== 'fixed') ?? null;
+      this._expanderAnchor = anchor;
+    }
+    return anchor;
+  }
+
+  /** Position expanders at the very beginning/end of root when no anchor exists. */
+  _positionExpandersAtHead(root, expTop, expLeft, expRight, expBottom) {
+    if (expTop) root.insertBefore(expTop, root.firstChild);
+    if (expLeft) root.insertBefore(expLeft, expTop ? expTop.nextSibling : root.firstChild);
+    if (expBottom) root.appendChild(expBottom);
+    if (expRight) root.insertBefore(expRight, expBottom ?? null);
+  }
+
+  /** Position expanders immediately before/after an anchor element. */
+  _positionExpandersAtAnchor(root, anchor, expTop, expLeft, expRight, expBottom) {
+    if (expTop) root.insertBefore(expTop, anchor);
+    if (expLeft) root.insertBefore(expLeft, anchor);
+    if (expRight) root.insertBefore(expRight, anchor.nextSibling);
+    if (expBottom) root.insertBefore(expBottom, expRight ? expRight.nextSibling : anchor.nextSibling);
+  }
+
   /**
    * Normalize existing expander positions so they stay adjacent to the
    * scroll container, even when other scripts add DOM nodes later.
@@ -731,45 +758,18 @@ class ScrollToSmooth {
     const expLeft = getExp('left');
     const expRight = getExp('right');
     if (isDocBody) {
-      const isExpander = el => el.hasAttribute(EXPANDER_ATTR);
-      let anchor = this._expanderAnchor;
-      if (!anchor || anchor.parentElement !== root || isExpander(anchor) || getComputedStyle(anchor).position === 'fixed') {
-        anchor = Array.from(root.children).find(el => !isExpander(el) && getComputedStyle(el).position !== 'fixed') ?? null;
-        this._expanderAnchor = anchor;
-      }
+      const anchor = this._findExpanderAnchor(root);
       if (!anchor) {
-        if (expTop) root.insertBefore(expTop, root.firstChild);
-        if (expLeft) root.insertBefore(expLeft, expTop ? expTop.nextSibling : root.firstChild);
-        if (expBottom) root.appendChild(expBottom);
-        if (expRight) root.insertBefore(expRight, expBottom ?? null);
-        return;
-      }
-      if (expTop) {
-        root.insertBefore(expTop, anchor);
-      }
-      if (expLeft) {
-        root.insertBefore(expLeft, anchor);
-      }
-      if (expRight) {
-        root.insertBefore(expRight, anchor.nextSibling);
-      }
-      if (expBottom) {
-        root.insertBefore(expBottom, expRight ? expRight.nextSibling : anchor.nextSibling);
+        this._positionExpandersAtHead(root, expTop, expLeft, expRight, expBottom);
+      } else {
+        this._positionExpandersAtAnchor(root, anchor, expTop, expLeft, expRight, expBottom);
       }
       return;
     }
-    if (expTop) {
-      root.insertBefore(expTop, container);
-    }
-    if (expLeft) {
-      root.insertBefore(expLeft, container);
-    }
-    if (expRight) {
-      root.insertBefore(expRight, container.nextSibling);
-    }
-    if (expBottom) {
-      root.insertBefore(expBottom, expRight ? expRight.nextSibling : container.nextSibling);
-    }
+    if (expTop) root.insertBefore(expTop, container);
+    if (expLeft) root.insertBefore(expLeft, container);
+    if (expRight) root.insertBefore(expRight, container.nextSibling);
+    if (expBottom) root.insertBefore(expBottom, expRight ? expRight.nextSibling : container.nextSibling);
   }
   _expandDocument(scrollPos, docSize, viewSize, _axis = 'y') {
     this._normalizeExpanders();
