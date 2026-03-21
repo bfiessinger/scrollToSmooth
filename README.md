@@ -13,7 +13,7 @@ The core stays minimal while advanced functionality can be added through a **tre
 ## Features
 
 - Smooth animated scrolling
-- Custom easing functions
+- Custom easing functions (import only what you need)
 - Programmatic scrolling API
 - Fixed header offset support
 - Scroll lifecycle callbacks
@@ -39,7 +39,7 @@ npm install scrolltosmooth
 
 ### CDN
 
-All in one build (Do not use for production):
+All‑in‑one build (Do not use for production):
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/scrolltosmooth/dist/scrolltosmooth.pkgd.min.js"></script>
@@ -51,7 +51,40 @@ Minimal build (linear easing only):
 <script src="https://cdn.jsdelivr.net/npm/scrolltosmooth/dist/scrolltosmooth.min.js"></script>
 ```
 
+> **Note:** the iife/minified core file only includes the linear easing and
+> the class itself.  the `pkgd` build exposes every easing on `window` but
+> is much larger; use it only when you need the full set with one script tag.
+
 ---
+
+## Quick Start
+
+### Easing import example
+
+By default the core class only ships with a single `linear` easing.  import
+other functions explicitly to keep your bundle small:
+
+```js
+import ScrollToSmooth from 'scrolltosmooth';
+import { easeOutCubic } from 'scrolltosmooth/easings/easeOutCubic';
+
+const scroller = new ScrollToSmooth('a', {
+  duration: 600,
+  easing: easeOutCubic
+});
+```
+
+If you still prefer passing a string name you can resolve it yourself:
+
+```js
+import { getEasing } from 'scrolltosmooth/easings';
+
+const scroller = new ScrollToSmooth('a', {
+  easing: getEasing('easeOutCubic')
+});
+```
+
+(The core will warn and fall back to `linear` if a string is given.)
 
 ## Quick Start
 

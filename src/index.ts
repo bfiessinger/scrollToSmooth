@@ -11,4 +11,8 @@
  */
 export { ScrollToSmooth, ScrollToSmooth as default } from './scrolltosmooth';
 export type { Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollToSmoothPlugin } from './scrolltosmooth';
-export * from './easings';
+
+// easings are intentionally not re-exported here; consumers who need a
+// function or want to use string names should import from
+// 'scrolltosmooth/easings/*' directly.  this keeps the core entry small and
+// tree-shakeable.  the pkgd build still imports everything itself.

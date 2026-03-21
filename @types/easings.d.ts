@@ -4,6 +4,7 @@
  * @since 3.0.0
  */
 import { linear } from './easings/linear';
+import type { EasingFunction } from './types';
 import { easeInQuad } from './easings/easeInQuad';
 import { easeOutQuad } from './easings/easeOutQuad';
 import { easeInOutQuad } from './easings/easeInOutQuad';
@@ -35,3 +36,4 @@ import { easeInBounce } from './easings/easeInBounce';
 import { easeOutBounce } from './easings/easeOutBounce';
 import { easeInOutBounce } from './easings/easeInOutBounce';
 export { linear, easeInQuad, easeOutQuad, easeInOutQuad, easeInCubic, easeOutCubic, easeInOutCubic, easeInQuart, easeOutQuart, easeInOutQuart, easeInQuint, easeOutQuint, easeInOutQuint, easeInSine, easeOutSine, easeInOutSine, easeInExpo, easeOutExpo, easeInOutExpo, easeInCirc, easeOutCirc, easeInOutCirc, easeInElastic, easeOutElastic, easeInOutElastic, easeInBack, easeOutBack, easeInOutBack, easeInBounce, easeOutBounce, easeInOutBounce };
+export declare function getEasing(name: string): EasingFunction | undefined;

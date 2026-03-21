@@ -1,5 +1,21 @@
 # Changelog
 
+### 4.0.0
+
+#### Features
+- [NEW] Core build now tree‑shakeable: only `linear` easing is included by
+  default.  additional easing functions must be imported individually from
+  `scrolltosmooth/easings/...` or resolved with `getEasing()`.
+- [NEW] Plugin architecture and horizontal scrolling (see `HorizontalScrollPlugin`)
+
+#### Enhancements
+- considerable rewrite and TypeScript conversion to support modular builds
+- documentation updated for new import patterns
+
+#### Code Quality
+- complete structural overhaul
+- extensive type upgrade
+
 ### 3.0.2
 - remove forgotten console.log (#10)
 

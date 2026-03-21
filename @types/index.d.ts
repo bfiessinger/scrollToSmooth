@@ -11,4 +11,3 @@
  */
 export { ScrollToSmooth, ScrollToSmooth as default } from './scrolltosmooth';
 export type { Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollToSmoothPlugin } from './scrolltosmooth';
-export * from './easings';

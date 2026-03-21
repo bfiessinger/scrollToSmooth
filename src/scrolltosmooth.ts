@@ -21,7 +21,9 @@ import {
 	ScrollToSmoothPlugin,
 } from './types';
 
-import * as builtinEasings from './easings';
+// only the default easing is pulled in by core; other easings
+// are imported by consumers when they need them, keeping the core
+// bundle tree‑shakeable.
 import { linear } from './easings/linear';
 
 import {
@@ -56,6 +58,8 @@ const defaults: ScrollToSmoothSettings = {
 	durationRelative: false,
 	durationMin: null,
 	durationMax: null,
+	// to keep the core bundle tiny we only import `linear` here; other
+	// easings are pulled in by callers and can be tree‑shaken.
 	easing: linear,
 	onScrollStart: null,
 	onScrollUpdate: null,
@@ -381,9 +385,19 @@ export class ScrollToSmooth {
 		t: number
 	): number {
 		if (typeof easing === 'function') return easing(t);
+		// string names are no longer looked up by core; they only exist on
+		// the pkgd build (global `window`) or can be resolved by the user
+		// via helper APIs.  we fall back to linear when something else is
+		// provided, which keeps the public API backwards‑compatible but
+		// still allows bundlers to drop unused code.
 		if (typeof easing === 'string') {
-			const fn = (builtinEasings as Record<string, EasingFunction>)[easing];
-			return typeof fn === 'function' ? fn(t) : t;
+			if (easing === 'linear') return linear(t);
+			console && console.warn &&
+				console.warn(
+					`ScrollToSmooth: easing "${easing}" not found, ` +
+					`please supply a function or import it from 'scrolltosmooth/easings'`
+			);
+			return linear(t);
 		}
 		return t;
 	}

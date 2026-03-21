@@ -4,6 +4,7 @@
  * @since 3.0.0
  */
 import { linear } from './easings/linear';
+import type { EasingFunction } from './types';
 import { easeInQuad } from './easings/easeInQuad';
 import { easeOutQuad } from './easings/easeOutQuad';
 import { easeInOutQuad } from './easings/easeInOutQuad';
@@ -68,3 +69,43 @@ export {
 	easeOutBounce,
 	easeInOutBounce
 };
+
+// helper for people still wanting to use names; this file is only pulled in by
+// pkgd or by callers who explicitly import from easings, so bundlers can
+// effectively drop unused functions when the core isn't referencing them.
+export function getEasing(name: string): EasingFunction | undefined {
+	switch (name) {
+		case 'linear': return linear;
+		case 'easeInQuad': return easeInQuad;
+		case 'easeOutQuad': return easeOutQuad;
+		case 'easeInOutQuad': return easeInOutQuad;
+		case 'easeInCubic': return easeInCubic;
+		case 'easeOutCubic': return easeOutCubic;
+		case 'easeInOutCubic': return easeInOutCubic;
+		case 'easeInQuart': return easeInQuart;
+		case 'easeOutQuart': return easeOutQuart;
+		case 'easeInOutQuart': return easeInOutQuart;
+		case 'easeInQuint': return easeInQuint;
+		case 'easeOutQuint': return easeOutQuint;
+		case 'easeInOutQuint': return easeInOutQuint;
+		case 'easeInSine': return easeInSine;
+		case 'easeOutSine': return easeOutSine;
+		case 'easeInOutSine': return easeInOutSine;
+		case 'easeInExpo': return easeInExpo;
+		case 'easeOutExpo': return easeOutExpo;
+		case 'easeInOutExpo': return easeInOutExpo;
+		case 'easeInCirc': return easeInCirc;
+		case 'easeOutCirc': return easeOutCirc;
+		case 'easeInOutCirc': return easeInOutCirc;
+		case 'easeInElastic': return easeInElastic;
+		case 'easeOutElastic': return easeOutElastic;
+		case 'easeInOutElastic': return easeInOutElastic;
+		case 'easeInBack': return easeInBack;
+		case 'easeOutBack': return easeOutBack;
+		case 'easeInOutBack': return easeInOutBack;
+		case 'easeInBounce': return easeInBounce;
+		case 'easeOutBounce': return easeOutBounce;
+		case 'easeInOutBounce': return easeInOutBounce;
+		default: return undefined;
+	}
+}
