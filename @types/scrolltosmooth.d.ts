@@ -27,6 +27,8 @@ export declare class ScrollToSmooth {
     private _nativeEndTimer;
     /** Pending scroll queue populated by `queueScroll()`. */
     private _queue;
+    /** Stable body child used as expander anchor when container is document body. */
+    private _expanderAnchor;
     /** True while an animation (JS or native) is running. */
     protected _isScrolling: boolean;
     /** Registered plugins (keyed by name). */

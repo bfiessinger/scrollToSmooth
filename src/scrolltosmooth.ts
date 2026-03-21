@@ -118,6 +118,9 @@ export class ScrollToSmooth {
 	/** Pending scroll queue populated by `queueScroll()`. */
 	private _queue: ScrollQueueItem[] = [];
 
+	/** Stable body child used as expander anchor when container is document body. */
+	private _expanderAnchor: HTMLElement | null = null;
+
 	/** True while an animation (JS or native) is running. */
 	protected _isScrolling = false;
 
@@ -680,17 +683,33 @@ export class ScrollToSmooth {
 		const expRight = getExp('right');
 
 		if (isDocBody) {
+			const isExpander = (el: HTMLElement): boolean => el.hasAttribute(EXPANDER_ATTR);
+			let anchor = this._expanderAnchor;
+			if (!anchor || anchor.parentElement !== root || isExpander(anchor)) {
+				anchor = (Array.from(root.children) as HTMLElement[])
+					.find(el => !isExpander(el)) ?? null;
+				this._expanderAnchor = anchor;
+			}
+
+			if (!anchor) {
+				if (expTop) root.insertBefore(expTop, root.firstChild);
+				if (expLeft) root.insertBefore(expLeft, expTop ? expTop.nextSibling : root.firstChild);
+				if (expBottom) root.appendChild(expBottom);
+				if (expRight) root.insertBefore(expRight, expBottom ?? null);
+				return;
+			}
+
 			if (expTop) {
-				root.insertBefore(expTop, root.firstChild);
+				root.insertBefore(expTop, anchor);
 			}
 			if (expLeft) {
-				root.insertBefore(expLeft, expTop ? expTop.nextSibling : root.firstChild);
-			}
-			if (expBottom) {
-				root.appendChild(expBottom);
+				root.insertBefore(expLeft, anchor);
 			}
 			if (expRight) {
-				root.insertBefore(expRight, expBottom ?? null);
+				root.insertBefore(expRight, anchor.nextSibling);
+			}
+			if (expBottom) {
+				root.insertBefore(expBottom, expRight ? expRight.nextSibling : anchor.nextSibling);
 			}
 			return;
 		}
