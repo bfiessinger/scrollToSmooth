@@ -53,6 +53,19 @@ export interface AnimationConfig {
 }
 
 /**
+ * A single item in the scroll queue, created by `queueScroll()`.
+ */
+export interface ScrollQueueItem {
+	/** The scroll target (same types accepted by `scrollTo`). */
+	target: HTMLElement | string | number | ScrollPoint;
+	/**
+	 * Optional identifier. Pass to `clearQueue(id)` or `cancelScroll()` to
+	 * remove only this item from the queue.
+	 */
+	id?: string;
+}
+
+/**
  * Configuration options for a ScrollToSmooth instance.
  * All properties are optional; defaults are applied internally.
  */

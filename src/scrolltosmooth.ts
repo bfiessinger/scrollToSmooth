@@ -19,6 +19,7 @@ import {
 	EasingFunction,
 	AnimationConfig,
 	ScrollToSmoothPlugin,
+	ScrollQueueItem,
 } from './types';
 
 // only the default easing is pulled in by core; other easings
@@ -39,7 +40,7 @@ import {
 	supportsNativeSmoothScroll,
 } from './utils/dom';
 
-export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollPoint, ScrollToSmoothPlugin };
+export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollPoint, ScrollToSmoothPlugin, ScrollQueueItem };
 
 /** Data-attribute used on invisible document expander divs */
 const EXPANDER_ATTR = 'data-scrolltosmooth-expand';
@@ -85,6 +86,12 @@ export class ScrollToSmooth {
 
 	/** Timer used to detect scroll-end in native mode. */
 	private _nativeEndTimer: ReturnType<typeof setTimeout> | null = null;
+
+	/** Pending scroll queue populated by `queueScroll()`. */
+	private _queue: ScrollQueueItem[] = [];
+
+	/** True while an animation (JS or native) is running. */
+	private _isScrolling = false;
 
 	/** Registered plugins (keyed by name). */
 	private static _plugins: Map<string, ScrollToSmoothPlugin> = new Map();
@@ -196,17 +203,64 @@ export class ScrollToSmooth {
 	}
 
 	/**
-	 * Animate a scroll to the given target (vertical axis only by default).
-	 * To scroll on the x-axis or both axes, register the HorizontalScrollPlugin.
+	 * Animate a scroll to the given target immediately, cancelling any
+	 * in-progress animation and clearing the queue.
 	 * @param target  Element, CSS selector, pixel offset, or ScrollPoint.
 	 * @param _axis   Accepted for API compatibility; core only processes 'y'.
 	 *                Pass 'x' or 'both' after registering HorizontalScrollPlugin.
 	 */
 	scrollTo(target: HTMLElement | string | number | ScrollPoint, _axis?: 'x' | 'y' | 'both'): void {
-		this.cancelScroll();
+		this.cancelScroll(true);
+		this._executeScroll(target);
+	}
 
-		const startY    = this._getContainerScrollPosition('y');
-		const docHeight = this._getDocumentSize('y');
+	/**
+	 * Add a scroll target to the queue. Scrolls execute one after another;
+	 * the next starts automatically when the previous finishes.
+	 *
+	 * @param target  Same target types accepted by `scrollTo`.
+	 * @param id      Optional identifier — pass to `clearQueue(id)` to remove
+	 *                only this item without touching the rest.
+	 *
+	 * @example
+	 * scroller.queueScroll('#section-1');
+	 * scroller.queueScroll('#section-2');
+	 * scroller.queueScroll('#section-3');
+	 */
+	queueScroll(target: HTMLElement | string | number | ScrollPoint, id?: string): void {
+		this._queue.push({ target, id });
+		this._processQueue();
+	}
+
+	/**
+	 * Remove items from the pending queue without affecting the active animation.
+	 * @param id  When supplied, only items with a matching id are removed.
+	 *            When omitted, the entire queue is cleared.
+	 */
+	clearQueue(id?: string): void {
+		if (id !== undefined) {
+			this._queue = this._queue.filter(item => item.id !== id);
+		} else {
+			this._queue = [];
+		}
+	}
+
+	/** Internal – run the next queued item if nothing is currently scrolling. */
+	private _processQueue(): void {
+		if (this._isScrolling || this._queue.length === 0) return;
+		const item = this._queue.shift()!;
+		this._executeScroll(item.target);
+	}
+
+	/**
+	 * Core scroll execution shared by `scrollTo` and the queue processor.
+	 * Does NOT cancel any in-progress animation — callers must do that first.
+	 */
+	protected _executeScroll(target: HTMLElement | string | number | ScrollPoint, _axis?: 'x' | 'y' | 'both'): void {
+		this._isScrolling = true;
+
+		const startY     = this._getContainerScrollPosition('y');
+		const docHeight  = this._getDocumentSize('y');
 		const viewHeight = this._getViewportSize('y');
 
 		let targetY = this._resolveTargetY(target, startY, docHeight, viewHeight);
@@ -312,12 +366,15 @@ export class ScrollToSmooth {
 
 	/**
 	 * Cancel any in-progress scroll animation.
+	 * @param clearQueue  When `true`, also discard all pending queued scrolls.
 	 */
-	cancelScroll(): void {
+	cancelScroll(clearQueue = false): void {
 		if (this._animationFrame !== null) {
 			window.cancelAnimationFrame(this._animationFrame);
 			this._animationFrame = null;
 		}
+		if (clearQueue) this._queue = [];
+		this._isScrolling = false;
 	}
 
 	/**
@@ -364,6 +421,8 @@ export class ScrollToSmooth {
 					this.settings.onScrollEnd(endData);
 				}
 				this._dispatchScrollEvent('scrolltosmooth:end', endData);
+				this._isScrolling = false;
+				this._processQueue();
 			}, 100);
 		};
 
@@ -405,6 +464,8 @@ export class ScrollToSmooth {
 				this.settings.onScrollEnd(endData);
 			}
 			this._dispatchScrollEvent('scrolltosmooth:end', endData);
+			this._isScrolling = false;
+			this._processQueue();
 			return;
 		}
 
