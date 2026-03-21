@@ -710,6 +710,45 @@ class ScrollToSmooth {
         root.insertBefore(el, container.nextSibling);
       }
     }
+    this._normalizeExpanders();
+  }
+
+  /**
+   * Normalize existing expander positions so they stay adjacent to the
+   * scroll container, even when other scripts add DOM nodes later.
+   */
+  _normalizeExpanders() {
+    const root = this._getExpanderRoot();
+    const container = this.container;
+    const isDocBody = container === document.body || container === document.documentElement;
+    const expTop = root.querySelector('[data-scrolltosmooth-expand="top"]');
+    const expBottom = root.querySelector('[data-scrolltosmooth-expand="bottom"]');
+    const expLeft = root.querySelector('[data-scrolltosmooth-expand="left"]');
+    const expRight = root.querySelector('[data-scrolltosmooth-expand="right"]');
+    if (expTop) {
+      root.insertBefore(expTop, root.firstChild);
+    }
+    if (expBottom) {
+      root.appendChild(expBottom);
+    }
+    if (expLeft) {
+      if (expTop) {
+        root.insertBefore(expLeft, expTop.nextSibling);
+      } else if (isDocBody) {
+        root.insertBefore(expLeft, root.firstChild);
+      } else {
+        root.insertBefore(expLeft, container);
+      }
+    }
+    if (expRight) {
+      if (expBottom) {
+        root.insertBefore(expRight, expBottom);
+      } else if (isDocBody) {
+        root.appendChild(expRight);
+      } else {
+        root.insertBefore(expRight, container.nextSibling);
+      }
+    }
   }
   _expandDocument(scrollPos, docSize, viewSize, _axis = 'y') {
     const exceeding = this._scrollExceedsDocument(scrollPos, docSize, viewSize);

@@ -299,6 +299,7 @@ const HorizontalScrollPlugin = {
           }
         }
       }
+      this._normalizeExpanders && this._normalizeExpanders();
     };
 
     // ----------------------------------------------------------------

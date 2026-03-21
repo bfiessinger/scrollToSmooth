@@ -117,6 +117,11 @@ export declare class ScrollToSmooth {
      * programmatic-only usage (no init()) gets expanders too.
      */
     protected _ensureExpanders(_axis: 'x' | 'y' | 'both'): void;
+    /**
+     * Normalize existing expander positions so they stay adjacent to the
+     * scroll container, even when other scripts add DOM nodes later.
+     */
+    protected _normalizeExpanders(): void;
     protected _expandDocument(scrollPos: number, docSize: number, viewSize: number, _axis?: 'x' | 'y'): void;
     protected _scrollExceedsDocument(pos: number, docSize: number, viewSize: number): {
         direction: string;

@@ -657,6 +657,50 @@ export class ScrollToSmooth {
 				root.insertBefore(el, container.nextSibling);
 			}
 		}
+
+		this._normalizeExpanders();
+	}
+
+	/**
+	 * Normalize existing expander positions so they stay adjacent to the
+	 * scroll container, even when other scripts add DOM nodes later.
+	 */
+	protected _normalizeExpanders(): void {
+		const root = this._getExpanderRoot();
+		const container = this.container as HTMLElement;
+		const isDocBody = container === document.body || container === document.documentElement;
+
+		const expTop    = root.querySelector('[data-scrolltosmooth-expand="top"]') as HTMLElement | null;
+		const expBottom = root.querySelector('[data-scrolltosmooth-expand="bottom"]') as HTMLElement | null;
+		const expLeft   = root.querySelector('[data-scrolltosmooth-expand="left"]') as HTMLElement | null;
+		const expRight  = root.querySelector('[data-scrolltosmooth-expand="right"]') as HTMLElement | null;
+
+		if (expTop) {
+			root.insertBefore(expTop, root.firstChild);
+		}
+		if (expBottom) {
+			root.appendChild(expBottom);
+		}
+
+		if (expLeft) {
+			if (expTop) {
+				root.insertBefore(expLeft, expTop.nextSibling);
+			} else if (isDocBody) {
+				root.insertBefore(expLeft, root.firstChild);
+			} else {
+				root.insertBefore(expLeft, container);
+			}
+		}
+
+		if (expRight) {
+			if (expBottom) {
+				root.insertBefore(expRight, expBottom);
+			} else if (isDocBody) {
+				root.appendChild(expRight);
+			} else {
+				root.insertBefore(expRight, container.nextSibling);
+			}
+		}
 	}
 
 	protected _expandDocument(scrollPos: number, docSize: number, viewSize: number, _axis: 'x' | 'y' = 'y'): void {
