@@ -129,9 +129,11 @@ export default [
 		plugins: modulePlugins
 	},
 	// Plugins – ESM (tree-shakeable, for bundlers)
+	// utils/dom is intentionally bundled inline so the plugin file is self-contained
+	// and consumers don't need a separate dist/utils/dom.js file.
 	{
 		input: pluginFiles,
-		external: ['../scrolltosmooth', '../utils/dom', '../easings'],
+		external: ['../scrolltosmooth'],
 		output: {
 			dir: 'dist/plugins',
 			format: 'es',
@@ -139,7 +141,6 @@ export default [
 			banner: banner,
 			paths: {
 				'../scrolltosmooth': '../scrolltosmooth.esm.js',
-				'../utils/dom':      '../utils/dom.js',
 			},
 		},
 		plugins: modulePlugins
@@ -147,7 +148,7 @@ export default [
 	// Plugins – CJS (for Node / require())
 	{
 		input: pluginFiles,
-		external: ['../scrolltosmooth', '../utils/dom', '../easings'],
+		external: ['../scrolltosmooth'],
 		output: {
 			dir: 'dist/plugins',
 			format: 'cjs',
@@ -156,7 +157,6 @@ export default [
 			exports: 'named',
 			paths: {
 				'../scrolltosmooth': '../scrolltosmooth.cjs.js',
-				'../utils/dom':      '../utils/dom.js',
 			},
 		},
 		plugins: modulePlugins

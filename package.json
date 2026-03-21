@@ -10,16 +10,20 @@
   "types": "@types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/scrolltosmooth.esm.js",
+      "types":   "./@types/index.d.ts",
+      "import":  "./dist/scrolltosmooth.esm.js",
       "require": "./dist/scrolltosmooth.cjs.js",
       "default": "./dist/scrolltosmooth.cjs.js"
     },
     "./package.json": "./package.json",
-    "./easings/*": "./dist/easings/*.js",
+    "./easings/*": {
+      "types":  "./@types/easings/*.d.ts",
+      "import": "./dist/easings/*.js"
+    },
     "./plugins/horizontal": {
+      "types":   "./@types/plugins/horizontal.d.ts",
       "import":  "./dist/plugins/horizontal.js",
-      "require": "./dist/plugins/horizontal.cjs.js",
-      "types":   "./@types/plugins/horizontal.d.ts"
+      "require": "./dist/plugins/horizontal.cjs.js"
     }
   },
   "scripts": {
