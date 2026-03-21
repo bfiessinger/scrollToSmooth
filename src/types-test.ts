@@ -10,7 +10,7 @@ const opts: Options = {
         console.log(data.startPosition, data.endPosition);
     },
     onScrollUpdate: (data: ScrollUpdateData) => {
-        console.log(data.currentPosition);
+        console.log(data.currentPosition, data.progress);
     }
 };
 

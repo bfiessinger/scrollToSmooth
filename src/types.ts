@@ -12,6 +12,8 @@ export interface ScrollData<T = number> {
  */
 export interface ScrollUpdateData<T = number> extends ScrollData<T> {
 	currentPosition: T;
+	/** Normalized animation progress in the range [0, 1]. */
+	progress: number;
 }
 
 /**

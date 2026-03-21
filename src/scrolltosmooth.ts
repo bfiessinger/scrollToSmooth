@@ -444,6 +444,7 @@ export class ScrollToSmooth {
 			startPosition:   startY,
 			currentPosition: currentY,
 			endPosition:     targetY,
+			progress:        t,
 		};
 
 		if (typeof this.settings.onScrollUpdate === 'function') {

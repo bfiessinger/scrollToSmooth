@@ -416,6 +416,7 @@ export const HorizontalScrollPlugin = {
 					startPosition:   axis === 'x' ? startX   : startY,
 					currentPosition: axis === 'x' ? currentX : currentY,
 					endPosition:     axis === 'x' ? targetX  : targetY,
+					progress:        t,
 				});
 			}
 
