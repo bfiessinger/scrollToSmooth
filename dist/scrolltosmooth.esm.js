@@ -386,7 +386,12 @@ class ScrollToSmooth {
       this._nativeScrollTo(targetY, startY);
       return;
     }
-    this._ensureExpanders('y');
+
+    // Expanders should be created in init() or early; on-demand creation is
+    // only a fallback when still missing (e.g. no init() call).
+    if (this._getDocumentExpanders().length === 0) {
+      this._ensureExpanders('y');
+    }
     this._animateScroll({
       targetY,
       startY,
