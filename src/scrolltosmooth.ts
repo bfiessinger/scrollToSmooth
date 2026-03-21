@@ -42,6 +42,34 @@ import {
 
 export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollPoint, ScrollToSmoothPlugin, ScrollQueueItem };
 
+/**
+ * Parse a `%` or `vh` string into an absolute pixel value.
+ * - `%`  → fraction of `docSize`   (for scroll targets)
+ * - `vh` → fraction of `viewSize`  (for scroll targets and offsets alike)
+ * Returns `null` for any other string.
+ */
+function parsePercentTarget(str: string, docSize: number, viewSize: number): number | null {
+	const vhMatch = str.match(/^(-?[\d.]+)vh$/i);
+	if (vhMatch) return parseFloat(vhMatch[1]) / 100 * viewSize;
+	const pctMatch = str.match(/^(-?[\d.]+)%$/);
+	if (pctMatch) return parseFloat(pctMatch[1]) / 100 * docSize;
+	return null;
+}
+
+/**
+ * Parse a `%` or `vh` offset string into an absolute pixel value.
+ * Both units resolve against the viewport size, which is re-evaluated
+ * on every scroll so resizing is handled automatically.
+ * Returns `null` for any other string.
+ */
+function parsePercentOffset(str: string, viewSize: number): number | null {
+	const vhMatch = str.match(/^(-?[\d.]+)vh$/i);
+	if (vhMatch) return parseFloat(vhMatch[1]) / 100 * viewSize;
+	const pctMatch = str.match(/^(-?[\d.]+)%$/);
+	if (pctMatch) return parseFloat(pctMatch[1]) / 100 * viewSize;
+	return null;
+}
+
 /** Data-attribute used on invisible document expander divs */
 const EXPANDER_ATTR = 'data-scrolltosmooth-expand';
 const EXPANDER_TOP = 'top';
@@ -331,6 +359,12 @@ export class ScrollToSmooth {
 			return clamp(n);
 		}
 
+		// ── Percent / viewport-height string (e.g. '50%', '25vh') ────
+		if (typeof target === 'string') {
+			const px = parsePercentTarget(target, docHeight, viewHeight);
+			if (px !== null) return clamp(px);
+		}
+
 		// ── Element or CSS selector ───────────────────────────────────
 		if (validateSelector(target as string | HTMLElement, this.container)) {
 			if (typeof target === 'string') {
@@ -356,6 +390,14 @@ export class ScrollToSmooth {
 		if (this.settings.offset === null) return targetY;
 
 		let offsetY = 0;
+		if (typeof this.settings.offset === 'string') {
+			const viewSize = this._getViewportSize('y');
+			const pxOffset = parsePercentOffset(this.settings.offset, viewSize);
+			if (pxOffset !== null) {
+				return targetY - pxOffset;
+			}
+		}
+
 		if (validateSelector(this.settings.offset as string | Node | HTMLElement, this.container)) {
 			let offsetEl = this.settings.offset;
 			if (typeof offsetEl === 'string') {

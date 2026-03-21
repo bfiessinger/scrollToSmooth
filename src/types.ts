@@ -75,6 +75,15 @@ export interface ScrollToSmoothSettings {
 	// Selectors
 	container?: string | Document | Element;
 	targetAttribute?: string;
+	/**
+	 * Pixel amount, element (whose height is used), CSS selector, or a
+	 * percent / viewport-height string to subtract from the target position.
+	 * Percent strings (`'10%'`) and `vh` strings (`'5vh'`) are re-evaluated
+	 * against the viewport height on every scroll, so they adapt to resizing.
+	 * @example offset: '10%'   // 10 % of the viewport height
+	 * @example offset: '64px'  // fixed 64 px (same as the number 64)
+	 * @example offset: '#nav'  // height of the #nav element
+	 */
 	offset?: Node | Element | string | number | null;
 	topOnEmptyHash?: boolean;
 	// Axis
