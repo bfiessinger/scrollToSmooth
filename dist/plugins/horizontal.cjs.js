@@ -5,7 +5,7 @@
 */
 'use strict';
 
-var dom = require('./dom-BHQGRYOh.js');
+var dom = require('./dom-Dy6hzwz2.js');
 
 /**
  * HorizontalScrollPlugin – adds x-axis and both-axis scrolling to ScrollToSmooth.
@@ -376,7 +376,9 @@ const HorizontalScrollPlugin = {
         const cont = this.container;
         const isDocBody = cont === document.body || cont === document.documentElement;
         if (isDocBody) {
-          window.scroll(currentX, currentY);
+          const scrollEl = document.scrollingElement || document.documentElement || document.body;
+          scrollEl.scrollLeft = currentX;
+          scrollEl.scrollTop = currentY;
         } else {
           cont.scrollLeft = currentX;
           cont.scrollTop = currentY;

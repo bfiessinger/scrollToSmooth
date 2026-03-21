@@ -3,7 +3,7 @@
 * Author: Bastian Fießinger
 * Version: 3.0.2
 */
-import { v as validateSelector, q as querySelector, i as isNodeOrElement, g as getTimestamp, a as getScrollPositionX, b as getScrollPositionY, c as getDocumentWidth, d as getDocumentHeight, e as getWindowWidth, f as getWindowHeight } from './dom-BiuthMCg.js';
+import { v as validateSelector, q as querySelector, i as isNodeOrElement, g as getTimestamp, a as getScrollPositionX, b as getScrollPositionY, c as getDocumentWidth, d as getDocumentHeight, e as getWindowWidth, f as getWindowHeight } from './dom-DIl_ElIK.js';
 
 /**
  * HorizontalScrollPlugin – adds x-axis and both-axis scrolling to ScrollToSmooth.
@@ -374,7 +374,9 @@ const HorizontalScrollPlugin = {
         const cont = this.container;
         const isDocBody = cont === document.body || cont === document.documentElement;
         if (isDocBody) {
-          window.scroll(currentX, currentY);
+          const scrollEl = document.scrollingElement || document.documentElement || document.body;
+          scrollEl.scrollLeft = currentX;
+          scrollEl.scrollTop = currentY;
         } else {
           cont.scrollLeft = currentX;
           cont.scrollTop = currentY;

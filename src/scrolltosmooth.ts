@@ -576,9 +576,18 @@ export class ScrollToSmooth {
 		const container = this.container as HTMLElement;
 		const isDocBody = container === document.body || container === document.documentElement;
 		if (isDocBody) {
-			window.scroll(window.scrollX ?? 0, pos);
+			const scrollEl = document.scrollingElement as HTMLElement || document.documentElement || document.body;
+			if (_axis === 'x') {
+				scrollEl.scrollLeft = pos;
+			} else {
+				scrollEl.scrollTop = pos;
+			}
 		} else {
-			container.scrollTop = pos;
+			if (_axis === 'x') {
+				container.scrollLeft = pos;
+			} else {
+				container.scrollTop = pos;
+			}
 		}
 	}
 

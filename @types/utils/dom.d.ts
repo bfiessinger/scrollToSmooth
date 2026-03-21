@@ -16,6 +16,7 @@ export declare function isNodeOrElement(obj: unknown): obj is Node;
 /**
  * Current vertical scroll position.
  */
+export declare function getScrollingElement(): HTMLElement;
 export declare function getScrollPositionY(): number;
 /**
  * Current horizontal scroll position.

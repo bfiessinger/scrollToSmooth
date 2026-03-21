@@ -3,7 +3,7 @@
 * Author: Bastian Fießinger
 * Version: 3.0.2
 */
-import { h as querySelectorAll } from './dom-BiuthMCg.js';
+import { h as querySelectorAll } from './dom-DIl_ElIK.js';
 
 /**
  * SnapPlugin – adds snap-to-nearest behaviour to ScrollToSmooth.

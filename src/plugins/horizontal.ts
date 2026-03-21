@@ -428,7 +428,9 @@ export const HorizontalScrollPlugin = {
 				const cont = this.container as HTMLElement;
 				const isDocBody = cont === document.body || cont === document.documentElement;
 				if (isDocBody) {
-					window.scroll(currentX, currentY);
+					const scrollEl = document.scrollingElement as HTMLElement || document.documentElement || document.body;
+					scrollEl.scrollLeft = currentX;
+					scrollEl.scrollTop  = currentY;
 				} else {
 					cont.scrollLeft = currentX;
 					cont.scrollTop  = currentY;

@@ -5,7 +5,7 @@
 */
 'use strict';
 
-var dom = require('./dom-BHQGRYOh.js');
+var dom = require('./dom-Dy6hzwz2.js');
 
 /**
  * SnapPlugin – adds snap-to-nearest behaviour to ScrollToSmooth.

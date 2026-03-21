@@ -105,8 +105,12 @@ function isNodeOrElement(obj) {
 /**
  * Current vertical scroll position.
  */
+function getScrollingElement() {
+  return document.scrollingElement || document.documentElement || document.body;
+}
 function getScrollPositionY() {
-  return window.scrollY ?? document.body.scrollTop ?? document.documentElement.scrollTop;
+  const scrollEl = getScrollingElement();
+  return scrollEl.scrollTop;
 }
 
 /**
@@ -635,9 +639,18 @@ class ScrollToSmooth {
     const container = this.container;
     const isDocBody = container === document.body || container === document.documentElement;
     if (isDocBody) {
-      window.scroll(window.scrollX ?? 0, pos);
+      const scrollEl = document.scrollingElement || document.documentElement || document.body;
+      if (_axis === 'x') {
+        scrollEl.scrollLeft = pos;
+      } else {
+        scrollEl.scrollTop = pos;
+      }
     } else {
-      container.scrollTop = pos;
+      if (_axis === 'x') {
+        container.scrollLeft = pos;
+      } else {
+        container.scrollTop = pos;
+      }
     }
   }
   _getDocumentSize(_axis) {

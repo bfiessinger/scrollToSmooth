@@ -40,15 +40,21 @@ export function isNodeOrElement(obj: unknown): obj is Node {
 /**
  * Current vertical scroll position.
  */
+export function getScrollingElement(): HTMLElement {
+	return document.scrollingElement as HTMLElement || document.documentElement || document.body;
+}
+
 export function getScrollPositionY(): number {
-	return window.scrollY ?? document.body.scrollTop ?? document.documentElement.scrollTop;
+	const scrollEl = getScrollingElement();
+	return scrollEl.scrollTop;
 }
 
 /**
  * Current horizontal scroll position.
  */
 export function getScrollPositionX(): number {
-	return window.scrollX ?? document.body.scrollLeft ?? document.documentElement.scrollLeft;
+	const scrollEl = getScrollingElement();
+	return scrollEl.scrollLeft;
 }
 
 /**
