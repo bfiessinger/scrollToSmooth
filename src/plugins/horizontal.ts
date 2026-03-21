@@ -67,6 +67,204 @@ interface HorizontalAnimationConfig extends AnimationConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Module-level helpers (reduce cyclomatic complexity in plugin methods)
+// ---------------------------------------------------------------------------
+
+/** Resolve scroll target pixel coordinates from any accepted target type. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function resolveTargetCoords(
+	target: HTMLElement | string | number | ScrollPoint,
+	resolvedAxis: 'x' | 'y' | 'both',
+	startX: number, startY: number,
+	docWidth: number, docHeight: number,
+	viewWidth: number, viewHeight: number,
+	container: HTMLElement,
+): { targetX: number; targetY: number } {
+	let targetX = startX;
+	let targetY = startY;
+
+	const isScrollPoint = (
+		typeof target === 'object'
+		&& target !== null
+		&& !('nodeType' in (target as object))
+		&& 'x' in (target as object)
+		&& 'y' in (target as object)
+	);
+
+	if (isScrollPoint) {
+		const sp = target as ScrollPoint;
+		targetX = Math.max(0, Math.min(sp.x, docWidth  - viewWidth));
+		targetY = Math.max(0, Math.min(sp.y, docHeight - viewHeight));
+	} else if (!isNaN(target as number)) {
+		if (typeof target === 'string') target = parseFloat(target);
+		const n = target as number;
+		if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+			targetX = docWidth - n < viewWidth ? docWidth - viewWidth : n;
+		}
+		if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+			targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
+		}
+	} else if (
+		(typeof target === 'object' || typeof target === 'string')
+		&& validateSelector(target as string | HTMLElement, container)
+	) {
+		if (typeof target === 'string') {
+			target = querySelector(target, container) as HTMLElement;
+		}
+		const rect = (target as HTMLElement).getBoundingClientRect();
+		const isDocBody = container === document.body || container === document.documentElement;
+		let rawX: number;
+		let rawY: number;
+		if (isDocBody) {
+			rawX = rect.left + startX;
+			rawY = rect.top  + startY;
+		} else {
+			const cr = container.getBoundingClientRect();
+			rawX = rect.left - cr.left + startX;
+			rawY = rect.top  - cr.top  + startY;
+		}
+		if (resolvedAxis === 'x' || resolvedAxis === 'both') {
+			targetX = docWidth  - rawX < viewWidth  ? docWidth  - viewWidth  : rawX;
+		}
+		if (resolvedAxis === 'y' || resolvedAxis === 'both') {
+			targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
+		}
+	}
+
+	return { targetX, targetY };
+}
+
+/** Resolve offset pixels from settings.offset (element, number, or string). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function resolveScrollOffset(settings: any, container: HTMLElement): { offsetX: number; offsetY: number } {
+	let offsetX = 0;
+	let offsetY = 0;
+	if (validateSelector(settings.offset as string | Node | HTMLElement, container)) {
+		let offsetEl = settings.offset;
+		if (typeof offsetEl === 'string') {
+			offsetEl = querySelector(settings.offset as string) as HTMLElement;
+		}
+		if (isNodeOrElement(offsetEl as Node | Element)) {
+			const offRect = (offsetEl as HTMLElement).getBoundingClientRect();
+			offsetX = offRect.width;
+			offsetY = offRect.height;
+		}
+	} else if (!isNaN(settings.offset as number)) {
+		const o = typeof settings.offset === 'string'
+			? parseFloat(settings.offset as string)
+			: settings.offset as number;
+		offsetX = o;
+		offsetY = o;
+	}
+	return { offsetX, offsetY };
+}
+
+/** Create a horizontal expander element with inline-block sizing. */
+function createXExpanderEl(dir: string): HTMLDivElement {
+	const el = document.createElement('div');
+	el.setAttribute(EXPANDER_ATTR, dir);
+	el.style.setProperty('display', 'inline-block');
+	el.style.setProperty('vertical-align', 'top');
+	el.style.setProperty('width', '0px');
+	el.style.setProperty('height', '100%');
+	return el;
+}
+
+/** Insert a left expander into the document. */
+function insertLeftExpander(
+	root: HTMLElement, container: HTMLElement, isDocBody: boolean,
+	getExp: (dir: string) => HTMLElement | null,
+): void {
+	const el = createXExpanderEl(EXPANDER_LEFT);
+	if (isDocBody) {
+		const firstContent = Array.from(container.children).find(
+			c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed'
+		) ?? container.firstChild;
+		container.insertBefore(el, firstContent);
+	} else {
+		const topExp = getExp(EXPANDER_TOP);
+		root.insertBefore(el, topExp ? topExp.nextSibling : container);
+	}
+}
+
+/** Insert a right expander into the document. */
+function insertRightExpander(
+	root: HTMLElement, container: HTMLElement, isDocBody: boolean,
+	getExp: (dir: string) => HTMLElement | null,
+): void {
+	const el = createXExpanderEl(EXPANDER_RIGHT);
+	if (isDocBody) {
+		const lastContent = Array.from(container.children).reverse().find(
+			c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed'
+		) as Element | undefined;
+		if (lastContent) {
+			container.insertBefore(el, lastContent.nextSibling);
+		} else {
+			container.appendChild(el);
+		}
+	} else {
+		const bottomExp = getExp(EXPANDER_BOTTOM);
+		root.insertBefore(el, bottomExp ?? container.nextSibling);
+	}
+}
+
+/** Apply/clear a size property on a pair of directional expanders. */
+function applyExpanderPair(
+	expStart: HTMLElement | undefined,
+	expEnd: HTMLElement | undefined,
+	exceeding: { direction: string; px: number } | false,
+	startDir: string,
+	endDir: string,
+	prop: 'width' | 'height',
+): void {
+	if (exceeding && expStart && exceeding.direction === startDir) {
+		expStart.style.setProperty(prop, exceeding.px + 'px');
+		expEnd?.style.removeProperty(prop);
+	} else if (exceeding && expEnd && exceeding.direction === endDir) {
+		expEnd.style.setProperty(prop, exceeding.px + 'px');
+		expStart?.style.removeProperty(prop);
+	} else {
+		expStart?.style.removeProperty(prop);
+		expEnd?.style.removeProperty(prop);
+	}
+}
+
+/** Dispatch the onScrollUpdate callback if set. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fireOnScrollUpdate(settings: any, axis: 'x' | 'y' | 'both', startX: number, startY: number, currentX: number, currentY: number, targetX: number, targetY: number, t: number): void {
+	if (typeof settings.onScrollUpdate !== 'function') return;
+	settings.onScrollUpdate({
+		startPosition:   axis === 'x' ? startX   : startY,
+		currentPosition: axis === 'x' ? currentX : currentY,
+		endPosition:     axis === 'x' ? targetX  : targetY,
+		progress: t,
+	});
+}
+
+/** Dispatch the onScrollEnd callback if set. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fireOnScrollEnd(settings: any, axis: 'x' | 'y' | 'both', startX: number, startY: number, targetX: number, targetY: number): void {
+	if (typeof settings.onScrollEnd !== 'function') return;
+	settings.onScrollEnd({
+		startPosition: axis === 'x' ? startX  : startY,
+		endPosition:   axis === 'x' ? targetX : targetY,
+	});
+}
+
+/** Scroll both axes simultaneously on the given container. */
+function scrollBothAxes(container: HTMLElement, currentX: number, currentY: number): void {
+	const isDocBody = container === document.body || container === document.documentElement;
+	if (isDocBody) {
+		const scrollEl = document.scrollingElement as HTMLElement || document.documentElement || document.body;
+		scrollEl.scrollLeft = currentX;
+		scrollEl.scrollTop  = currentY;
+	} else {
+		container.scrollLeft = currentX;
+		container.scrollTop  = currentY;
+	}
+}
+
+// ---------------------------------------------------------------------------
 // Plugin definition
 // ---------------------------------------------------------------------------
 export const HorizontalScrollPlugin = {
@@ -91,90 +289,24 @@ export const HorizontalScrollPlugin = {
 			this.cancelScroll();
 
 			const resolvedAxis = axis ?? this.settings.axis ?? 'y';
+			const container   = this.container as HTMLElement;
 
-			const startX = this._getContainerScrollPosition('x');
-			const startY = this._getContainerScrollPosition('y');
+			const startX     = this._getContainerScrollPosition('x');
+			const startY     = this._getContainerScrollPosition('y');
 			const docWidth   = this._getDocumentSize('x');
 			const docHeight  = this._getDocumentSize('y');
 			const viewWidth  = this._getViewportSize('x');
 			const viewHeight = this._getViewportSize('y');
 
-			let targetX = startX;
-			let targetY = startY;
-
-			// ── Resolve target coordinates ──────────────────────────────
-			const isScrollPoint = (
-				typeof target === 'object'
-				&& target !== null
-				&& !('nodeType' in (target as object))
-				&& 'x' in (target as object)
-				&& 'y' in (target as object)
+			let { targetX, targetY } = resolveTargetCoords(
+				target, resolvedAxis,
+				startX, startY,
+				docWidth, docHeight, viewWidth, viewHeight,
+				container,
 			);
 
-			if (isScrollPoint) {
-				const sp = target as ScrollPoint;
-				targetX = Math.max(0, Math.min(sp.x, docWidth  - viewWidth));
-				targetY = Math.max(0, Math.min(sp.y, docHeight - viewHeight));
-
-			} else if (!isNaN(target as number)) {
-				if (typeof target === 'string') target = parseFloat(target);
-				const n = target as number;
-				if (resolvedAxis === 'x' || resolvedAxis === 'both') {
-					targetX = docWidth - n < viewWidth ? docWidth - viewWidth : n;
-				}
-				if (resolvedAxis === 'y' || resolvedAxis === 'both') {
-					targetY = docHeight - n < viewHeight ? docHeight - viewHeight : n;
-				}
-
-			} else if (
-				(typeof target === 'object' || typeof target === 'string')
-				&& validateSelector(target as string | HTMLElement, this.container)
-			) {
-				if (typeof target === 'string') {
-					target = querySelector(target, this.container as HTMLElement) as HTMLElement;
-				}
-				const rect = (target as HTMLElement).getBoundingClientRect();
-				const cont = this.container as HTMLElement;
-				const isDocBody = cont === document.body || cont === document.documentElement;
-				let rawX: number;
-				let rawY: number;
-				if (isDocBody) {
-					rawX = rect.left + startX;
-					rawY = rect.top  + startY;
-				} else {
-					const cr = cont.getBoundingClientRect();
-					rawX = rect.left - cr.left + startX;
-					rawY = rect.top  - cr.top  + startY;
-				}
-				if (resolvedAxis === 'x' || resolvedAxis === 'both') {
-					targetX = docWidth  - rawX < viewWidth  ? docWidth  - viewWidth  : rawX;
-				}
-				if (resolvedAxis === 'y' || resolvedAxis === 'both') {
-					targetY = docHeight - rawY < viewHeight ? docHeight - viewHeight : rawY;
-				}
-			}
-
-			// ── Apply offset ─────────────────────────────────────────────
 			if (this.settings.offset !== null) {
-				let offsetX = 0;
-				let offsetY = 0;
-				if (validateSelector(this.settings.offset as string | Node | HTMLElement, this.container)) {
-					let offsetEl = this.settings.offset;
-					if (typeof offsetEl === 'string') {
-						offsetEl = querySelector(this.settings.offset as string) as HTMLElement;
-					}
-					if (isNodeOrElement(offsetEl as Node | Element)) {
-						const offRect = (offsetEl as HTMLElement).getBoundingClientRect();
-						offsetX = offRect.width;
-						offsetY = offRect.height;
-					}
-				} else if (!isNaN(this.settings.offset as number)) {
-					const o = typeof this.settings.offset === 'string'
-						? parseFloat(this.settings.offset as string)
-						: this.settings.offset as number;
-					offsetX = o;
-					offsetY = o;
-				}
+				const { offsetX, offsetY } = resolveScrollOffset(this.settings, container);
 				if (resolvedAxis === 'x' || resolvedAxis === 'both') targetX -= offsetX;
 				if (resolvedAxis === 'y' || resolvedAxis === 'both') targetY -= offsetY;
 			}
@@ -309,55 +441,11 @@ export const HorizontalScrollPlugin = {
 				(Array.from(root.children) as HTMLElement[])
 					.find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
 
-            const expanderStyles = {
-                display: 'inline-block',
-                verticalAlign: 'top',
-                width: '0px',
-                height: '100%',
-            }
-
 			const container = this.container as HTMLElement;
 			const isDocBody = container === document.body || container === document.documentElement;
 
-			// LEFT – immediately before the first non-fixed content element
-			if (!getExp(EXPANDER_LEFT)) {
-				const el = document.createElement('div');
-				el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
-				Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-				if (isDocBody) {
-					const firstContent = Array.from(container.children).find(
-						c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed'
-					) ?? container.firstChild;
-					container.insertBefore(el, firstContent);
-				} else {
-					const topExp = getExp(EXPANDER_TOP);
-					root.insertBefore(el, topExp ? topExp.nextSibling : container);
-				}
-			}
-
-			// RIGHT – immediately after the last non-fixed content element
-			if (!getExp(EXPANDER_RIGHT)) {
-				const el = document.createElement('div');
-				el.setAttribute(EXPANDER_ATTR, EXPANDER_RIGHT);
-				Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-				if (isDocBody) {
-					const lastContent = Array.from(container.children).reverse().find(
-						c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed'
-					) as Element | undefined;
-					if (lastContent) {
-						container.insertBefore(el, lastContent.nextSibling);
-					} else {
-						container.appendChild(el);
-					}
-				} else {
-					const bottomExp = getExp(EXPANDER_BOTTOM);
-					if (bottomExp) {
-						root.insertBefore(el, bottomExp);
-					} else {
-						root.insertBefore(el, container.nextSibling);
-					}
-				}
-			}
+			if (!getExp(EXPANDER_LEFT))  insertLeftExpander(root, container, isDocBody, getExp);
+			if (!getExp(EXPANDER_RIGHT)) insertRightExpander(root, container, isDocBody, getExp);
 
 			this._normalizeExpanders && this._normalizeExpanders();
 		};
@@ -373,11 +461,11 @@ export const HorizontalScrollPlugin = {
 			axis: 'x' | 'y' = 'y',
 		): void {
 			this._normalizeExpanders && this._normalizeExpanders();
-			const max = docSize - viewSize;
+			const max      = docSize - viewSize;
 			const startDir = axis === 'x' ? EXPANDER_LEFT  : EXPANDER_TOP;
 			const endDir   = axis === 'x' ? EXPANDER_RIGHT : EXPANDER_BOTTOM;
 			let exceeding: { direction: string; px: number } | false = false;
-			if (scrollPos < 0)    exceeding = { direction: startDir, px: scrollPos * -1 };
+			if (scrollPos < 0)        exceeding = { direction: startDir, px: scrollPos * -1 };
 			else if (scrollPos > max) exceeding = { direction: endDir,   px: (max - scrollPos) * -1 };
 
 			const expanders = this._getDocumentExpanders() as HTMLElement[];
@@ -385,29 +473,11 @@ export const HorizontalScrollPlugin = {
 			if (axis === 'x') {
 				const expLeft  = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_LEFT);
 				const expRight = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_RIGHT);
-				if (exceeding && expLeft && exceeding.direction === EXPANDER_LEFT) {
-					expLeft.style.width = exceeding.px + 'px';
-					expRight?.style.removeProperty('width');
-				} else if (exceeding && expRight && exceeding.direction === EXPANDER_RIGHT) {
-					expRight.style.width = exceeding.px + 'px';
-					expLeft?.style.removeProperty('width');
-				} else {
-					expLeft?.style.removeProperty('width');
-					expRight?.style.removeProperty('width');
-				}
+				applyExpanderPair(expLeft, expRight, exceeding, EXPANDER_LEFT, EXPANDER_RIGHT, 'width');
 			} else {
 				const expTop    = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_TOP);
 				const expBottom = expanders.find(el => el.getAttribute(EXPANDER_ATTR) === EXPANDER_BOTTOM);
-				if (exceeding && expTop && exceeding.direction === EXPANDER_TOP) {
-					expTop.style.height = exceeding.px + 'px';
-					expBottom?.style.removeProperty('height');
-				} else if (exceeding && expBottom && exceeding.direction === EXPANDER_BOTTOM) {
-					expBottom.style.height = exceeding.px + 'px';
-					expTop?.style.removeProperty('height');
-				} else {
-					expTop?.style.removeProperty('height');
-					expBottom?.style.removeProperty('height');
-				}
+				applyExpanderPair(expTop, expBottom, exceeding, EXPANDER_TOP, EXPANDER_BOTTOM, 'height');
 			}
 		};
 
@@ -424,42 +494,25 @@ export const HorizontalScrollPlugin = {
 				axis = 'y',
 			} = config;
 
-			const elapsed = getTimestamp() - startTime;
-			const distX = Math.abs(targetX - startX);
-			const distY = Math.abs(targetY - startY);
+			const elapsed  = getTimestamp() - startTime;
+			const distX    = Math.abs(targetX - startX);
+			const distY    = Math.abs(targetY - startY);
 			const distance = axis === 'both' ? Math.max(distX, distY) : axis === 'x' ? distX : distY;
 			const duration = this._getDuration(distance);
-			const t = Math.min(1, elapsed / duration);
+			const t        = Math.min(1, elapsed / duration);
 			const easedProgress = this._resolveEasing(this.settings.easing, t);
 
 			const currentX = startX + (targetX - startX) * easedProgress;
 			const currentY = startY + (targetY - startY) * easedProgress;
 
-			if (typeof this.settings.onScrollUpdate === 'function') {
-				this.settings.onScrollUpdate({
-					startPosition:   axis === 'x' ? startX   : startY,
-					currentPosition: axis === 'x' ? currentX : currentY,
-					endPosition:     axis === 'x' ? targetX  : targetY,
-					progress:        t,
-				});
-			}
+			fireOnScrollUpdate(this.settings, axis, startX, startY, currentX, currentY, targetX, targetY, t);
 
 			// Expand document BEFORE setting scroll so the browser's scroll-area
 			// already includes the overshoot distance when we call window.scroll().
 			if (axis === 'both') {
 				this._expandDocument(currentX, docWidth,  viewWidth,  'x');
 				this._expandDocument(currentY, docHeight, viewHeight, 'y');
-				// Inline simultaneous scroll for both axes
-				const cont = this.container as HTMLElement;
-				const isDocBody = cont === document.body || cont === document.documentElement;
-				if (isDocBody) {
-					const scrollEl = document.scrollingElement as HTMLElement || document.documentElement || document.body;
-					scrollEl.scrollLeft = currentX;
-					scrollEl.scrollTop  = currentY;
-				} else {
-					cont.scrollLeft = currentX;
-					cont.scrollTop  = currentY;
-				}
+				scrollBothAxes(this.container as HTMLElement, currentX, currentY);
 			} else if (axis === 'x') {
 				this._expandDocument(currentX, docWidth, viewWidth, 'x');
 				this._setContainerScrollPosition(currentX, 'x');
@@ -472,12 +525,7 @@ export const HorizontalScrollPlugin = {
 			(this.container as HTMLElement).style.setProperty('--sts-scroll-y', String(Math.round(currentY)));
 
 			if (elapsed >= duration) {
-				if (typeof this.settings.onScrollEnd === 'function') {
-					this.settings.onScrollEnd({
-						startPosition: axis === 'x' ? startX  : startY,
-						endPosition:   axis === 'x' ? targetX : targetY,
-					});
-				}
+				fireOnScrollEnd(this.settings, axis, startX, startY, targetX, targetY);
 				this._isScrolling = false;
 				this._processQueue();
 				return;
