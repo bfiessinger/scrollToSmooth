@@ -99,6 +99,23 @@ export interface ScrollToSmoothSettings {
 	 * Defaults to `true`.
 	 */
 	dispatchEvents?: boolean;
+	// Scroll snapping
+	/**
+	 * When `true` or `'nearest'`, automatically snap to the nearest anchor
+	 * after the user stops scrolling.
+	 * Defaults to `false` (no snapping).
+	 */
+	snap?: boolean | 'nearest';
+	/**
+	 * CSS selector that identifies snap target elements.
+	 * When omitted, the linked elements' targets (resolved via `targetAttribute`) are used.
+	 */
+	snapSelector?: string;
+	/**
+	 * Milliseconds of scroll inactivity to wait before triggering a snap.
+	 * Defaults to `150`.
+	 */
+	snapDebounce?: number;
 	// Callbacks
 	onScrollStart?: ((data: ScrollData) => void) | null;
 	onScrollUpdate?: ((data: ScrollUpdateData) => void) | null;
