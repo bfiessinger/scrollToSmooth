@@ -70,6 +70,14 @@ export interface ScrollToSmoothSettings {
 	durationMin?: number | null;
 	durationMax?: number | null;
 	easing?: string | EasingFunction;
+	// Native smooth scrolling
+	/**
+	 * When `true`, delegate scrolling to `element.scrollTo({ behavior: 'smooth' })`
+	 * instead of running the JS animation loop.
+	 * When `'auto'`, use native only when the browser supports `scroll-behavior: smooth`.
+	 * Defaults to `false` (always use JS animation).
+	 */
+	useNative?: boolean | 'auto';
 	// Callbacks
 	onScrollStart?: ((data: ScrollData) => void) | null;
 	onScrollUpdate?: ((data: ScrollUpdateData) => void) | null;

@@ -104,3 +104,11 @@ export function getWindowHeight(): number {
 export function getWindowWidth(): number {
 	return window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 }
+
+/**
+ * Returns true when the browser supports CSS `scroll-behavior: smooth`
+ * (i.e. native smooth scrolling via `element.scrollTo({ behavior: 'smooth' })`).
+ */
+export function supportsNativeSmoothScroll(): boolean {
+	return 'scrollBehavior' in document.documentElement.style;
+}

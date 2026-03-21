@@ -36,6 +36,7 @@ import {
 	getBaseURI,
 	getDocumentHeight,
 	getWindowHeight,
+	supportsNativeSmoothScroll,
 } from './utils/dom';
 
 export type { ScrollToSmoothSettings as Options, ScrollData, ScrollUpdateData, EasingFunction, ScrollPoint, ScrollToSmoothPlugin };
@@ -80,6 +81,9 @@ export class ScrollToSmooth {
 
 	/** Stored bound cancel-scroll handler for proper removal. */
 	private _cancelHandler: (() => void) | null = null;
+
+	/** Timer used to detect scroll-end in native mode. */
+	private _nativeEndTimer: ReturnType<typeof setTimeout> | null = null;
 
 	/** Registered plugins (keyed by name). */
 	private static _plugins: Map<string, ScrollToSmoothPlugin> = new Map();
@@ -212,6 +216,11 @@ export class ScrollToSmooth {
 			this.settings.onScrollStart({ startPosition: startY, endPosition: targetY });
 		}
 
+		if (this._shouldUseNative()) {
+			this._nativeScrollTo(targetY, startY);
+			return;
+		}
+
 		this._ensureExpanders('y');
 		this._animateScroll({ targetY, startY, docHeight, viewHeight, startTime: getTimestamp() });
 	}
@@ -318,6 +327,35 @@ export class ScrollToSmooth {
 	// ---------------------------------------------------------------
 	// Private – Animation
 	// ---------------------------------------------------------------
+
+	protected _shouldUseNative(): boolean {
+		const { useNative } = this.settings;
+		if (useNative === true) return true;
+		if (useNative === 'auto') return supportsNativeSmoothScroll();
+		return false;
+	}
+
+	protected _nativeScrollTo(targetY: number, startY: number): void {
+		const container = this.container as HTMLElement;
+		const isDocBody = container === document.body || container === document.documentElement;
+		const scrollTarget = isDocBody ? window : container;
+
+		(scrollTarget as Window | HTMLElement).scrollTo({ top: targetY, behavior: 'smooth' });
+
+		// Detect scroll-end via scroll event + idle debounce (100 ms quiet period)
+		const onScrollEnd = () => {
+			if (this._nativeEndTimer !== null) clearTimeout(this._nativeEndTimer);
+			this._nativeEndTimer = setTimeout(() => {
+				scrollTarget.removeEventListener('scroll', onScrollEnd);
+				this._nativeEndTimer = null;
+				if (typeof this.settings.onScrollEnd === 'function') {
+					this.settings.onScrollEnd({ startPosition: startY, endPosition: targetY });
+				}
+			}, 100);
+		};
+
+		scrollTarget.addEventListener('scroll', onScrollEnd, { passive: true });
+	}
 
 	protected _animateScroll(config: AnimationConfig): void {
 		const { targetY, startY, docHeight, viewHeight, startTime } = config;
