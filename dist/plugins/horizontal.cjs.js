@@ -268,32 +268,34 @@ const HorizontalScrollPlugin = {
       const container = this.container;
       const isDocBody = container === document.body || container === document.documentElement;
 
-      // LEFT – right after top so it stays on the same inline line
+      // LEFT – immediately before the first non-fixed content element
       if (!getExp(EXPANDER_LEFT)) {
         const el = document.createElement('div');
         el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
         Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-        const topExp = getExp(EXPANDER_TOP);
         if (isDocBody) {
-          container.insertBefore(el, topExp ? topExp.nextSibling : container.firstChild);
+          const firstContent = Array.from(container.children).find(c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed') ?? container.firstChild;
+          container.insertBefore(el, firstContent);
         } else {
+          const topExp = getExp(EXPANDER_TOP);
           root.insertBefore(el, topExp ? topExp.nextSibling : container);
         }
       }
 
-      // RIGHT – before bottom so it stays on the same inline line
+      // RIGHT – immediately after the last non-fixed content element
       if (!getExp(EXPANDER_RIGHT)) {
         const el = document.createElement('div');
         el.setAttribute(EXPANDER_ATTR, EXPANDER_RIGHT);
         Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
-        const bottomExp = getExp(EXPANDER_BOTTOM);
         if (isDocBody) {
-          if (bottomExp) {
-            container.insertBefore(el, bottomExp);
+          const lastContent = Array.from(container.children).reverse().find(c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed');
+          if (lastContent) {
+            container.insertBefore(el, lastContent.nextSibling);
           } else {
             container.appendChild(el);
           }
         } else {
+          const bottomExp = getExp(EXPANDER_BOTTOM);
           if (bottomExp) {
             root.insertBefore(el, bottomExp);
           } else {
@@ -416,6 +418,8 @@ const HorizontalScrollPlugin = {
             endPosition: axis === 'x' ? targetX : targetY
           });
         }
+        this._isScrolling = false;
+        this._processQueue();
         return;
       }
       this._animationFrame = window.requestAnimationFrame(() => {

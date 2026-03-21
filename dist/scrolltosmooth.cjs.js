@@ -693,12 +693,14 @@ class ScrollToSmooth {
     const getExp = dir => Array.from(root.children).find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
     const isDocBody = this.container === document.body || this.container === document.documentElement;
 
-    // TOP – before container or first child (body case)
+    // TOP – before container or first non-fixed content child (body case)
     if (!getExp(EXPANDER_TOP)) {
       const el = document.createElement('div');
       el.setAttribute(EXPANDER_ATTR, EXPANDER_TOP);
       if (isDocBody) {
-        this.container.insertBefore(el, this.container.firstChild);
+        const body = this.container;
+        const firstContent = Array.from(body.children).find(c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed') ?? body.firstChild;
+        body.insertBefore(el, firstContent);
       } else {
         const container = this.container;
         root.insertBefore(el, container);
@@ -735,8 +737,8 @@ class ScrollToSmooth {
     if (isDocBody) {
       const isExpander = el => el.hasAttribute(EXPANDER_ATTR);
       let anchor = this._expanderAnchor;
-      if (!anchor || anchor.parentElement !== root || isExpander(anchor)) {
-        anchor = Array.from(root.children).find(el => !isExpander(el)) ?? null;
+      if (!anchor || anchor.parentElement !== root || isExpander(anchor) || getComputedStyle(anchor).position === 'fixed') {
+        anchor = Array.from(root.children).find(el => !isExpander(el) && getComputedStyle(el).position !== 'fixed') ?? null;
         this._expanderAnchor = anchor;
       }
       if (!anchor) {

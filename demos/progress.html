@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Progress Tracking — ScrollToSmooth v4</title>
+  <link rel="stylesheet" href="../demo/shared.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    body { background: var(--c-bg); color: var(--c-text); }
+
+    /* ── Secondary nav (section links — scrollToSmooth targets) ── */
+    .section-nav {
+      position: fixed;
+      top: var(--nav-h);
+      left: 0; right: 0;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 1.25rem;
+      background: rgba(13, 17, 23, 0.78);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--c-border);
+      z-index: 400;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .section-nav::-webkit-scrollbar { display: none; }
+
+    .section-nav a {
+      flex-shrink: 0;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--c-muted);
+      text-decoration: none;
+      padding: 0.28rem 0.7rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+
+    .section-nav a:hover { color: var(--c-text); background: rgba(255,255,255,0.07); }
+    .section-nav a.active { color: #86efac; background: rgba(34,197,94,0.1); }
+
+    /* ── Animation progress bar ── */
+    .anim-bar-wrap {
+      position: fixed;
+      top: calc(var(--nav-h) + 44px);
+      left: 0; right: 0;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      z-index: 450;
+    }
+
+    .anim-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #86efac);
+    }
+
+    /* ── Live data HUD ── */
+    .progress-hud {
+      position: fixed;
+      top: calc(var(--nav-h) + 44px + 16px);
+      right: 1.5rem;
+      background: rgba(13, 17, 23, 0.92);
+      border: 1px solid var(--c-border);
+      border-radius: 12px;
+      padding: 1rem 1.15rem;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 400;
+      min-width: 210px;
+    }
+
+    .hud-title {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--c-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .hud-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
+      font-size: 0.78rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .hud-key { color: var(--c-muted); }
+
+    .hud-val {
+      font-family: var(--mono);
+      color: #86efac;
+      font-size: 0.8rem;
+    }
+
+    .hud-val.idle { color: var(--c-muted); }
+
+    .hud-progress-bar {
+      margin-top: 0.75rem;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .hud-progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #86efac);
+      border-radius: 2px;
+    }
+
+    /* ── Content ── */
+    .content-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: calc(var(--nav-h) + 44px + 3px + 3rem) 2rem 5rem;
+    }
+
+    .content-section {
+      min-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 3rem 0;
+      border-bottom: 1px solid var(--c-border);
+    }
+
+    .content-section:last-child { border-bottom: none; }
+
+    .section-badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(34, 197, 94, 0.1);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 1.25rem;
+    }
+
+    .content-section h2 {
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      margin-bottom: 1.25rem;
+      line-height: 1.1;
+    }
+
+    .content-section p {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--c-muted);
+      margin-bottom: 1rem;
+    }
+
+    .content-section p:last-child { margin-bottom: 0; }
+
+    .content-section code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: rgba(34, 197, 94, 0.08);
+      color: #86efac;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* ── Code block ── */
+    .code-block {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.75;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    .kw  { color: #ff7b72; }
+    .fn  { color: #d2a8ff; }
+    .str { color: #a5d6ff; }
+    .cm  { color: rgba(255,255,255,0.28); font-style: italic; }
+    .num { color: #79c0ff; }
+  </style>
+</head>
+<body>
+
+  <!-- Main nav -->
+  <nav class="sts-nav">
+    <a class="sts-nav-logo" href="../index.html">ScrollToSmooth <em>v4</em></a>
+    <div class="sts-nav-sep"></div>
+    <ul class="sts-nav-links">
+      <li><a href="../index.html">2D Board</a></li>
+      <li><a href="vertical.html">Vertical</a></li>
+      <li><a href="horizontal.html">Horizontal</a></li>
+      <li><a href="snap.html">Snap</a></li>
+      <li><a href="progress.html" class="sts-active">Progress</a></li>
+      <li><a href="queue.html">Queue</a></li>
+    </ul>
+  </nav>
+
+  <!-- Section nav — scrollToSmooth intercepts these anchor clicks -->
+  <div class="section-nav" id="section-nav">
+    <a href="#intro"     class="active">Intro</a>
+    <a href="#callback">Callback API</a>
+    <a href="#use-cases">Use Cases</a>
+    <a href="#example">This Demo</a>
+  </div>
+
+  <!-- Progress bar (driven by onScrollUpdate) -->
+  <div class="anim-bar-wrap">
+    <div class="anim-bar" id="anim-bar"></div>
+  </div>
+
+  <!-- Live data HUD -->
+  <div class="progress-hud">
+    <p class="hud-title">onScrollUpdate</p>
+    <div class="hud-row">
+      <span class="hud-key">progress</span>
+      <span class="hud-val idle" id="hud-progress">—</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-key">currentPosition</span>
+      <span class="hud-val idle" id="hud-current">—</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-key">startPosition</span>
+      <span class="hud-val idle" id="hud-start">—</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-key">endPosition</span>
+      <span class="hud-val idle" id="hud-end">—</span>
+    </div>
+    <div class="hud-progress-bar">
+      <div class="hud-progress-fill" id="hud-fill"></div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content-wrap">
+
+    <section class="content-section" id="intro">
+      <span class="section-badge">onScrollUpdate</span>
+      <h2>Real-time scroll progress.</h2>
+      <p>Click any link in the section bar above to trigger a scrollToSmooth animation. The green bar beneath the nav fills as the animation runs — that's the <code>progress</code> value from <code>onScrollUpdate</code>, normalized 0&thinsp;&rarr;&thinsp;1.</p>
+      <p>The panel on the right shows all four values that the callback receives on every animation frame. Click between sections and watch the numbers update live.</p>
+    </section>
+
+    <section class="content-section" id="callback">
+      <span class="section-badge">ScrollUpdateData</span>
+      <h2>The callback API.</h2>
+      <p>On every animation frame, <code>onScrollUpdate</code> is called with a <code>ScrollUpdateData</code> object:</p>
+      <div class="code-block">
+<span class="kw">new</span> <span class="fn">scrollToSmooth</span>(<span class="str">'a[href^="#"]'</span>, {
+  <span class="fn">onScrollUpdate</span>: <span class="kw">function</span> (data) {
+    data.progress         <span class="cm">// 0 → 1, follows the easing curve</span>
+    data.currentPosition  <span class="cm">// scroll position this frame (px)</span>
+    data.startPosition    <span class="cm">// where the animation began (px)</span>
+    data.endPosition      <span class="cm">// where the animation is heading (px)</span>
+  }
+})
+      </div>
+      <p><code>progress</code> tracks the easing curve, not raw distance — at 50% of elapsed time an <code>easeInOutQuart</code> animation is only ~19% of the way to its target. Use <code>currentPosition</code> for raw pixel metrics.</p>
+    </section>
+
+    <section class="content-section" id="use-cases">
+      <span class="section-badge">Ideas</span>
+      <h2>What can you build with it?</h2>
+      <p>Reading-progress bars, parallax tied to scroll position, counter animations, colour interpolation between sections, custom loading indicators — anything that should respond to scroll animation state.</p>
+      <p>Since <code>progress</code> is a 0&ndash;1 float you can multiply it into any range: <code>progress * 360</code> for a hue rotation, <code>'rgb(' + lerp(0,255,p) + ',0,0)'</code> for a colour blend, or <code>progress * maxScale</code> for a transform.</p>
+    </section>
+
+    <section class="content-section" id="example">
+      <span class="section-badge">This page</span>
+      <h2>How this demo works.</h2>
+      <p>The green bar and the live panel are driven entirely by <code>onScrollUpdate</code>. The setup is six lines:</p>
+      <div class="code-block">
+<span class="kw">var</span> bar = document.<span class="fn">getElementById</span>(<span class="str">'anim-bar'</span>);
+
+<span class="kw">new</span> <span class="fn">scrollToSmooth</span>(<span class="str">'a[href^="#"]'</span>, {
+  <span class="fn">onScrollUpdate</span>: <span class="kw">function</span> (data) {
+    bar.style.width = (data.progress * <span class="num">100</span>) + <span class="str">'%'</span>;
+  },
+  <span class="fn">onScrollEnd</span>: <span class="kw">function</span> () {
+    bar.style.width = <span class="str">'100%'</span>;
+    <span class="cm">setTimeout(function () { bar.style.width = '0%'; }, 400);</span>
+  }
+}).<span class="fn">init</span>();
+      </div>
+      <p><code>onScrollEnd</code> snaps the bar to 100% then fades it back to 0 after a short delay, ready for the next navigation.</p>
+    </section>
+
+  </div>
+
+  <!-- GitHub corner -->
+  <a href="https://github.com/bfiessinger/scrollToSmooth" class="github-corner" aria-label="View source on GitHub" target="_blank" rel="noopener">
+    <svg width="60" height="60" viewBox="0 0 250 250" style="fill:#70B7FD;color:#fff" aria-hidden="true">
+      <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+      <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin:130px 106px" class="octo-arm"></path>
+      <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+    </svg>
+  </a>
+
+  <script src="../dist/scrolltosmooth.pkgd.min.js"></script>
+  <script>
+    var animBar = document.getElementById('anim-bar');
+    var hudFill = document.getElementById('hud-fill');
+    var OFFSET  = 52 + 44 + 3; // main nav + section nav + progress bar
+
+    function setHUD(progress, current, start, end) {
+      var pct = (progress * 100).toFixed(1);
+      animBar.style.width      = (progress * 100) + '%';
+      hudFill.style.width      = (progress * 100) + '%';
+      document.getElementById('hud-progress').textContent = pct + '%';
+      document.getElementById('hud-current').textContent  = Math.round(current) + 'px';
+      document.getElementById('hud-start').textContent    = Math.round(start)   + 'px';
+      document.getElementById('hud-end').textContent      = Math.round(end)     + 'px';
+      ['hud-progress','hud-current','hud-start','hud-end'].forEach(function (id) {
+        document.getElementById(id).classList.remove('idle');
+      });
+    }
+
+    function resetHUD() {
+      ['hud-progress','hud-current','hud-start','hud-end'].forEach(function (id) {
+        document.getElementById(id).textContent = '\u2014';
+        document.getElementById(id).classList.add('idle');
+      });
+      hudFill.style.width = '0%';
+    }
+
+    var smooth = new scrollToSmooth('a[href^="#"]', {
+      duration: 900,
+      easing:   easeInOutQuart,
+      offset:   OFFSET,
+
+      onScrollUpdate: function (data) {
+        setHUD(data.progress, data.currentPosition, data.startPosition, data.endPosition);
+      },
+
+      onScrollEnd: function (data) {
+        setHUD(1, data.endPosition, data.startPosition, data.endPosition);
+        animBar.style.width = '100%';
+        hudFill.style.width = '100%';
+        // Fade bar back to zero after a moment
+        setTimeout(function () {
+          animBar.style.transition = 'width 0.4s ease';
+          animBar.style.width = '0%';
+          setTimeout(function () {
+            animBar.style.transition = '';
+            resetHUD();
+          }, 450);
+        }, 600);
+      }
+    });
+
+    smooth.init();
+
+    // ── Active section highlight ──
+    var sections  = document.querySelectorAll('.content-section');
+    var snavLinks = document.querySelectorAll('.section-nav a');
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var id = entry.target.id;
+          snavLinks.forEach(function (a) {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { threshold: 0.4 });
+
+    sections.forEach(function (s) { observer.observe(s); });
+  </script>
+</body>
+</html>

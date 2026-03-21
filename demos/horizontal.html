@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Horizontal Slider — ScrollToSmooth v4</title>
+  <link rel="stylesheet" href="../demo/shared.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    body {
+      background: var(--c-bg);
+      color: var(--c-text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Page layout ── */
+    .demo-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2.5rem;
+      padding: calc(var(--nav-h) + 2.5rem) 2rem 3rem;
+    }
+
+    /* ── Header text ── */
+    .demo-intro {
+      text-align: center;
+    }
+
+    .demo-intro .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(20, 184, 166, 0.1);
+      color: #5eead4;
+      border: 1px solid rgba(20, 184, 166, 0.25);
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 0.9rem;
+    }
+
+    .demo-intro h1 {
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      margin-bottom: 0.5rem;
+    }
+
+    .demo-intro p {
+      font-size: 0.9rem;
+      color: var(--c-muted);
+    }
+
+    .demo-intro code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: rgba(20, 184, 166, 0.1);
+      color: #5eead4;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* ── Slider ── */
+    .slider-wrap {
+      width: 100%;
+      max-width: 840px;
+      position: relative;
+    }
+
+    #slider {
+      display: flex;
+      overflow-x: scroll;
+      scrollbar-width: none;
+      border-radius: 14px;
+      width: 100%;
+    }
+
+    #slider::-webkit-scrollbar { display: none; }
+
+    .slide {
+      flex: 0 0 100%;
+      height: clamp(240px, 42vh, 380px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      user-select: none;
+    }
+
+    .slide-num {
+      font-size: clamp(4.5rem, 13vw, 9rem);
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      line-height: 1;
+      opacity: 0.92;
+    }
+
+    .slide-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      opacity: 0.5;
+    }
+
+    .slide:nth-child(1) { background: linear-gradient(135deg, #1e1b4b, #312e81); color: #c7d2fe; }
+    .slide:nth-child(2) { background: linear-gradient(135deg, #052e16, #065f46); color: #a7f3d0; }
+    .slide:nth-child(3) { background: linear-gradient(135deg, #431407, #7c2d12); color: #fed7aa; }
+    .slide:nth-child(4) { background: linear-gradient(135deg, #3b0764, #6b21a8); color: #e9d5ff; }
+    .slide:nth-child(5) { background: linear-gradient(135deg, #082f49, #0c4a6e); color: #bae6fd; }
+    .slide:nth-child(6) { background: linear-gradient(135deg, #042f2e, #134e4a); color: #99f6e4; }
+
+    /* ── Arrow buttons ── */
+    .slider-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background: rgba(13, 17, 23, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 50%;
+      color: var(--c-text);
+      font-size: 1.2rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: background 0.15s, transform 0.15s;
+      z-index: 10;
+    }
+
+    .slider-arrow:hover  { background: rgba(255,255,255,0.14); transform: translateY(-50%) scale(1.06); }
+    .slider-arrow:active { transform: translateY(-50%) scale(0.93); }
+    .slider-arrow:disabled { opacity: 0.2; pointer-events: none; }
+    .slider-arrow.prev { left: -22px; }
+    .slider-arrow.next { right: -22px; }
+
+    /* ── Dot indicators ── */
+    .slider-dots {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      padding: 0;
+    }
+
+    .dot.active {
+      background: #5eead4;
+      transform: scale(1.4);
+    }
+
+    /* ── Tab nav ── */
+    .slider-tabs {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .slider-tab {
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 0.35rem 0.9rem;
+      border-radius: 20px;
+      border: 1px solid var(--c-border);
+      background: transparent;
+      color: var(--c-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .slider-tab:hover { color: var(--c-text); background: rgba(255,255,255,0.06); }
+    .slider-tab.active { color: #5eead4; border-color: rgba(94, 234, 212, 0.4); background: rgba(20,184,166,0.08); }
+
+    /* ── Easing selector ── */
+    .slider-settings {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .slider-settings label {
+      font-size: 0.78rem;
+      color: var(--c-muted);
+    }
+
+    .slider-settings select {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      color: var(--c-text);
+      border-radius: 6px;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.78rem;
+      font-family: var(--mono);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav class="sts-nav">
+    <a class="sts-nav-logo" href="../index.html">ScrollToSmooth <em>v4</em></a>
+    <div class="sts-nav-sep"></div>
+    <ul class="sts-nav-links">
+      <li><a href="../index.html">2D Board</a></li>
+      <li><a href="vertical.html">Vertical</a></li>
+      <li><a href="horizontal.html" class="sts-active">Horizontal</a></li>
+      <li><a href="snap.html">Snap</a></li>
+      <li><a href="progress.html">Progress</a></li>
+      <li><a href="queue.html">Queue</a></li>
+    </ul>
+  </nav>
+
+  <div class="demo-body">
+
+    <div class="demo-intro">
+      <span class="badge">HorizontalScrollPlugin</span>
+      <h1>Horizontal Slider</h1>
+      <p>Smooth <code>axis: 'x'</code> scrolling on a container element. Use buttons, dots, tabs, or ← → keys.</p>
+    </div>
+
+    <div class="slider-wrap">
+      <button class="slider-arrow prev" id="prev" aria-label="Previous">&#8249;</button>
+      <div id="slider">
+        <div class="slide"><span class="slide-num">01</span><span class="slide-label">Indigo</span></div>
+        <div class="slide"><span class="slide-num">02</span><span class="slide-label">Emerald</span></div>
+        <div class="slide"><span class="slide-num">03</span><span class="slide-label">Amber</span></div>
+        <div class="slide"><span class="slide-num">04</span><span class="slide-label">Violet</span></div>
+        <div class="slide"><span class="slide-num">05</span><span class="slide-label">Sky</span></div>
+        <div class="slide"><span class="slide-num">06</span><span class="slide-label">Teal</span></div>
+      </div>
+      <button class="slider-arrow next" id="next" aria-label="Next">&#8250;</button>
+    </div>
+
+    <div class="slider-dots" id="dots"></div>
+
+    <div class="slider-tabs" id="tabs"></div>
+
+    <div class="slider-settings">
+      <label>Easing</label>
+      <select id="easing-select">
+        <option value="easeInOutQuart" selected>easeInOutQuart</option>
+        <option value="linear">linear</option>
+        <option value="easeInOutSine">easeInOutSine</option>
+        <option value="easeInOutCubic">easeInOutCubic</option>
+        <option value="easeInOutBack">easeInOutBack</option>
+        <option value="easeInOutElastic">easeInOutElastic</option>
+        <option value="easeInOutBounce">easeInOutBounce</option>
+      </select>
+    </div>
+
+  </div>
+
+  <!-- GitHub corner -->
+  <a href="https://github.com/bfiessinger/scrollToSmooth" class="github-corner" aria-label="View source on GitHub" target="_blank" rel="noopener">
+    <svg width="60" height="60" viewBox="0 0 250 250" style="fill:#70B7FD;color:#fff" aria-hidden="true">
+      <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+      <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin:130px 106px" class="octo-arm"></path>
+      <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+    </svg>
+  </a>
+
+  <script src="../dist/scrolltosmooth.pkgd.min.js"></script>
+  <script>
+    var SLIDES  = 6;
+    var LABELS  = ['Indigo','Emerald','Amber','Violet','Sky','Teal'];
+    var current = 0;
+
+    var slider = new scrollToSmooth([], {
+      container: '#slider',
+      axis: 'x',
+      duration: 550,
+      easing: easeInOutQuart,
+      onScrollEnd: function () { syncUI(); }
+    });
+    slider.init();
+
+    function sliderWidth() {
+      return document.getElementById('slider').offsetWidth;
+    }
+
+    function goTo(n) {
+      n = Math.max(0, Math.min(SLIDES - 1, n));
+      current = n;
+      slider.scrollTo(n * sliderWidth(), 'x');
+      syncUI();
+    }
+
+    function syncUI() {
+      document.querySelectorAll('.dot').forEach(function (d, i) {
+        d.classList.toggle('active', i === current);
+      });
+      document.querySelectorAll('.slider-tab').forEach(function (t, i) {
+        t.classList.toggle('active', i === current);
+      });
+      document.getElementById('prev').disabled = current === 0;
+      document.getElementById('next').disabled = current === SLIDES - 1;
+    }
+
+    // Build dots and tabs
+    var dotsEl = document.getElementById('dots');
+    var tabsEl = document.getElementById('tabs');
+
+    for (var i = 0; i < SLIDES; i++) {
+      (function (idx) {
+        var dot = document.createElement('button');
+        dot.className = 'dot';
+        dot.setAttribute('aria-label', 'Go to slide ' + (idx + 1));
+        dot.addEventListener('click', function () { goTo(idx); });
+        dotsEl.appendChild(dot);
+
+        var tab = document.createElement('button');
+        tab.className = 'slider-tab';
+        tab.textContent = LABELS[idx];
+        tab.addEventListener('click', function () { goTo(idx); });
+        tabsEl.appendChild(tab);
+      })(i);
+    }
+
+    document.getElementById('prev').addEventListener('click', function () { goTo(current - 1); });
+    document.getElementById('next').addEventListener('click', function () { goTo(current + 1); });
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft')  goTo(current - 1);
+      if (e.key === 'ArrowRight') goTo(current + 1);
+    });
+
+    document.getElementById('easing-select').addEventListener('change', function () {
+      slider.update({ easing: window[this.value] });
+    });
+
+    syncUI();
+  </script>
+</body>
+</html>

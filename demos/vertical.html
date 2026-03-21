@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vertical Scroll — ScrollToSmooth v4</title>
+  <link rel="stylesheet" href="../demo/shared.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; -webkit-font-smoothing: antialiased; }
+    body { background: var(--c-bg); color: var(--c-text); }
+
+    /* ── Secondary section nav ── */
+    .section-nav {
+      position: fixed;
+      top: var(--nav-h);
+      left: 0; right: 0;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 1.25rem;
+      background: rgba(13, 17, 23, 0.78);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--c-border);
+      z-index: 400;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .section-nav::-webkit-scrollbar { display: none; }
+
+    .section-nav a {
+      flex-shrink: 0;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--c-muted);
+      text-decoration: none;
+      padding: 0.28rem 0.7rem;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .section-nav a:hover { color: var(--c-text); background: rgba(255,255,255,0.07); }
+    .section-nav a.active { color: var(--c-accent); background: rgba(112,183,253,0.1); }
+
+    /* ── Sections ── */
+    .section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    #s1 { padding-top: calc(var(--nav-h) + 44px + 4rem); }
+
+    .section-num {
+      font-size: 0.68rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.45;
+      margin-bottom: 1rem;
+    }
+
+    .section h2 {
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 1.1rem;
+    }
+
+    .section p {
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--c-muted);
+      max-width: 520px;
+    }
+
+    .section p code {
+      font-family: var(--mono);
+      font-size: 0.88em;
+      background: rgba(255,255,255,0.08);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--c-text);
+    }
+
+    /* Section themes */
+    #s1 { background: linear-gradient(160deg, #111827 0%, #0d1117 100%); }
+    #s2 { background: linear-gradient(160deg, #1e1b4b 0%, #0d1117 100%); }
+    #s3 { background: linear-gradient(160deg, #0c1a2e 0%, #0d1117 100%); }
+    #s4 { background: linear-gradient(160deg, #052e16 0%, #0d1117 100%); }
+    #s5 { background: linear-gradient(160deg, #1c1400 0%, #0d1117 100%); }
+
+    #s1 h2 { color: #93c5fd; }
+    #s2 h2 { color: #c4b5fd; }
+    #s3 h2 { color: #67e8f9; }
+    #s4 h2 { color: #86efac; }
+    #s5 h2 { color: #fcd34d; }
+
+    /* ── Settings panel ── */
+    .settings-panel {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      background: rgba(13, 17, 23, 0.92);
+      border: 1px solid var(--c-border);
+      border-radius: 12px;
+      padding: 1rem 1.1rem 1.1rem;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 400;
+      min-width: 200px;
+    }
+
+    .settings-panel h3 {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--c-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .settings-panel label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--c-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .settings-panel label span {
+      color: var(--c-accent);
+      font-family: var(--mono);
+    }
+
+    .settings-panel select,
+    .settings-panel input[type=range] {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--c-border);
+      color: var(--c-text);
+      border-radius: 6px;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.78rem;
+      font-family: var(--mono);
+      margin-bottom: 0.6rem;
+      cursor: pointer;
+      appearance: auto;
+    }
+
+    .settings-panel input[type=range] {
+      padding: 0;
+      border: none;
+      background: transparent;
+      accent-color: var(--c-accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main nav -->
+  <nav class="sts-nav">
+    <a class="sts-nav-logo" href="../index.html">ScrollToSmooth <em>v4</em></a>
+    <div class="sts-nav-sep"></div>
+    <ul class="sts-nav-links">
+      <li><a href="../index.html">2D Board</a></li>
+      <li><a href="vertical.html" class="sts-active">Vertical</a></li>
+      <li><a href="horizontal.html">Horizontal</a></li>
+      <li><a href="snap.html">Snap</a></li>
+      <li><a href="progress.html">Progress</a></li>
+      <li><a href="queue.html">Queue</a></li>
+    </ul>
+  </nav>
+
+  <!-- Section nav — these are the scrollToSmooth targets -->
+  <div class="section-nav" id="section-nav">
+    <a href="#s1" class="active">01 · Intro</a>
+    <a href="#s2">02 · TypeScript</a>
+    <a href="#s3">03 · Plugins</a>
+    <a href="#s4">04 · Easings</a>
+    <a href="#s5">05 · Get Started</a>
+  </div>
+
+  <!-- Sections -->
+  <section id="s1" class="section">
+    <p class="section-num">01 / 05</p>
+    <h2>Smooth, simple,<br>powerful.</h2>
+    <p>Click any link in the nav above — scrollToSmooth intercepts the anchor and animates the scroll. Try different easings and durations in the panel below ↙</p>
+  </section>
+
+  <section id="s2" class="section">
+    <p class="section-num">02 / 05</p>
+    <h2>Built for<br>modern JS.</h2>
+    <p>Fully rewritten in TypeScript with tree-shaking support. The core (with <code>linear</code> easing) is under 5&thinsp;KB gzipped. Import only what you need.</p>
+  </section>
+
+  <section id="s3" class="section">
+    <p class="section-num">03 / 05</p>
+    <h2>Extend with<br>plugins.</h2>
+    <p><code>SnapPlugin</code>, <code>TouchMomentumPlugin</code>, and <code>HorizontalScrollPlugin</code> register via <code>ScrollToSmooth.use()</code> without touching the core bundle.</p>
+  </section>
+
+  <section id="s4" class="section">
+    <p class="section-num">04 / 05</p>
+    <h2>32 easing<br>functions.</h2>
+    <p>From <code>linear</code> to <code>easeInOutElastic</code> — all individually importable and tree-shakeable. Change the easing in the panel ↙ and feel the difference.</p>
+  </section>
+
+  <section id="s5" class="section">
+    <p class="section-num">05 / 05</p>
+    <h2>Get started<br>in minutes.</h2>
+    <p>Drop in the script, point it at your anchor links, set an <code>offset</code> for your sticky header, and you're done. v4 is a drop-in upgrade from v3.</p>
+  </section>
+
+  <!-- Settings panel -->
+  <div class="settings-panel">
+    <h3>Live Settings</h3>
+    <label>Easing</label>
+    <select id="easing-select">
+      <option value="easeInOutCubic" selected>easeInOutCubic</option>
+      <option value="linear">linear</option>
+      <option value="easeInSine">easeInSine</option>
+      <option value="easeOutSine">easeOutSine</option>
+      <option value="easeInOutSine">easeInOutSine</option>
+      <option value="easeInQuad">easeInQuad</option>
+      <option value="easeOutQuad">easeOutQuad</option>
+      <option value="easeInOutQuad">easeInOutQuad</option>
+      <option value="easeInCubic">easeInCubic</option>
+      <option value="easeOutCubic">easeOutCubic</option>
+      <option value="easeInQuart">easeInQuart</option>
+      <option value="easeOutQuart">easeOutQuart</option>
+      <option value="easeInOutQuart">easeInOutQuart</option>
+      <option value="easeInBack">easeInBack</option>
+      <option value="easeOutBack">easeOutBack</option>
+      <option value="easeInOutBack">easeInOutBack</option>
+      <option value="easeInElastic">easeInElastic</option>
+      <option value="easeOutElastic">easeOutElastic</option>
+      <option value="easeInOutElastic">easeInOutElastic</option>
+      <option value="easeInBounce">easeInBounce</option>
+      <option value="easeOutBounce">easeOutBounce</option>
+      <option value="easeInOutBounce">easeInOutBounce</option>
+    </select>
+    <label>Duration <span id="dur-val">800ms</span></label>
+    <input type="range" id="dur-slider" min="100" max="3000" step="50" value="800">
+  </div>
+
+  <!-- GitHub corner -->
+  <a href="https://github.com/bfiessinger/scrollToSmooth" class="github-corner" aria-label="View source on GitHub" target="_blank" rel="noopener">
+    <svg width="60" height="60" viewBox="0 0 250 250" style="fill:#70B7FD;color:#fff" aria-hidden="true">
+      <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+      <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin:130px 106px" class="octo-arm"></path>
+      <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+    </svg>
+  </a>
+
+  <script src="../dist/scrolltosmooth.pkgd.min.js"></script>
+  <script>
+    var NAV_OFFSET = 52 + 44; // main nav + section nav
+
+    var smooth = new scrollToSmooth('a[href^="#"]', {
+      duration: 800,
+      easing: easeInOutCubic,
+      offset: NAV_OFFSET
+    });
+    smooth.init();
+
+    // ── Live controls ──
+    document.getElementById('easing-select').addEventListener('change', function () {
+      smooth.update({ easing: window[this.value] });
+    });
+
+    var durSlider = document.getElementById('dur-slider');
+    var durVal    = document.getElementById('dur-val');
+    durSlider.addEventListener('input', function () {
+      durVal.textContent = this.value + 'ms';
+      smooth.update({ duration: parseInt(this.value) });
+    });
+
+    // ── Active section highlight ──
+    var sections = document.querySelectorAll('.section');
+    var navLinks = document.querySelectorAll('.section-nav a');
+
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var id = entry.target.id;
+          navLinks.forEach(function (a) {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+          });
+        }
+      });
+    }, { threshold: 0.5 });
+
+    sections.forEach(function (s) { observer.observe(s); });
+  </script>
+</body>
+</html>

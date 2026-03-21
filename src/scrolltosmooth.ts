@@ -279,7 +279,7 @@ export class ScrollToSmooth {
 	}
 
 	/** Internal – run the next queued item if nothing is currently scrolling. */
-	private _processQueue(): void {
+	protected _processQueue(): void {
 		if (this._isScrolling || this._queue.length === 0) return;
 		const item = this._queue.shift()!;
 		this._executeScroll(item.target);
@@ -637,12 +637,16 @@ export class ScrollToSmooth {
 
 		const isDocBody = (this.container as HTMLElement) === document.body || (this.container as HTMLElement) === document.documentElement;
 
-		// TOP – before container or first child (body case)
+		// TOP – before container or first non-fixed content child (body case)
 		if (!getExp(EXPANDER_TOP)) {
 			const el = document.createElement('div');
 			el.setAttribute(EXPANDER_ATTR, EXPANDER_TOP);
 			if (isDocBody) {
-				(this.container as HTMLElement).insertBefore(el, (this.container as HTMLElement).firstChild);
+				const body = this.container as HTMLElement;
+				const firstContent = Array.from(body.children).find(
+					c => !c.hasAttribute(EXPANDER_ATTR) && getComputedStyle(c).position !== 'fixed'
+				) ?? body.firstChild;
+				body.insertBefore(el, firstContent);
 			} else {
 				const container = this.container as HTMLElement;
 				root.insertBefore(el, container);
@@ -685,9 +689,9 @@ export class ScrollToSmooth {
 		if (isDocBody) {
 			const isExpander = (el: HTMLElement): boolean => el.hasAttribute(EXPANDER_ATTR);
 			let anchor = this._expanderAnchor;
-			if (!anchor || anchor.parentElement !== root || isExpander(anchor)) {
+			if (!anchor || anchor.parentElement !== root || isExpander(anchor) || getComputedStyle(anchor).position === 'fixed') {
 				anchor = (Array.from(root.children) as HTMLElement[])
-					.find(el => !isExpander(el)) ?? null;
+					.find(el => !isExpander(el) && getComputedStyle(el).position !== 'fixed') ?? null;
 				this._expanderAnchor = anchor;
 			}
 

@@ -122,7 +122,10 @@ const SnapPlugin = {
       const self = this;
       const targets = self._getSnapTargets();
       if (targets.length === 0) return;
+      const axis = self.settings.axis ?? 'y';
+      const is2D = axis === 'both';
       const currentY = self._getContainerScrollPosition('y');
+      const currentX = is2D ? self._getContainerScrollPosition('x') : 0;
       const container = self.container;
       const isDocBody = container === document.body || container === document.documentElement;
       const contRect = isDocBody ? null : container.getBoundingClientRect();
@@ -130,15 +133,24 @@ const SnapPlugin = {
       let minDist = Infinity;
       for (const el of targets) {
         const rect = el.getBoundingClientRect();
-        const elY = isDocBody ? rect.top + currentY : rect.top - contRect.top + currentY;
-        const dist = Math.abs(self._applyOffset(elY) - currentY);
+        let dist;
+        if (is2D) {
+          const elX = isDocBody ? rect.left + currentX : rect.left - contRect.left + currentX;
+          const elY = isDocBody ? rect.top + currentY : rect.top - contRect.top + currentY;
+          const dx = elX - currentX;
+          const dy = elY - currentY;
+          dist = Math.sqrt(dx * dx + dy * dy);
+        } else {
+          const elY = isDocBody ? rect.top + currentY : rect.top - contRect.top + currentY;
+          dist = Math.abs(self._applyOffset(elY) - currentY);
+        }
         if (dist < minDist) {
           minDist = dist;
           nearest = el;
         }
       }
       if (nearest !== null && minDist > 1) {
-        self.scrollTo(nearest);
+        self.scrollTo(nearest, is2D ? 'both' : undefined);
       }
     };
   }

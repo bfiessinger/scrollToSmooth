@@ -1,0 +1,118 @@
+/* ── ScrollToSmooth v4 — Shared Demo Styles ── */
+
+:root {
+  --c-bg:      #0d1117;
+  --c-surface: #161b22;
+  --c-border:  rgba(255, 255, 255, 0.08);
+  --c-accent:  #70B7FD;
+  --c-text:    #e6edf3;
+  --c-muted:   rgba(230, 237, 243, 0.5);
+  --nav-h:     52px;
+  --mono:      'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+/* ── Nav ─────────────────────────────────────────────────────── */
+
+.sts-nav {
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--nav-h);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.25rem;
+  background: rgba(13, 17, 23, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--c-border);
+  z-index: 500;
+}
+
+.sts-nav-logo {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--c-text);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sts-nav-logo em {
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--c-accent);
+  background: rgba(112, 183, 253, 0.12);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.sts-nav-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--c-border);
+  flex-shrink: 0;
+}
+
+.sts-nav-links {
+  list-style: none;
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex: 1;
+}
+
+.sts-nav-links::-webkit-scrollbar { display: none; }
+
+.sts-nav-links a {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--c-muted);
+  text-decoration: none;
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+}
+
+.sts-nav-links a:hover {
+  color: var(--c-text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.sts-nav-links a.sts-active {
+  color: var(--c-accent);
+  background: rgba(112, 183, 253, 0.08);
+}
+
+/* ── GitHub corner ───────────────────────────────────────────── */
+
+.github-corner {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 600;
+  border: 0;
+}
+
+.github-corner svg { display: block; }
+
+.github-corner:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out;
+}
+
+@keyframes octocat-wave {
+  0%, 100% { transform: rotate(0); }
+  20%,  60% { transform: rotate(-25deg); }
+  40%,  80% { transform: rotate(10deg); }
+}
+
+@media (max-width: 500px) {
+  .github-corner:hover .octo-arm { animation: none; }
+  .github-corner       .octo-arm { animation: octocat-wave 560ms ease-in-out; }
+}

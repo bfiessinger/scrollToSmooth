@@ -75,7 +75,7 @@ export declare class ScrollToSmooth {
      */
     clearQueue(id?: string): void;
     /** Internal – run the next queued item if nothing is currently scrolling. */
-    private _processQueue;
+    protected _processQueue(): void;
     /**
      * Core scroll execution shared by `scrollTo` and the queue processor.
      * Does NOT cancel any in-progress animation — callers must do that first.
