@@ -116,6 +116,25 @@ export interface ScrollToSmoothSettings {
 	 * Defaults to `150`.
 	 */
 	snapDebounce?: number;
+	// Touch momentum
+	/**
+	 * When `true`, a fast swipe gesture triggers a momentum scroll animation
+	 * after the finger is lifted, giving the page an inertia feel.
+	 * Disabled by default to avoid interfering with native scroll behaviour.
+	 */
+	touchMomentum?: boolean;
+	/**
+	 * Multiplier (in milliseconds) applied to the swipe velocity to compute
+	 * the extra momentum distance.  Higher values = more "throw".
+	 * Defaults to `300`.
+	 */
+	touchMomentumFactor?: number;
+	/**
+	 * Minimum swipe velocity in px/ms required to trigger a momentum scroll.
+	 * Swipes slower than this are ignored.
+	 * Defaults to `0.3`.
+	 */
+	touchMomentumMinVelocity?: number;
 	// Callbacks
 	onScrollStart?: ((data: ScrollData) => void) | null;
 	onScrollUpdate?: ((data: ScrollUpdateData) => void) | null;

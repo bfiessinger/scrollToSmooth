@@ -96,6 +96,14 @@ export class ScrollToSmooth {
 	/** Pending scroll queue populated by `queueScroll()`. */
 	private _queue: ScrollQueueItem[] = [];
 
+	/** Touch-momentum tracking state. */
+	private _touchSamples: Array<{ y: number; t: number }> = [];
+	private _touchMomentumHandlers: {
+		start: EventListener;
+		move: EventListener;
+		end: EventListener;
+	} | null = null;
+
 	/** True while an animation (JS or native) is running. */
 	private _isScrolling = false;
 
@@ -182,6 +190,10 @@ export class ScrollToSmooth {
 		if (this.settings.snap) {
 			this._setupSnapping();
 		}
+
+		if (this.settings.touchMomentum) {
+			this._setupTouchMomentum();
+		}
 	}
 
 	/**
@@ -212,6 +224,7 @@ export class ScrollToSmooth {
 		}
 
 		this._teardownSnapping();
+		this._teardownTouchMomentum();
 	}
 
 	/**
@@ -702,6 +715,67 @@ export class ScrollToSmooth {
 		if (nearest !== null && minDist > 1) {
 			this.scrollTo(nearest);
 		}
+	}
+
+	// ---------------------------------------------------------------
+	// Private – Touch momentum
+	// ---------------------------------------------------------------
+
+	private _setupTouchMomentum(): void {
+		const target = this._getScrollEventTarget();
+
+		const onStart = (e: Event) => {
+			const touch = (e as TouchEvent).touches[0];
+			this._touchSamples = [{ y: touch.clientY, t: performance.now() }];
+		};
+
+		const onMove = (e: Event) => {
+			const touch = (e as TouchEvent).touches[0];
+			const now = performance.now();
+			this._touchSamples.push({ y: touch.clientY, t: now });
+			// Keep only the last 100 ms of samples for accurate end-velocity
+			const cutoff = now - 100;
+			while (this._touchSamples.length > 1 && this._touchSamples[0].t < cutoff) {
+				this._touchSamples.shift();
+			}
+		};
+
+		const onEnd = () => {
+			if (this._touchSamples.length < 2) return;
+
+			const first = this._touchSamples[0];
+			const last  = this._touchSamples[this._touchSamples.length - 1];
+			const dt = last.t - first.t;
+			if (dt === 0) return;
+
+			// Velocity in px/ms — positive means finger moved down (scroll up)
+			const velocity = (first.y - last.y) / dt;
+			const minVelocity = this.settings.touchMomentumMinVelocity ?? 0.3;
+
+			if (Math.abs(velocity) < minVelocity) return;
+
+			const factor   = this.settings.touchMomentumFactor ?? 300;
+			const distance = velocity * factor;
+			const currentY = this._getContainerScrollPosition('y');
+
+			this.scrollTo(currentY + distance);
+		};
+
+		this._touchMomentumHandlers = { start: onStart as EventListener, move: onMove as EventListener, end: onEnd as EventListener };
+
+		target.addEventListener('touchstart', this._touchMomentumHandlers.start, { passive: true });
+		target.addEventListener('touchmove',  this._touchMomentumHandlers.move,  { passive: true });
+		target.addEventListener('touchend',   this._touchMomentumHandlers.end,   { passive: true });
+	}
+
+	private _teardownTouchMomentum(): void {
+		if (!this._touchMomentumHandlers) return;
+		const target = this._getScrollEventTarget();
+		target.removeEventListener('touchstart', this._touchMomentumHandlers.start);
+		target.removeEventListener('touchmove',  this._touchMomentumHandlers.move);
+		target.removeEventListener('touchend',   this._touchMomentumHandlers.end);
+		this._touchMomentumHandlers = null;
+		this._touchSamples = [];
 	}
 
 	// ---------------------------------------------------------------
