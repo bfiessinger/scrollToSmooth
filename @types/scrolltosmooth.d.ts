@@ -105,6 +105,7 @@ export declare class ScrollToSmooth {
     protected _animateScroll(config: AnimationConfig): void;
     protected _getDuration(distance: number): number;
     protected _resolveEasing(easing: string | EasingFunction | undefined, t: number): number;
+    protected _getExpanderRoot(): HTMLElement;
     protected _getContainerScrollPosition(_axis: 'x' | 'y'): number;
     protected _setContainerScrollPosition(pos: number, _axis: 'x' | 'y'): void;
     protected _getDocumentSize(_axis: 'x' | 'y'): number;

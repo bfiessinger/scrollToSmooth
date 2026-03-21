@@ -566,6 +566,14 @@ export class ScrollToSmooth {
 	// (overridden by HorizontalScrollPlugin to add x-axis support)
 	// ---------------------------------------------------------------
 
+	protected _getExpanderRoot(): HTMLElement {
+		const container = this.container as HTMLElement;
+		if (container === document.body || container === document.documentElement) {
+			return container;
+		}
+		return container.parentElement as HTMLElement || container;
+	}
+
 	protected _getContainerScrollPosition(_axis: 'x' | 'y'): number {
 		const container = this.container as HTMLElement;
 		const isDocBody = container === document.body || container === document.documentElement;
@@ -614,22 +622,35 @@ export class ScrollToSmooth {
 	 * programmatic-only usage (no init()) gets expanders too.
 	 */
 	protected _ensureExpanders(_axis: 'x' | 'y' | 'both'): void {
+		const root = this._getExpanderRoot();
 		const getExp = (dir: string): HTMLElement | null =>
-			(Array.from(this.container.children) as HTMLElement[])
+			(Array.from(root.children) as HTMLElement[])
 				.find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
 
-		// TOP – always the very first child
+		const isDocBody = (this.container as HTMLElement) === document.body || (this.container as HTMLElement) === document.documentElement;
+
+		// TOP – before container or first child (body case)
 		if (!getExp(EXPANDER_TOP)) {
 			const el = document.createElement('div');
 			el.setAttribute(EXPANDER_ATTR, EXPANDER_TOP);
-			this.container.insertBefore(el, this.container.firstChild);
+			if (isDocBody) {
+				(this.container as HTMLElement).insertBefore(el, (this.container as HTMLElement).firstChild);
+			} else {
+				const container = this.container as HTMLElement;
+				root.insertBefore(el, container);
+			}
 		}
 
-		// BOTTOM – always the very last child
+		// BOTTOM – after container or last child (body case)
 		if (!getExp(EXPANDER_BOTTOM)) {
 			const el = document.createElement('div');
 			el.setAttribute(EXPANDER_ATTR, EXPANDER_BOTTOM);
-			this.container.appendChild(el);
+			if (isDocBody) {
+				(this.container as HTMLElement).appendChild(el);
+			} else {
+				const container = this.container as HTMLElement;
+				root.insertBefore(el, container.nextSibling);
+			}
 		}
 	}
 
@@ -663,7 +684,8 @@ export class ScrollToSmooth {
 	}
 
 	protected _getDocumentExpanders(): HTMLDivElement[] {
-		return (Array.from(this.container.children) as HTMLDivElement[])
+		const root = this._getExpanderRoot();
+		return (Array.from(root.children) as HTMLDivElement[])
 			.filter(el => el.hasAttribute(EXPANDER_ATTR));
 	}
 

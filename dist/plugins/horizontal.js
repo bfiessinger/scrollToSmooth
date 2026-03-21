@@ -255,13 +255,16 @@ const HorizontalScrollPlugin = {
       // Always call original (creates top/bottom for y/both)
       _origEnsureExpanders.call(this, axis);
       if (axis !== 'x' && axis !== 'both') return;
-      const getExp = dir => Array.from(this.container.children).find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
+      const root = this._getExpanderRoot();
+      const getExp = dir => Array.from(root.children).find(el => el.getAttribute(EXPANDER_ATTR) === dir) ?? null;
       const expanderStyles = {
         display: 'inline-block',
         verticalAlign: 'top',
         width: '0px',
         height: '100%'
       };
+      const container = this.container;
+      const isDocBody = container === document.body || container === document.documentElement;
 
       // LEFT – right after top so it stays on the same inline line
       if (!getExp(EXPANDER_LEFT)) {
@@ -269,7 +272,11 @@ const HorizontalScrollPlugin = {
         el.setAttribute(EXPANDER_ATTR, EXPANDER_LEFT);
         Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
         const topExp = getExp(EXPANDER_TOP);
-        this.container.insertBefore(el, topExp ? topExp.nextSibling : this.container.firstChild);
+        if (isDocBody) {
+          container.insertBefore(el, topExp ? topExp.nextSibling : container.firstChild);
+        } else {
+          root.insertBefore(el, topExp ? topExp.nextSibling : container);
+        }
       }
 
       // RIGHT – before bottom so it stays on the same inline line
@@ -278,10 +285,18 @@ const HorizontalScrollPlugin = {
         el.setAttribute(EXPANDER_ATTR, EXPANDER_RIGHT);
         Object.entries(expanderStyles).forEach(([k, v]) => el.style.setProperty(k, v));
         const bottomExp = getExp(EXPANDER_BOTTOM);
-        if (bottomExp) {
-          this.container.insertBefore(el, bottomExp);
+        if (isDocBody) {
+          if (bottomExp) {
+            container.insertBefore(el, bottomExp);
+          } else {
+            container.appendChild(el);
+          }
         } else {
-          this.container.appendChild(el);
+          if (bottomExp) {
+            root.insertBefore(el, bottomExp);
+          } else {
+            root.insertBefore(el, container.nextSibling);
+          }
         }
       }
     };
