@@ -1,6 +1,3 @@
-> [!IMPORTANT]
-> The Docs below refer to the version 4 of ScrollToSmooth which is not yet released.\For version.3 docs refer to https://github.com/bfiessinger/scrollToSmooth/tree/v3.0.2
-
 # ScrollToSmooth
 
 Lightweight **Vanilla JavaScript smooth scrolling library** with zero dependencies.
@@ -135,22 +132,6 @@ ScrollToSmooth adds functionality when you need:
 - fixed header offsets
 - programmatic scroll control
 - extendable plugin system
-
----
-
-## Browser Support
-
-Modern browsers supported.
-
-Minimum versions:
-
-- Chrome 15+
-- Firefox 7+
-- Edge 12+
-- Safari 6+
-- IE 10+
-
-Older browsers require a `requestAnimationFrame` polyfill.
 
 ---
 
