@@ -136,6 +136,11 @@ export declare class ScrollToSmooth {
         px: number;
     } | false;
     protected _getDocumentExpanders(): HTMLDivElement[];
+    /**
+     * Clear inline expander dimensions so stale overscroll state never leaks into
+     * subsequent user-driven or snapped scroll calculations.
+     */
+    protected _clearExpanderSizes(): void;
     protected _getScrollEventTarget(): Window | HTMLElement;
     protected _getTargetElement(el: Element): Element | null;
     private _collectLinks;

@@ -491,6 +491,7 @@ class ScrollToSmooth {
     }
     if (clearQueue) this._queue = [];
     this._isScrolling = false;
+    this._clearExpanderSizes();
   }
 
   /**
@@ -583,6 +584,10 @@ class ScrollToSmooth {
     // surrounding page can react to it.
     this.container.style.setProperty('--sts-scroll-y', String(Math.round(currentY)));
     if (elapsed >= duration) {
+      // Ensure final frame lands exactly at target and reset overscroll expanders.
+      this._expandDocument(targetY, docHeight, viewHeight, 'y');
+      this._setContainerScrollPosition(targetY, 'y');
+      this._clearExpanderSizes();
       const endData = {
         startPosition: startY,
         endPosition: targetY
@@ -803,6 +808,17 @@ class ScrollToSmooth {
   _getDocumentExpanders() {
     const root = this._getExpanderRoot();
     return Array.from(root.children).filter(el => el.hasAttribute(EXPANDER_ATTR));
+  }
+
+  /**
+   * Clear inline expander dimensions so stale overscroll state never leaks into
+   * subsequent user-driven or snapped scroll calculations.
+   */
+  _clearExpanderSizes() {
+    for (const expander of this._getDocumentExpanders()) {
+      expander.style.removeProperty('width');
+      expander.style.removeProperty('height');
+    }
   }
 
   // ---------------------------------------------------------------

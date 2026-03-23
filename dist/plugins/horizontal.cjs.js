@@ -247,6 +247,7 @@ const HorizontalScrollPlugin = {
     // ----------------------------------------------------------------
     proto.scrollTo = function (target, axis) {
       this.cancelScroll();
+      this._isScrolling = true;
       const resolvedAxis = axis ?? this.settings.axis ?? 'y';
       const container = this.container;
       const startX = this._getContainerScrollPosition('x');
@@ -473,6 +474,22 @@ const HorizontalScrollPlugin = {
       this.container.style.setProperty('--sts-scroll-x', String(Math.round(currentX)));
       this.container.style.setProperty('--sts-scroll-y', String(Math.round(currentY)));
       if (elapsed >= duration) {
+        // Ensure final frame lands exactly on the target and clear any
+        // transient overscroll expander dimensions from easing overshoot.
+        if (axis === 'both') {
+          this._expandDocument(targetX, docWidth, viewWidth, 'x');
+          this._expandDocument(targetY, docHeight, viewHeight, 'y');
+          scrollBothAxes(this.container, targetX, targetY);
+        } else if (axis === 'x') {
+          this._expandDocument(targetX, docWidth, viewWidth, 'x');
+          this._setContainerScrollPosition(targetX, 'x');
+        } else {
+          this._expandDocument(targetY, docHeight, viewHeight, 'y');
+          this._setContainerScrollPosition(targetY, 'y');
+        }
+        this._clearExpanderSizes();
+        this.container.style.setProperty('--sts-scroll-x', String(Math.round(targetX)));
+        this.container.style.setProperty('--sts-scroll-y', String(Math.round(targetY)));
         fireOnScrollEnd(this.settings, axis, startX, startY, targetX, targetY);
         this._isScrolling = false;
         this._processQueue();
