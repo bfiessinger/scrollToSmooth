@@ -1,13 +1,16 @@
 # Changelog
 
+### 4.0.2
+
+#### Bug Fixes
+- Fix 2D overscroll snapping by clearing expander state and guarding animations
+
 ### 4.0.1
 
 #### Chores
 - Removed outdated "unreleased" notice from README.
 - Removed browser support table from README as version-specific figures are no longer accurate.
 - Added `.npmignore` to exclude demo assets, source files, and dev tooling from the published package (reduced tarball from ~5.6 MB to ~41 kB).
-
----
 
 ### 4.0.0
 
