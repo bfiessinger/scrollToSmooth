@@ -139,7 +139,10 @@
     .content-section:last-child { border-bottom: none; }
 
     .section-badge {
-      display: inline-block;
+      display: inline-flex;
+      align-self: flex-start;
+      width: auto;
+      max-width: max-content;
       font-size: 0.65rem;
       font-weight: 700;
       font-family: var(--mono);
@@ -190,6 +193,7 @@
       line-height: 1.75;
       overflow-x: auto;
       margin: 1rem 0;
+      white-space: pre; /* preserve line breaks in code snippets */
     }
 
     .kw  { color: #ff7b72; }
