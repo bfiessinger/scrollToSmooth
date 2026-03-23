@@ -248,7 +248,7 @@ CSS smooth scrolling is great for simple use cases. ScrollToSmooth steps in when
 | Custom easing curves | ❌ | ✅ 31 built-in + custom |
 | Scroll lifecycle events | ❌ | ✅ start / update / end |
 | Dynamic duration | ❌ | ✅ fixed, relative, min/max |
-| Fixed header offset | ❌ | ✅ element, px, %, vh |
+| Fixed header offset | ✅ via scroll-margin-top | ✅ element, px, %, vh |
 | Horizontal / 2D scrolling | ❌ | ✅ via plugin |
 | Section snapping | Partial | ✅ customizable debounce |
 | Touch momentum | ❌ | ✅ via plugin |
